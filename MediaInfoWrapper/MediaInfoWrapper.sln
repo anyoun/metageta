@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaInfoWrapper", "MediaInfoWrapper\MediaInfoWrapper.csproj", "{84DF7BD6-1AE9-44AA-8100-7578802BC976}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaInfoCLI", "MediaInfoCLI\MediaInfoCLI.csproj", "{2B31EE0F-760B-4815-BE96-73556811895B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{84DF7BD6-1AE9-44AA-8100-7578802BC976}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84DF7BD6-1AE9-44AA-8100-7578802BC976}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84DF7BD6-1AE9-44AA-8100-7578802BC976}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84DF7BD6-1AE9-44AA-8100-7578802BC976}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B31EE0F-760B-4815-BE96-73556811895B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B31EE0F-760B-4815-BE96-73556811895B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B31EE0F-760B-4815-BE96-73556811895B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B31EE0F-760B-4815-BE96-73556811895B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
