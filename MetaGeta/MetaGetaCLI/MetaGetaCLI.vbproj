@@ -121,6 +121,10 @@
       <Project>{F62A4017-8F99-4904-995D-3977B9A5260E}</Project>
       <Name>MGUtilities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TranscodePlugin\TranscodePlugin.vbproj">
+      <Project>{9D2AE6E9-248A-4A52-8122-A08727B82D78}</Project>
+      <Name>TranscodePlugin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TVShowPlugin\TVShowPlugin.vbproj">
       <Project>{C7A11128-E589-4016-8735-3FF3A50E12ED}</Project>
       <Name>TVShowPlugin</Name>

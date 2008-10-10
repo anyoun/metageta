@@ -339,6 +339,11 @@ Public Class EducatedGuessImporter
         Next 'stepping through ph with x
         'Debug.Write(ControlChars.NewLine)
 
+        If Not tags.ContainsKey(TVShowDataStoreTemplate.EpisodeTitle) _
+            And tags.ContainsKey(TVShowDataStoreTemplate.EpisodeNumber) Then
+            sett(tags, TVShowDataStoreTemplate.EpisodeTitle, String.Format("Episode {0}", tags(TVShowDataStoreTemplate.EpisodeNumber).Value))
+        End If
+
         If Not foundSeriesTitle Then
             'Debug.WriteLine("Breaking...")
         End If
