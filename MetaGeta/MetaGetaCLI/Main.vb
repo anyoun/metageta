@@ -5,7 +5,6 @@ Imports System.Text
 Module Main
 
     Sub Main(ByVal args As String())
-
         Dim dsm As New DataStoreManager()
         Dim template = New MetaGeta.TVShowPlugin.TVShowDataStoreTemplate()
         dsm.NewDataStore("cli", template)
@@ -17,6 +16,8 @@ Module Main
         Dim path As Uri = New Uri(Environment.CurrentDirectory)
         If args.Count > 0 Then
             path = New Uri(args(0))
+        Else
+
         End If
 
         If File.Exists(path.LocalPath) Then
@@ -29,20 +30,29 @@ Module Main
             Console.WriteLine("Can't find path: {0}", path.LocalPath)
         End If
 
-        Dim names = From s In template.GetDimensionNames() Order By s Select s
-        Console.WriteLine(names.JoinToString(","))
+        'Dim names = From s In template.GetDimensionNames() Order By s Select s
+        'Console.WriteLine(names.JoinToString(","))
         For Each f In ds
-            Console.WriteLine(Aggregate t In f.Tags() Order By t.Name Into JoinToCsv(t.Value))
+            'Console.WriteLine(Aggregate t In f.Tags() Order By t.Name Into JoinToCsv(t.Value))
             WriteTags(f)
         Next
     End Sub
 
     Sub ProcessFile(ByVal ds As MGDataStore, ByVal path As Uri)
-        Console.WriteLine("Transcoding: {0}", path.LocalPath)
-        Dim newFile = ChangeExtension(path, "mp4")
-        TranscodePlugin.TranscodePlugin.TranscodeMencoder(path, newFile)
-        Console.WriteLine("Importing: {0}", newFile.LocalPath)
-        ds.NewFile(newFile)
+        If System.IO.Path.GetExtension(path.LocalPath) = ".mp4" Then
+            Console.WriteLine("Not transcoding: {0}", path.LocalPath)
+            Console.WriteLine("Importing: {0}", path.LocalPath)
+            ds.NewFile(path)
+        Else
+            Console.WriteLine("Transcoding: {0}", path.LocalPath)
+            Dim newFile = ChangeExtension(path, "mp4")
+
+            Dim t = New TranscodePlugin.TranscodePlugin()
+            t.Transcode(path, newFile, "iPhone-HQ")
+
+            Console.WriteLine("Importing: {0}", newFile.LocalPath)
+            ds.NewFile(newFile)
+        End If
     End Sub
 
     Function ChangeExtension(ByVal path As Uri, ByVal extension As String) As Uri
@@ -51,7 +61,8 @@ Module Main
 
     Sub WriteTags(ByVal f As MGFile)
         Dim p As New Process()
-        p.StartInfo = New ProcessStartInfo("F:\src\MetaGeta\tools\AtomicParsley\AtomicParsley.exe")
+        'p.StartInfo = New ProcessStartInfo("F:\src\MetaGeta\tools\AtomicParsley\AtomicParsley.exe")
+        p.StartInfo = New ProcessStartInfo(Environment.ExpandEnvironmentVariables("%TOOLS%\AtomicParsley\AtomicParsley.exe"))
         Dim sb As New StringBuilder()
 
         sb.AppendFormat(" ""{0}"" ", f.Path.LocalPath)
@@ -65,7 +76,7 @@ Module Main
         sb.Append(" --stik ""TV Show"" --genre ""TV Shows"" ")
         sb.Append(" --overWrite ")
 
-        Console.WriteLine(sb.ToString())
+        'Console.WriteLine(sb.ToString())
         p.StartInfo.Arguments = sb.ToString()
 
         p.Start()

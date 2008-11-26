@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<MetaGetaCliConfig>
+  <Library>
+    <Directory Location="c:\videos"/>
+    <File Location="c:\Users\willt\Desktop\sunbeam_commercial_1.mpeg"/>
+  </Library>
+  <Conversion
+    OutputDirectory="c:\video\"
+    Format="iPhone"
+    />
+</MetaGetaCliConfig>

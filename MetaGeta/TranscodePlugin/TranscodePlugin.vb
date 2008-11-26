@@ -1,64 +1,46 @@
 ﻿Imports System.Text
 Imports System.Text.RegularExpressions
+Imports System.Xml
+Imports System.Xml.XPath
+Imports System.IO
+Imports MetaGeta.Utilities
 
 Public Class TranscodePlugin
 
-    Public Shared Sub Transcodex264(ByVal source As Uri, ByVal destination As Uri, ByVal profileFile As Uri)
+    Private ReadOnly m_Presets As New Dictionary(Of String, Preset)
 
-        'Dim xs As New Xml.Serialization.XmlSerializer(GetType(GenericProfileOfx264Settings))
-        'Dim profile As GenericProfileOfx264Settings
+    Public Sub New()
+        Dim d As New XPathDocument(Path.Combine(My.Application.Info.DirectoryPath, "TranscodingPresets.xml"))
+        Dim nav = d.CreateNavigator()
+        For Each node As XPathNavigator In nav.Select("/TranscodingPresets/Preset")
+            Dim p As New Preset
+            p.Name = node.GetAttribute("Name", "")
+            p.Encoder = node.GetAttribute("Encoder", "")
+            p.CommandLine = node.Value
 
-        'Using Str As New IO.StreamReader(profileFile.LocalPath)
-        '   profile = xs.Deserialize(Str)
-        'End Using
-
-        Dim p As New Process()
-        p.StartInfo = New ProcessStartInfo("f:\src\MetaGeta\tools\x264\x264.exe")
-        Dim sb As New StringBuilder()
-
-        sb.Append(" --bitrate 750 ")
-        sb.Append(" --level 3 --no-cabac --partitions p8x8,b8x8,i4x4 --vbv-bufsize 10000 --vbv-maxrate 10000 ")
-        sb.Append(" --threads auto --thread-input --progress --no-psnr --no-ssim ")
-        sb.AppendFormat(" --output ""{0}"" ""{1}"" ", destination.LocalPath, source.LocalPath)
-
-        Console.WriteLine(sb.ToString())
-        p.StartInfo.Arguments = sb.ToString()
-        p.StartInfo.CreateNoWindow = True
-        p.StartInfo.UseShellExecute = False
-
-        p.StartInfo.RedirectStandardError = True
-        p.StartInfo.RedirectStandardOutput = True
-
-        AddHandler p.OutputDataReceived, AddressOf OutputHandler
-
-        p.Start()
-
-        p.BeginErrorReadLine()
-        p.BeginOutputReadLine()
-
-        'Console.WriteLine(s)
-
-        p.WaitForExit()
+            m_Presets.Add(p.Name, p)
+        Next
     End Sub
 
-    Public Shared Sub TranscodeMencoder(ByVal source As Uri, ByVal destination As Uri)
+    Public Sub Transcode(ByVal source As Uri, ByVal destination As Uri, ByVal presetName As String)
         Dim p As New Process()
-        p.StartInfo = New ProcessStartInfo("F:\src\MetaGeta\tools\mplayer\mencoder.exe")
+        p.StartInfo = New ProcessStartInfo(Environment.ExpandEnvironmentVariables("%TOOLS%\mplayer\mencoder.exe"))
         Dim sb As New StringBuilder()
 
-        Dim videoBitrate = 250
-        Dim audioBitrate = 64
-        Dim maxWidth = 320
-
         sb.AppendFormat(" ""{0}"" ", source.LocalPath)
-        sb.Append(" -endpos 30 ")
-        'sb.AppendFormat(" -sws 9 -of lavf -lavfopts format=mp4 -vf dsize={0}:-2,harddup ", maxWidth)
-        sb.AppendFormat(" -sws 9 -of lavf -lavfopts format=mp4 -vf scale=320:-2,dsize=320:-2,harddup ")
-        sb.AppendFormat("-ovc x264 -x264encopts bitrate={0}:vbv_maxrate=1500:vbv_bufsize=2000:nocabac:me=umh:subq=6:frameref=6:trellis=1:level_idc=30:global_header:threads=2", videoBitrate)
-        sb.AppendFormat(" -oac faac -faacopts mpeg=4:object=2:br={0}:raw -channels 2 -srate 48000 ", audioBitrate)
+
+        If False Then
+            'Stops after 30 seconds
+            sb.Append(" -endpos 30 ")
+        End If
+
+        Dim preset = m_Presets(presetName)
+        sb.Append(Regex.Replace(preset.CommandLine, "\s+", " "))
+
         sb.AppendFormat(" -o ""{0}"" ", destination.LocalPath)
 
-        Console.WriteLine(sb.ToString())
+        Console.WriteLine("Encoding using mencoder preset {0}...", presetName)
+
         p.StartInfo.Arguments = sb.ToString()
         p.StartInfo.CreateNoWindow = True
         p.StartInfo.UseShellExecute = False
@@ -68,12 +50,21 @@ Public Class TranscodePlugin
 
         AddHandler p.OutputDataReceived, AddressOf OutputHandler
 
+        Console.WriteLine()
+        Console.WriteLine()
+
         p.Start()
 
         p.BeginErrorReadLine()
         p.BeginOutputReadLine()
 
         p.WaitForExit()
+
+        If p.ExitCode <> 0 Then
+            Throw New Exception("mencoder failed!")
+        End If
+
+        Console.WriteLine()
     End Sub
 
     Private Shared Sub OutputHandler(ByVal sendingProcess As Object, ByVal outLine As DataReceivedEventArgs)
@@ -84,7 +75,9 @@ Public Class TranscodePlugin
         Dim p = CType(sendingProcess, Process)
         Dim s As New MencoderStatusLine(outLine.Data)
 
-        Console.WriteLine("{0}: {1} {2:00%}", p.ProcessName, outLine.Data, s.PositionPercent)
+        If s.PositionPercent <> -1 Then
+            StringHelpers.DrawProgressBar(s.PositionPercent, String.Format("{0,6:#0.00}fps {1:HH:mm:ss} remaining", s.EncodingSpeedFps, s.EstimatedTimeRemaining))
+        End If
     End Sub
 
     Private Structure MencoderStatusLine
@@ -103,6 +96,12 @@ Public Class TranscodePlugin
                 '7 = a/v delay?
                 EstimatedVideoBitrate = Double.Parse(m.Groups(8).Value)
                 EstimatedAudioBitrate = Double.Parse(m.Groups(9).Value)
+
+                If PositionPercent <> 0 AndAlso EncodingSpeedFps <> 0 Then
+                    EstimatedTimeRemaining = New TimeSpan(0, 0, (PositionFrames / PositionPercent - PositionFrames) / EncodingSpeedFps)
+                End If
+            Else
+                PositionPercent = -1
             End If
         End Sub
 
@@ -113,6 +112,14 @@ Public Class TranscodePlugin
         Public ReadOnly EstimatedVideoBitrate As Double
         Public ReadOnly EstimatedAudioBitrate As Double
         Public ReadOnly EstimatedFileSizeMB As Integer
+
+        Public ReadOnly EstimatedTimeRemaining As TimeSpan
+    End Structure
+
+    Private Structure Preset
+        Public Name As String
+        Public Encoder As String
+        Public CommandLine As String
     End Structure
 
 End Class

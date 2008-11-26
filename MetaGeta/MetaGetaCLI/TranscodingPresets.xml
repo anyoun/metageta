@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TranscodingPresets>
+  <Preset Name="iPhone-LQ" Encoder="mencoder">
+    -sws 9 -of lavf -lavfopts format=mp4 -vf scale=320:-2,dsize=320:-2,harddup
+    -ovc x264 -x264encopts bitrate=500:vbv_maxrate=1500:vbv_bufsize=2000:nocabac:me=umh:subq=6:frameref=6:trellis=1:level_idc=30:global_header:threads=4
+    -oac faac -faacopts mpeg=4:object=2:br=64:raw -channels 2 -srate 48000
+  </Preset>
+  <Preset Name="iPhone-HQ" Encoder="mencoder">
+    -sws 9 -of lavf -lavfopts format=mp4 -vf scale=480:-2,dsize=480:-2,harddup
+    -ovc x264 -x264encopts bitrate=1000:vbv_maxrate=1500:vbv_bufsize=2000:nocabac:me=umh:subq=6:frameref=6:trellis=1:level_idc=30:global_header:threads=4
+    -oac faac -faacopts mpeg=4:object=2:br=128:raw -channels 2 -srate 48000
+  </Preset>
+</TranscodingPresets>
