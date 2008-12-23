@@ -13,6 +13,8 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MetaGetaCLI", "MetaGetaCLI\
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "TranscodePlugin", "TranscodePlugin\TranscodePlugin.vbproj", "{9D2AE6E9-248A-4A52-8122-A08727B82D78}"
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "TVDBPlugin", "TVDBPlugin\TVDBPlugin.vbproj", "{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,12 @@ Global
 		{9D2AE6E9-248A-4A52-8122-A08727B82D78}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9D2AE6E9-248A-4A52-8122-A08727B82D78}.Release|x86.ActiveCfg = Release|x86
 		{9D2AE6E9-248A-4A52-8122-A08727B82D78}.Release|x86.Build.0 = Release|x86
+		{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

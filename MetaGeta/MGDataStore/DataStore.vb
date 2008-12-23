@@ -96,6 +96,12 @@ Public Class MGDataStore
 
 #End Region
 
+    Public Sub Close()
+        For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
+            plugin.Close()
+        Next
+    End Sub
+
     Public Event ItemAdded As EventHandler(Of MGFileEventArgs)
     'Public Event CollectionChanged(ByVal sender As Object, ByVal e As NotifyCollectionChangedEventArgs) Implements INotifyCollectionChanged.CollectionChanged
 

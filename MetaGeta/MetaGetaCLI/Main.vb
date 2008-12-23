@@ -1,6 +1,7 @@
 ﻿Imports MetaGeta.DataStore
 Imports System.IO
 Imports System.Text
+Imports System.Xml
 
 Module Main
 
@@ -12,6 +13,7 @@ Module Main
 
         ds.AddTaggingPlugin(New MetaGeta.MediaInfoPlugin.MediaInfoPlugin)
         ds.AddTaggingPlugin(New MetaGeta.TVShowPlugin.EducatedGuessImporter)
+        ds.AddTaggingPlugin(New TVDBPlugin.TVDBPlugin)
 
         Dim path As Uri = New Uri(Environment.CurrentDirectory)
         If args.Count > 0 Then
@@ -36,6 +38,39 @@ Module Main
             'Console.WriteLine(Aggregate t In f.Tags() Order By t.Name Into JoinToCsv(t.Value))
             WriteTags(f)
         Next
+
+        ds.Close()
+    End Sub
+
+    Sub ProcessConfigFile(ByVal configFilePath As Uri)
+        Dim doc As New XmlDocument()
+        doc.Load(configFilePath.LocalPath)
+
+        For Each actionNode As XmlNode In doc.SelectNodes("/MetaGetaCliConfig/*")
+            Select Case actionNode.Name
+                Case "ReloadLibrary"
+                    Dim libraryPath = actionNode.SelectSingleNode("path").InnerText
+
+                Case "ImportLibrary"
+
+                Case "AddPlugin"
+                    Dim typeName = actionNode.SelectSingleNode("TypeName").InnerText
+
+                Case "AddConvertedVersion"
+                    Dim outputPath = actionNode.SelectSingleNode("output").InnerText
+                    Dim format = actionNode.SelectSingleNode("format").InnerText
+
+                Case "SetTag"
+                    Dim tagName = actionNode.SelectSingleNode("name").InnerText
+                    Dim tagValue = actionNode.SelectSingleNode("value").InnerText
+
+                Case "Config"
+
+                Case Else
+                    Throw New Exception("Unknown action: " + actionNode.Name)
+            End Select
+        Next
+
     End Sub
 
     Sub ProcessFile(ByVal ds As MGDataStore, ByVal path As Uri)

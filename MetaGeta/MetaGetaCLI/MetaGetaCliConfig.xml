@@ -1,11 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <MetaGetaCliConfig>
-  <Library>
-    <Directory Location="c:\videos"/>
-    <File Location="c:\Users\willt\Desktop\sunbeam_commercial_1.mpeg"/>
-  </Library>
-  <Conversion
-    OutputDirectory="c:\video\"
-    Format="iPhone"
-    />
+  
+  <Config>
+    <tvdb>
+      <apikey>BC8024C516DFDA3B</apikey>
+    </tvdb>
+  </Config>
+
+  <ReloadLibrary>
+    <path>c:\metageta\library.mgl</path>
+  </ReloadLibrary>
+  
+  <ImportLibrary>
+    <directory>c:\videos</directory>
+    <!--<file>c:\Users\willt\Desktop\sunbeam_commercial_1.mpeg<file>-->
+  </ImportLibrary>
+
+  <AddPlugin>
+    <TypeName>MetaGeta.MediaInfoPlugin.MediaInfoPlugin</TypeName>
+  </AddPlugin>
+  
+  <AddConvertedVersion>
+    <output>c:\video\</output>
+    <format>iPhone</format>
+  </AddConvertedVersion>
+  
+  <SetTag>
+    <name>EpisodeTitle</name>
+    <value>$SeasonNumber - $EpisodeNumber</value>
+  </SetTag>
+
 </MetaGetaCliConfig>
