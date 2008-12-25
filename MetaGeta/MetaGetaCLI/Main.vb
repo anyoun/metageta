@@ -125,6 +125,4 @@ Module Main
         Return s.Substring(0, Math.Min(255, s.Length))
     End Function
 
-    'http://www.thetvdb.com/api/BC8024C516DFDA3B/mirrors.xml
-
 End Module
