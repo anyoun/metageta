@@ -2,6 +2,7 @@
 Imports TvdbConnector
 Imports TvdbConnector.Cache
 Imports TvdbConnector.Data
+Imports MetaGeta.TVShowPlugin
 
 Public Class TVDBPlugin
     Implements IMGTaggingPlugin
@@ -17,24 +18,51 @@ Public Class TVDBPlugin
         m_tvdbHandler.SaveCache()
     End Sub
 
-    Public Sub ItemAdded(ByVal File As MetaGeta.DataStore.MGFile) Implements MetaGeta.DataStore.IMGTaggingPlugin.ItemAdded
+    Public Sub ItemAdded(ByVal file As MetaGeta.DataStore.MGFile) Implements MetaGeta.DataStore.IMGTaggingPlugin.ItemAdded
         'Should use cache first
         'prompt user for series name lookups??
 
-        Dim seriesName = File.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.SeriesTitle).Value
-        Dim episodeNumber = Integer.Parse(File.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.EpisodeNumber).Value)
-        Dim seasonNumber = Integer.Parse(File.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.SeasonNumber).Value)
+        Dim seriesID = GetSeriesID(file)
+        If seriesID Is Nothing Then Return
+        Dim series = GetSeries(seriesID)
 
-        Dim searchResult = m_tvdbHandler.SearchSeries(seriesName)
-        Dim exactMatch = searchResult.Find(Function(sr) sr.SeriesName = seriesName)
+        file.Tags.Item(TVShowDataStoreTemplate.SeriesDescription).Value = series.Overview
 
-        If Not exactMatch Is Nothing Then
-            Dim s = m_tvdbHandler.GetSeries(exactMatch.Id, TvdbLanguage.DefaultLanguage, True, False, False, True)
-            Dim exactEpisode = s.Episodes.Find(Function(e) e.SeasonNumber = seasonNumber And e.EpisodeNumber = episodeNumber)
-            If Not exactEpisode Is Nothing Then
-                File.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.EpisodeTitle).Value = exactEpisode.EpisodeName
-                'Should add description etc
-            End If
+        Dim exactEpisode = GetEpisode(series, file)
+
+        file.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value = exactEpisode.EpisodeName
+        file.Tags.Item(TVShowDataStoreTemplate.EpisodeDescription).Value = exactEpisode.Overview
+        file.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value = exactEpisode.Id
+
+        If exactEpisode.Banner.LoadBanner() Then
+            Dim imagefile = System.IO.Path.GetTempFileName()
+            exactEpisode.Banner.Banner.Save(imagefile)
+            file.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).Value = imagefile
         End If
     End Sub
+
+    Private Function GetSeriesID(ByVal file As MGFile) As Integer?
+        If Not file.Tags.Item(TVShowDataStoreTemplate.SeriesID).IsSet Then
+            Dim seriesName = file.Tags.Item(TVShowDataStoreTemplate.SeriesTitle).Value
+            Dim searchResult = m_tvdbHandler.SearchSeries(seriesName)
+            Dim exactMatch = searchResult.Find(Function(sr) sr.SeriesName = seriesName)
+            If Not exactMatch Is Nothing Then
+                file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsNumber = exactMatch.Id
+                Return exactMatch.Id
+            Else
+                Return Nothing
+            End If
+        End If
+        Return file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsNumber
+    End Function
+
+    Private Function GetSeries(ByVal seriesID As Integer) As TvdbSeries
+        Return m_tvdbHandler.GetSeries(seriesID, TvdbLanguage.DefaultLanguage, True, False, False, True)
+    End Function
+
+    Private Function GetEpisode(ByVal series As TvdbSeries, ByVal file As MGFile) As TvdbEpisode
+        Dim seasonNumber = file.Tags.Item(TVShowDataStoreTemplate.SeasonNumber).ValueAsNumber
+        Dim episodeNumber = file.Tags.Item(TVShowDataStoreTemplate.EpisodeNumber).ValueAsNumber
+        Return m_tvdbHandler.GetEpisode(series.Id, seasonNumber, episodeNumber, TvdbEpisode.EpisodeOrdering.DefaultOrder, TvdbLanguage.DefaultLanguage)
+    End Function
 End Class

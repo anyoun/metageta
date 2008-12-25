@@ -751,7 +751,9 @@ Public Class TVShowDataStoreTemplate
     Implements IDataStoreTemplate
 
     Public Function GetDimensionNames() As String() Implements IDataStoreTemplate.GetDimensionNames
-        Return New String() {SeriesTitle, EpisodeTitle, EpisodeNumber, SeasonNumber, PartNumber, CRC32, Group, AudioCodec, VideoCodec, Resolution, PlayTime}
+        Return New String() {SeriesTitle, EpisodeTitle, EpisodeNumber, SeasonNumber, PartNumber, _
+                             SeriesID, EpisodeID, SeriesDescription, EpisodeDescription, EpisodeBanner, _
+                             CRC32, Group, AudioCodec, VideoCodec, Resolution, PlayTime}
     End Function
 
 #Region "Constants"
@@ -761,6 +763,14 @@ Public Class TVShowDataStoreTemplate
     Public Const EpisodeNumber As String = "EpisodeNumber"
     Public Const SeasonNumber As String = "SeasonNumber"
     Public Const PartNumber As String = "PartNumber"
+
+    Public Const SeriesID As String = "SeriesID"
+    Public Const EpisodeID As String = "EpisodeID"
+
+    Public Const EpisodeBanner As String = "EpisodeBanner"
+
+    Public Const SeriesDescription As String = "SeriesDescription"
+    Public Const EpisodeDescription As String = "EpisodeDescription"
 
     Public Const CRC32 As String = "CRC32"
     Public Const Group As String = "Group"

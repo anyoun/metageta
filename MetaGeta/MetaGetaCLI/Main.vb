@@ -2,6 +2,7 @@
 Imports System.IO
 Imports System.Text
 Imports System.Xml
+Imports MetaGeta.TVShowPlugin
 
 Module Main
 
@@ -13,7 +14,7 @@ Module Main
 
         ds.AddTaggingPlugin(New MetaGeta.MediaInfoPlugin.MediaInfoPlugin)
         ds.AddTaggingPlugin(New MetaGeta.TVShowPlugin.EducatedGuessImporter)
-        ds.AddTaggingPlugin(New TVDBPlugin.TVDBPlugin)
+        ds.AddTaggingPlugin(New MetaGeta.TVDBPlugin.TVDBPlugin)
 
         Dim path As Uri = New Uri(Environment.CurrentDirectory)
         If args.Count > 0 Then
@@ -95,28 +96,34 @@ Module Main
     End Function
 
     Sub WriteTags(ByVal f As MGFile)
+        WriteAtomicParsleyTag(f.Path, "TVShowName", f.Tags.Item(TVShowDataStoreTemplate.SeriesTitle).Value)
+        WriteAtomicParsleyTag(f.Path, "TVSeasonNum", f.Tags.Item(TVShowDataStoreTemplate.SeasonNumber).Value)
+        WriteAtomicParsleyTag(f.Path, "TVEpisode", f.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value)
+        WriteAtomicParsleyTag(f.Path, "title", f.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value)
+        WriteAtomicParsleyTag(f.Path, "TVEpisodeNum", f.Tags.Item(TVShowDataStoreTemplate.EpisodeNumber).Value)
+        WriteAtomicParsleyTag(f.Path, "description", f.Tags.Item(TVShowDataStoreTemplate.EpisodeDescription).Value)
+        WriteAtomicParsleyTag(f.Path, "artwork", f.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).Value)
+        WriteAtomicParsleyTag(f.Path, "stik", "TV Show")
+        WriteAtomicParsleyTag(f.Path, "genre", "TV Shows")
+    End Sub
+
+    Private Sub WriteAtomicParsleyTag(ByVal path As Uri, ByVal apTagName As String, ByVal value As String)
         Dim p As New Process()
-        'p.StartInfo = New ProcessStartInfo("F:\src\MetaGeta\tools\AtomicParsley\AtomicParsley.exe")
         p.StartInfo = New ProcessStartInfo(Environment.ExpandEnvironmentVariables("%TOOLS%\AtomicParsley\AtomicParsley.exe"))
         Dim sb As New StringBuilder()
 
-        sb.AppendFormat(" ""{0}"" ", f.Path.LocalPath)
-
-        sb.AppendFormat(" --TVShowName ""{0}"" ", f.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.SeriesTitle).Value)
-        sb.AppendFormat(" --TVSeasonNum ""{0}"" ", f.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.SeasonNumber).Value)
-        'sb.AppendFormat(" --TVEpisode ""{0}"" ", f.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.EpisodeTitle).Value)
-        sb.AppendFormat(" --title ""{0}"" ", f.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.EpisodeTitle).Value)
-        sb.AppendFormat(" --TVEpisodeNum ""{0}"" ", f.Tags.Item(MetaGeta.TVShowPlugin.TVShowDataStoreTemplate.EpisodeNumber).Value)
-
-        sb.Append(" --stik ""TV Show"" --genre ""TV Shows"" ")
+        sb.AppendFormat(" ""{0}"" ", path.LocalPath)
+        sb.AppendFormat(" --{0} ""{1}"" ", apTagName, value.Replace("""", """"""))
         sb.Append(" --overWrite ")
-
-        'Console.WriteLine(sb.ToString())
         p.StartInfo.Arguments = sb.ToString()
 
         p.Start()
         p.WaitForExit()
     End Sub
+
+    Private Function CapLength(ByVal s As String) As String
+        Return s.Substring(0, Math.Min(255, s.Length))
+    End Function
 
     'http://www.thetvdb.com/api/BC8024C516DFDA3B/mirrors.xml
 
