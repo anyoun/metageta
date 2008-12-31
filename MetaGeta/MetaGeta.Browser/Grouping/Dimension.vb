@@ -29,8 +29,3 @@ Public Class Dimension
         Me.Item(file.Tags.Item(m_Name).Value).Add(file)
     End Sub
 End Class
-
-
-Public Interface IDataStoreTemplate
-    Function GetDimensionNames() As String()
-End Interface

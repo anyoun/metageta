@@ -123,13 +123,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MGDataStore\MGDataStore.vbproj">
+    <ProjectReference Include="..\MetaGeta.DataStore\MetaGeta.DataStore.vbproj">
       <Project>{C293768F-6C79-4B6D-8F2B-1DF2F0F6A038}</Project>
-      <Name>MGDataStore</Name>
+      <Name>MetaGeta.DataStore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MGUtilities\MGUtilities.vbproj">
+    <ProjectReference Include="..\MetaGeta.Utilities\MetaGeta.Utilities.vbproj">
       <Project>{F62A4017-8F99-4904-995D-3977B9A5260E}</Project>
-      <Name>MGUtilities</Name>
+      <Name>MetaGeta.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

@@ -133,13 +133,13 @@
       <Project>{1B13DEB6-1B78-4D85-B3DB-F5282AF3DECD}</Project>
       <Name>MediaInfoPlugin</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MGDataStore\MGDataStore.vbproj">
+    <ProjectReference Include="..\MetaGeta.DataStore\MetaGeta.DataStore.vbproj">
       <Project>{C293768F-6C79-4B6D-8F2B-1DF2F0F6A038}</Project>
-      <Name>MGDataStore</Name>
+      <Name>MetaGeta.DataStore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MGUtilities\MGUtilities.vbproj">
+    <ProjectReference Include="..\MetaGeta.Utilities\MetaGeta.Utilities.vbproj">
       <Project>{F62A4017-8F99-4904-995D-3977B9A5260E}</Project>
-      <Name>MGUtilities</Name>
+      <Name>MetaGeta.Utilities</Name>
     </ProjectReference>
     <ProjectReference Include="..\TranscodePlugin\TranscodePlugin.vbproj">
       <Project>{9D2AE6E9-248A-4A52-8122-A08727B82D78}</Project>

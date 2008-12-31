@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}</ProjectGuid>
+    <ProjectGuid>{EE5E61B2-81A2-421A-9A07-B93E03179F4D}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>MetaGeta.TVDBPlugin</RootNamespace>
-    <AssemblyName>TVDBPlugin</AssemblyName>
+    <RootNamespace>MetaGeta.Browser</RootNamespace>
+    <AssemblyName>MetaGeta.Browser</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
@@ -23,7 +23,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
+    <DocumentationFile>MetaGeta.Browser.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -32,34 +32,15 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
+    <DocumentationFile>MetaGeta.Browser.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineDebug>true</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
-    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
-    <Optimize>true</Optimize>
-    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x86\Debug\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
+    <DocumentationFile>MetaGeta.Browser.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -67,7 +48,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x86\Release\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
+    <DocumentationFile>MetaGeta.Browser.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <DebugType>pdbonly</DebugType>
@@ -76,7 +57,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -87,14 +67,11 @@
     <Reference Include="System.Data.DataSetExtensions">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="TvdbConnector, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\tvdblib\bin\TvdbConnector.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Import Include="MetaGeta" />
     <Import Include="MetaGeta.DataStore" />
-    <Import Include="MetaGeta.TVShowPlugin" />
+    <Import Include="MetaGeta.Utilities" />
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="System" />
     <Import Include="System.Collections" />
@@ -103,11 +80,13 @@
     <Import Include="System.Diagnostics" />
     <Import Include="System.Linq" />
     <Import Include="System.Xml.Linq" />
-    <Import Include="TvdbConnector" />
-    <Import Include="TvdbConnector.Cache" />
-    <Import Include="TvdbConnector.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Browser\Browser.vb" />
+    <Compile Include="Browser\FileView.vb" />
+    <Compile Include="Browser\TagView.vb" />
+    <Compile Include="Grouping\Bucket.vb" />
+    <Compile Include="Grouping\Dimension.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -123,7 +102,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="TVDBPlugin.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -152,10 +130,6 @@
     <ProjectReference Include="..\MetaGeta.Utilities\MetaGeta.Utilities.vbproj">
       <Project>{F62A4017-8F99-4904-995D-3977B9A5260E}</Project>
       <Name>MetaGeta.Utilities</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TVShowPlugin\TVShowPlugin.vbproj">
-      <Project>{C7A11128-E589-4016-8735-3FF3A50E12ED}</Project>
-      <Name>TVShowPlugin</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

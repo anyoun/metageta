@@ -1,14 +1,10 @@
-Imports System.Text
-Imports System.IO
-
 <Serializable()> _
 Public Class MGDataStore
-    'Implements INotifyCollectionChanged
     Implements IEnumerable(Of MGFile)
 
     Private m_Items As New List(Of MGFile)
-    Private m_Dimensions As New Dictionary(Of String, Dimension)
 
+    Private ReadOnly m_Template As IDataStoreTemplate
     Private m_Name As String
     Private m_Description As String
 
@@ -16,25 +12,14 @@ Public Class MGDataStore
     Private m_TaggingPlugins As New List(Of IMGTaggingPlugin)
 
     Public Sub New(ByVal template As IDataStoreTemplate)
-        For Each s As String In template.GetDimensionNames()
-            m_Dimensions.Add(s, New Dimension(s))
-        Next
+        m_Template = template
     End Sub
 
     Public Sub NewFile(ByVal path As Uri)
         Dim f As New MGFile(path, Guid.NewGuid())
         m_Items.Add(f)
 
-        'Bucket along dimensions
-
-        For Each d As Dimension In m_Dimensions.Values
-            d.IndexNewItem(f)
-        Next
-
         RaiseEvent ItemAdded(Me, New MGFileEventArgs(f))
-        'RaiseEvent CollectionChanged(Me, New Collections.Specialized.NotifyCollectionChangedEventArgs(Specialized.NotifyCollectionChangedAction.Add, f))
-
-        'Threading.Thread.Sleep(1000)
     End Sub
 
     Public Sub RunTaggingPlugins()
@@ -42,20 +27,15 @@ Public Class MGDataStore
             plugin.Process()
         Next
     End Sub
-
     Public Sub AddTaggingPlugin(ByVal plugin As IMGTaggingPlugin)
         plugin.Startup(Me)
         m_TaggingPlugins.Add(plugin)
     End Sub
 
-    Public Function Browse(ByVal path As String) As Browser
-        Return New Browser(Me, path)
+    Public Function GetFilesWhere(ByVal tag As MGTag) As FileSet
+        Return New FileSet(From file In m_Items Where file.Tags.Item(tag.Name).Equals(tag))
     End Function
-
-    Friend Function GetFilesWhere(ByVal tag As MGTag) As FileSet
-        Return m_Dimensions(tag.Name).Item(tag.Value)
-    End Function
-    Friend Function GetAllFiles() As FileSet
+    Public Function GetAllFiles() As FileSet
         Return New FileSet(m_Items)
     End Function
 
@@ -105,7 +85,6 @@ Public Class MGDataStore
     End Sub
 
     Public Event ItemAdded As EventHandler(Of MGFileEventArgs)
-    'Public Event CollectionChanged(ByVal sender As Object, ByVal e As NotifyCollectionChangedEventArgs) Implements INotifyCollectionChanged.CollectionChanged
 
     Public Overrides Function ToString() As String
         Return "MGDataStore: " & Name

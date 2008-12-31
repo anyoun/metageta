@@ -1,10 +1,4 @@
-﻿Imports System.IO
-Imports System.Threading
-Imports System.Runtime.CompilerServices
-Imports System.ComponentModel
-Imports System.Collections.ObjectModel
-
-Public Class DataStoreManager
+﻿Public Class DataStoreManager
     Implements INotifyPropertyChanged
 
     Private ReadOnly m_DataStores As New ObservableCollection(Of MGDataStore)
@@ -70,9 +64,9 @@ Public Class DataStoreManager
     End Function
 #End Region
 
-    Public Function StartBrowsing(ByVal ds As MGDataStore) As Browser
-        Return ds.Browse("SeriesTitle/EpisodeNumber")
-    End Function
+    'Public Function StartBrowsing(ByVal ds As MGDataStore) As Browser
+    '   Return ds.Browse("SeriesTitle/EpisodeNumber")
+    'End Function
 
     Public ReadOnly Property DataStores() As ObservableCollection(Of MGDataStore)
         Get
