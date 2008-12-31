@@ -8,7 +8,7 @@ Module Main
 
     Sub Main(ByVal args As String())
         Dim dsm As New DataStoreManager()
-        Dim template = New MetaGeta.TVShowPlugin.TVShowDataStoreTemplate()
+        Dim template = New TVShowDataStoreTemplate()
         dsm.NewDataStore("cli", template)
         Dim ds = dsm.DataStores(0)
 

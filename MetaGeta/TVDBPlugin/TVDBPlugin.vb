@@ -7,38 +7,42 @@ Imports MetaGeta.TVShowPlugin
 Public Class TVDBPlugin
     Implements IMGTaggingPlugin
 
+    Private m_DataStore As MGDataStore
     Private m_tvdbHandler As Tvdb
 
-    Public Sub Initialize(ByVal dataStore As MetaGeta.DataStore.MGDataStore) Implements MetaGeta.DataStore.IMGTaggingPlugin.Initialize
+    Public Sub Startup(ByVal dataStore As MetaGeta.DataStore.MGDataStore) Implements IMGTaggingPlugin.Startup
+        m_DataStore = dataStore
         m_tvdbHandler = New Tvdb(New XmlCacheProvider("C:\temp\tvdbcache"), "BC8024C516DFDA3B")
         m_tvdbHandler.InitCache()
     End Sub
 
-    Public Sub Close() Implements MetaGeta.DataStore.IMGTaggingPlugin.Close
+    Public Sub Shutdown() Implements IMGTaggingPlugin.Shutdown
         m_tvdbHandler.SaveCache()
     End Sub
 
-    Public Sub ItemAdded(ByVal file As MetaGeta.DataStore.MGFile) Implements MetaGeta.DataStore.IMGTaggingPlugin.ItemAdded
-        'Should use cache first
+    Public Sub ItemAdded() Implements IMGTaggingPlugin.Process
         'prompt user for series name lookups??
 
-        Dim seriesID = GetSeriesID(file)
-        If seriesID Is Nothing Then Return
-        Dim series = GetSeries(seriesID)
+        For Each file As MGFile In m_DataStore
+            Dim seriesID = GetSeriesID(file)
+            If seriesID Is Nothing Then Return
+            Dim series = GetSeries(seriesID)
 
-        file.Tags.Item(TVShowDataStoreTemplate.SeriesDescription).Value = series.Overview
+            file.Tags.Item(TVShowDataStoreTemplate.SeriesDescription).Value = series.Overview
 
-        Dim exactEpisode = GetEpisode(series, file)
+            Dim exactEpisode = GetEpisode(series, file)
 
-        file.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value = exactEpisode.EpisodeName
-        file.Tags.Item(TVShowDataStoreTemplate.EpisodeDescription).Value = exactEpisode.Overview
-        file.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value = exactEpisode.Id
+            file.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value = exactEpisode.EpisodeName
+            file.Tags.Item(TVShowDataStoreTemplate.EpisodeDescription).Value = exactEpisode.Overview
+            file.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value = exactEpisode.Id
 
-        If exactEpisode.Banner.LoadBanner() Then
-            Dim imagefile = System.IO.Path.GetTempFileName()
-            exactEpisode.Banner.Banner.Save(imagefile)
-            file.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).Value = imagefile
-        End If
+            If exactEpisode.Banner.LoadBanner() Then
+                Dim imagefile = System.IO.Path.GetTempFileName()
+                exactEpisode.Banner.Banner.Save(imagefile)
+                file.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).Value = imagefile
+            End If
+
+        Next
     End Sub
 
     Private Function GetSeriesID(ByVal file As MGFile) As Integer?

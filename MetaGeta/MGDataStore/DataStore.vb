@@ -26,7 +26,7 @@ Public Class MGDataStore
         m_Items.Add(f)
 
         For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
-            plugin.ItemAdded(f)
+            'plugin.ItemAdded(f)
         Next
 
         'Bucket along dimensions
@@ -42,7 +42,7 @@ Public Class MGDataStore
     End Sub
 
     Public Sub AddTaggingPlugin(ByVal plugin As IMGTaggingPlugin)
-        plugin.Initialize(Me)
+        plugin.Startup(Me)
         m_TaggingPlugins.Add(plugin)
     End Sub
 
@@ -98,7 +98,7 @@ Public Class MGDataStore
 
     Public Sub Close()
         For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
-            plugin.Close()
+            plugin.Shutdown()
         Next
     End Sub
 

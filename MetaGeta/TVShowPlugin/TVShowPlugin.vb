@@ -97,6 +97,8 @@ Public Class EducatedGuessImporter
 
 #End Region
 
+    Private m_DataStore As MGDataStore
+
     Public Const myniceName As String = "Educated Guess TV Show importer"
     'Public intMaxLDForMatch As Integer = 3
     Public chPhraseDelimiters() As Char = {"-"c}
@@ -676,108 +678,76 @@ Public Class EducatedGuessImporter
         'no contents
     End Class
 
-    Public Sub Initialize(ByVal dataStore As MGDataStore) Implements IMGTaggingPlugin.Initialize
+    Public Sub Startup(ByVal dataStore As MGDataStore) Implements IMGTaggingPlugin.Startup
+        m_DataStore = dataStore
 
     End Sub
 
-    Public Sub ItemAdded(ByVal File As MGFile) Implements IMGTaggingPlugin.ItemAdded
-        Dim s As String
-        Dim gotSeriesTitle As Boolean = False
-        Dim longestBracketedPhrase As Integer
+    Public Sub Process() Implements IMGTaggingPlugin.Process
 
-        Dim tags As New Generic.Dictionary(Of String, MGTag)
+        For Each file As MGFile In m_DataStore
+            Dim s As String
+            Dim gotSeriesTitle As Boolean = False
+            Dim longestBracketedPhrase As Integer
 
-        Dim fullPath As String = File.Path.LocalPath
-        Dim fileName As String = System.IO.Path.GetFileNameWithoutExtension(fullPath)
-        Dim fileSize As Long = 20 '(New IO.FileInfo(fullPath)).Length
+            Dim tags As New Generic.Dictionary(Of String, MGTag)
+
+            Dim fullPath As String = file.Path.LocalPath
+            Dim fileName As String = System.IO.Path.GetFileNameWithoutExtension(fullPath)
+            Dim fileSize As Long = 20 '(New IO.FileInfo(fullPath)).Length
 
 
-        'new algorithm: break up into 2 types of "phrases":
-        'numbers & words and bracketed junk (encoder, CRC32)
-        'a const array will hold the phrase delimiters
-        'then work from there
-        'recognize "ep", "episode", etc
+            'new algorithm: break up into 2 types of "phrases":
+            'numbers & words and bracketed junk (encoder, CRC32)
+            'a const array will hold the phrase delimiters
+            'then work from there
+            'recognize "ep", "episode", etc
 
-        'turn all underscores and periods into spaces
-        fileName = fileName.Replace("_", " ")
-        fileName = fileName.Replace(".", " ")
+            'turn all underscores and periods into spaces
+            fileName = fileName.Replace("_", " ")
+            fileName = fileName.Replace(".", " ")
 
-        Dim brcktPhrases As New Generic.List(Of String)
-        brcktPhrases = getBracketedPhrases(fileName)
+            Dim brcktPhrases As New Generic.List(Of String)
+            brcktPhrases = getBracketedPhrases(fileName)
 
-        'idetify CRC32
-        Dim IsHex As Boolean = True
-        For Each s In brcktPhrases
-            If isCRC32(s) Then
-                sett(tags, TVShowDataStoreTemplate.CRC32, s)
-                brcktPhrases.Remove(s)
-                Exit For
+            'idetify CRC32
+            Dim IsHex As Boolean = True
+            For Each s In brcktPhrases
+                If isCRC32(s) Then
+                    sett(tags, TVShowDataStoreTemplate.CRC32, s)
+                    brcktPhrases.Remove(s)
+                    Exit For
+                End If
+            Next
+
+            'idetify encoder:
+            longestBracketedPhrase = getLongest(brcktPhrases)
+            If Not longestBracketedPhrase = -1 Then
+                brcktPhrases(longestBracketedPhrase) = brcktPhrases(longestBracketedPhrase).Trim(" "c)
+                'info.encoder = brcktPhrases(longestStart)
+                'Debug.WriteLine("Found Encoder: " & brcktPhrases(longestBracketedPhrase))
+                sett(tags, TVShowDataStoreTemplate.Group, brcktPhrases(longestBracketedPhrase))
             End If
-        Next
 
-        'idetify encoder:
-        longestBracketedPhrase = getLongest(brcktPhrases)
-        If Not longestBracketedPhrase = -1 Then
-            brcktPhrases(longestBracketedPhrase) = brcktPhrases(longestBracketedPhrase).Trim(" "c)
-            'info.encoder = brcktPhrases(longestStart)
-            'Debug.WriteLine("Found Encoder: " & brcktPhrases(longestBracketedPhrase))
-            sett(tags, TVShowDataStoreTemplate.Group, brcktPhrases(longestBracketedPhrase))
-        End If
+            'bracketed junk is now all out of the way and replaced with "-"
+            'now to build a similar array of the numbers
 
-        'bracketed junk is now all out of the way and replaced with "-"
-        'now to build a similar array of the numbers
-
-        Dim phrases As Generic.List(Of Phrase) = getNumberAndWordPhrases(fileName)
-        'now do stuff
-        tags = processPhrases(phrases, tags, gotSeriesTitle)
+            Dim phrases As Generic.List(Of Phrase) = getNumberAndWordPhrases(fileName)
+            'now do stuff
+            tags = processPhrases(phrases, tags, gotSeriesTitle)
 
 
-        For Each tag As MGTag In tags.Values
-            File.Tags.Add(tag)
+            For Each tag As MGTag In tags.Values
+                file.Tags.Add(tag)
+            Next
         Next
     End Sub
 
-    Public Sub Close() Implements IMGTaggingPlugin.Close
+    Public Sub Shutdown() Implements IMGTaggingPlugin.Shutdown
 
     End Sub
 
 #Region "Constants"
     Private Shared ReadOnly c_IgnoredStrings As String() = {"divx", "x264", "h264", "264", "1280x720", "720p", "1080p"}
-#End Region
-End Class
-
-
-Public Class TVShowDataStoreTemplate
-    Implements IDataStoreTemplate
-
-    Public Function GetDimensionNames() As String() Implements IDataStoreTemplate.GetDimensionNames
-        Return New String() {SeriesTitle, EpisodeTitle, EpisodeNumber, SeasonNumber, PartNumber, _
-                             SeriesID, EpisodeID, SeriesDescription, EpisodeDescription, EpisodeBanner, _
-                             CRC32, Group, AudioCodec, VideoCodec, Resolution, PlayTime}
-    End Function
-
-#Region "Constants"
-    Public Const SeriesTitle As String = "SeriesTitle"
-    Public Const EpisodeTitle As String = "EpisodeTitle"
-
-    Public Const EpisodeNumber As String = "EpisodeNumber"
-    Public Const SeasonNumber As String = "SeasonNumber"
-    Public Const PartNumber As String = "PartNumber"
-
-    Public Const SeriesID As String = "SeriesID"
-    Public Const EpisodeID As String = "EpisodeID"
-
-    Public Const EpisodeBanner As String = "EpisodeBanner"
-
-    Public Const SeriesDescription As String = "SeriesDescription"
-    Public Const EpisodeDescription As String = "EpisodeDescription"
-
-    Public Const CRC32 As String = "CRC32"
-    Public Const Group As String = "Group"
-
-    Public Const AudioCodec As String = "AudioCodec"
-    Public Const VideoCodec As String = "VideoCodec"
-    Public Const Resolution As String = "Resolution"
-    Public Const PlayTime As String = "PlayTime"
 #End Region
 End Class

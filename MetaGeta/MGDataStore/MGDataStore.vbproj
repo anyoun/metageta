@@ -95,6 +95,9 @@
     <Compile Include="Dimension.vb" />
     <Compile Include="File.vb" />
     <Compile Include="FileSet.vb" />
+    <Compile Include="Plugins\IMGFileActionPlugin.vb" />
+    <Compile Include="Plugins\IMGFileSourcePlugin.vb" />
+    <Compile Include="Plugins\IMGPluginBase.vb" />
     <Compile Include="Plugins\IMGTaggingPlugin.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -112,6 +115,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Tag.vb" />
+    <Compile Include="Templates\TVShowDataStoreTemplate.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
