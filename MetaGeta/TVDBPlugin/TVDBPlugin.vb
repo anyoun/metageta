@@ -20,7 +20,7 @@ Public Class TVDBPlugin
         m_tvdbHandler.SaveCache()
     End Sub
 
-    Public Sub ItemAdded() Implements IMGTaggingPlugin.Process
+    Public Sub Process() Implements IMGTaggingPlugin.Process
         'prompt user for series name lookups??
 
         For Each file As MGFile In m_DataStore

@@ -738,7 +738,7 @@ Public Class EducatedGuessImporter
 
 
             For Each tag As MGTag In tags.Values
-                file.Tags.Add(tag)
+                file.Tags.SetTag(tag)
             Next
         Next
     End Sub

@@ -22,14 +22,14 @@ Public Class MediaInfoPlugin
 
             If fileInfo.AudioStreams.Count > 0 Then
                 Dim audio = fileInfo.AudioStreams.First()
-                file.Tags.Add(New MGTag("AudioCodec", audio.CodecString))
+                file.Tags.SetTag(New MGTag("AudioCodec", audio.CodecString))
             End If
 
             If fileInfo.VideoStreams.Count > 0 Then
                 Dim video = fileInfo.VideoStreams.First()
-                file.Tags.Add(New MGTag("VideoCodec", video.CodecString))
-                file.Tags.Add(New MGTag("Resolution", String.Format("{0}x{1}", video.WidthPx, video.HeightPx)))
-                file.Tags.Add(New MGTag("PlayTime", video.PlayTime.ToString()))
+                file.Tags.SetTag(New MGTag("VideoCodec", video.CodecString))
+                file.Tags.SetTag(New MGTag("Resolution", String.Format("{0}x{1}", video.WidthPx, video.HeightPx)))
+                file.Tags.SetTag(New MGTag("PlayTime", video.PlayTime.ToString()))
             End If
         Next
     End Sub

@@ -25,10 +25,6 @@ Public Class MGDataStore
         Dim f As New MGFile(path, Guid.NewGuid())
         m_Items.Add(f)
 
-        For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
-            'plugin.ItemAdded(f)
-        Next
-
         'Bucket along dimensions
 
         For Each d As Dimension In m_Dimensions.Values
@@ -39,6 +35,12 @@ Public Class MGDataStore
         'RaiseEvent CollectionChanged(Me, New Collections.Specialized.NotifyCollectionChangedEventArgs(Specialized.NotifyCollectionChangedAction.Add, f))
 
         'Threading.Thread.Sleep(1000)
+    End Sub
+
+    Public Sub RunTaggingPlugins()
+        For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
+            plugin.Process()
+        Next
     End Sub
 
     Public Sub AddTaggingPlugin(ByVal plugin As IMGTaggingPlugin)

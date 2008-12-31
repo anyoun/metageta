@@ -33,11 +33,13 @@ Module Main
             Console.WriteLine("Can't find path: {0}", path.LocalPath)
         End If
 
-        'Dim names = From s In template.GetDimensionNames() Order By s Select s
-        'Console.WriteLine(names.JoinToString(","))
+        ds.RunTaggingPlugins()
+
+        Dim names = From s In template.GetDimensionNames() Order By s Select s
+        Console.WriteLine(names.JoinToString(","))
         For Each f In ds
-            'Console.WriteLine(Aggregate t In f.Tags() Order By t.Name Into JoinToCsv(t.Value))
-            WriteTags(f)
+            Console.WriteLine(Aggregate t In f.Tags() Order By t.Name Into JoinToCsv(t.Value))
+            'WriteTags(f)
         Next
 
         ds.Close()
