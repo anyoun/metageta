@@ -90,11 +90,13 @@
     <Compile Include="Browser\Browser.vb" />
     <Compile Include="Browser\FileView.vb" />
     <Compile Include="Browser\TagView.vb" />
-    <Compile Include="DataStore.vb" />
-    <Compile Include="DataStoreManager.vb" />
-    <Compile Include="Dimension.vb" />
-    <Compile Include="File.vb" />
-    <Compile Include="FileSet.vb" />
+    <Compile Include="Grouping\Bucket.vb" />
+    <Compile Include="Model\TagCollection.vb" />
+    <Compile Include="DataStore\DataStore.vb" />
+    <Compile Include="DataStore\DataStoreManager.vb" />
+    <Compile Include="Grouping\Dimension.vb" />
+    <Compile Include="Model\File.vb" />
+    <Compile Include="Model\FileSet.vb" />
     <Compile Include="Plugins\IMGFileActionPlugin.vb" />
     <Compile Include="Plugins\IMGFileSourcePlugin.vb" />
     <Compile Include="Plugins\IMGPluginBase.vb" />
@@ -114,7 +116,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Tag.vb" />
+    <Compile Include="Model\Tag.vb" />
     <Compile Include="Templates\TVShowDataStoreTemplate.vb" />
   </ItemGroup>
   <ItemGroup>
