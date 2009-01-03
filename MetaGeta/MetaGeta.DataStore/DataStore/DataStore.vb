@@ -55,6 +55,11 @@ Public Class MGDataStore
             m_Description = value
         End Set
     End Property
+    Public ReadOnly Property Template() As IDataStoreTemplate
+        Get
+            Return m_Template
+        End Get
+    End Property
 
 #Region "Disk Persistance"
 

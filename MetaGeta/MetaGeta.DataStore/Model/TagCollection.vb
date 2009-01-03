@@ -6,7 +6,7 @@ Public Class MGTagCollection
 
     Public Overloads ReadOnly Property Item(ByVal tagName As String) As MGTag
         Get
-            Dim tag As MGTag
+            Dim tag As MGTag = Nothing
             If Not m_Items.TryGetValue(tagName, tag) Then
                 tag = New MGTag(tagName)
                 m_Items.Add(tag.Name, tag)

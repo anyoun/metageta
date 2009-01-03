@@ -133,6 +133,10 @@
       <Project>{1B13DEB6-1B78-4D85-B3DB-F5282AF3DECD}</Project>
       <Name>MediaInfoPlugin</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MetaGeta.Browser\MetaGeta.Browser.vbproj">
+      <Project>{EE5E61B2-81A2-421A-9A07-B93E03179F4D}</Project>
+      <Name>MetaGeta.Browser</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MetaGeta.DataStore\MetaGeta.DataStore.vbproj">
       <Project>{C293768F-6C79-4B6D-8F2B-1DF2F0F6A038}</Project>
       <Name>MetaGeta.DataStore</Name>

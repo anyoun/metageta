@@ -19,11 +19,19 @@ Public Class MGTag
             m_Value = value
         End Set
     End Property
-    Public Property ValueAsNumber() As Double
+    Public Property ValueAsDouble() As Double
         Get
             Return Double.Parse(m_Value)
         End Get
         Set(ByVal value As Double)
+            m_Value = value.ToString()
+        End Set
+    End Property
+    Public Property ValueAsInteger() As Integer
+        Get
+            Return Integer.Parse(m_Value)
+        End Get
+        Set(ByVal value As Integer)
             m_Value = value.ToString()
         End Set
     End Property

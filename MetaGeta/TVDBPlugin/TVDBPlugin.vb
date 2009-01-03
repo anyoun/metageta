@@ -26,7 +26,7 @@ Public Class TVDBPlugin
         For Each file As MGFile In m_DataStore
             Dim seriesID = GetSeriesID(file)
             If seriesID Is Nothing Then Return
-            Dim series = GetSeries(seriesID)
+            Dim series = GetSeries(seriesID.Value)
 
             file.Tags.Item(TVShowDataStoreTemplate.SeriesDescription).Value = series.Overview
 
@@ -34,7 +34,7 @@ Public Class TVDBPlugin
 
             file.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value = exactEpisode.EpisodeName
             file.Tags.Item(TVShowDataStoreTemplate.EpisodeDescription).Value = exactEpisode.Overview
-            file.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value = exactEpisode.Id
+            file.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value = exactEpisode.Id.ToString()
 
             If exactEpisode.Banner.LoadBanner() Then
                 Dim imagefile = System.IO.Path.GetTempFileName()
@@ -51,13 +51,13 @@ Public Class TVDBPlugin
             Dim searchResult = m_tvdbHandler.SearchSeries(seriesName)
             Dim exactMatch = searchResult.Find(Function(sr) sr.SeriesName = seriesName)
             If Not exactMatch Is Nothing Then
-                file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsNumber = exactMatch.Id
+                file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsInteger = exactMatch.Id
                 Return exactMatch.Id
             Else
                 Return Nothing
             End If
         End If
-        Return file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsNumber
+        Return file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsInteger
     End Function
 
     Private Function GetSeries(ByVal seriesID As Integer) As TvdbSeries
@@ -65,8 +65,8 @@ Public Class TVDBPlugin
     End Function
 
     Private Function GetEpisode(ByVal series As TvdbSeries, ByVal file As MGFile) As TvdbEpisode
-        Dim seasonNumber = file.Tags.Item(TVShowDataStoreTemplate.SeasonNumber).ValueAsNumber
-        Dim episodeNumber = file.Tags.Item(TVShowDataStoreTemplate.EpisodeNumber).ValueAsNumber
+        Dim seasonNumber = file.Tags.Item(TVShowDataStoreTemplate.SeasonNumber).ValueAsInteger
+        Dim episodeNumber = file.Tags.Item(TVShowDataStoreTemplate.EpisodeNumber).ValueAsInteger
         Return m_tvdbHandler.GetEpisode(series.Id, seasonNumber, episodeNumber, TvdbEpisode.EpisodeOrdering.DefaultOrder, TvdbLanguage.DefaultLanguage)
     End Function
 End Class

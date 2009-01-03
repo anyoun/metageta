@@ -87,7 +87,7 @@ Public Class TranscodePlugin
             'Pos:   6.5s    198f (11%) 27.84fps Trem:   0min   5mb  A-V:-0.004 [773:64]
             Dim m = c_ParseRegex.Match(line)
             If m.Success Then
-                PositionTime = New TimeSpan(0, 0, Double.Parse(m.Groups(1).Value))
+                PositionTime = New TimeSpan(0, 0, Integer.Parse(m.Groups(1).Value))
                 PositionFrames = Long.Parse(m.Groups(2).Value)
                 PositionPercent = Double.Parse(m.Groups(3).Value) / 100
                 EncodingSpeedFps = Double.Parse(m.Groups(4).Value)
@@ -98,7 +98,7 @@ Public Class TranscodePlugin
                 EstimatedAudioBitrate = Double.Parse(m.Groups(9).Value)
 
                 If PositionPercent <> 0 AndAlso EncodingSpeedFps <> 0 Then
-                    EstimatedTimeRemaining = New TimeSpan(0, 0, (PositionFrames / PositionPercent - PositionFrames) / EncodingSpeedFps)
+                    EstimatedTimeRemaining = New TimeSpan(0, 0, CInt((PositionFrames / PositionPercent - PositionFrames) / EncodingSpeedFps))
                 End If
             Else
                 PositionPercent = -1
@@ -111,7 +111,7 @@ Public Class TranscodePlugin
         Public ReadOnly EncodingSpeedFps As Double
         Public ReadOnly EstimatedVideoBitrate As Double
         Public ReadOnly EstimatedAudioBitrate As Double
-        Public ReadOnly EstimatedFileSizeMB As Integer
+        Public ReadOnly EstimatedFileSizeMB As Double
 
         Public ReadOnly EstimatedTimeRemaining As TimeSpan
     End Structure

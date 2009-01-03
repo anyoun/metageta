@@ -5,12 +5,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>MetaGeta.TVDBPlugin</RootNamespace>
-    <AssemblyName>TVDBPlugin</AssemblyName>
+    <ProjectGuid>{D263E2C0-C6CC-44A8-87D6-98BCF0E26104}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <StartupObject>Sub Main</StartupObject>
+    <RootNamespace>MetaGeta.ScriptHost</RootNamespace>
+    <AssemblyName>MetaGeta.ScriptHost</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <MyType>Windows</MyType>
+    <MyType>Console</MyType>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <OptionExplicit>On</OptionExplicit>
     <OptionCompare>Binary</OptionCompare>
@@ -23,7 +24,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
+    <DocumentationFile>MetaGeta.ScriptHost.xml</DocumentationFile>
     <NoWarn>
     </NoWarn>
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
@@ -34,32 +35,9 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
+    <DocumentationFile>MetaGeta.ScriptHost.xml</DocumentationFile>
     <NoWarn>
     </NoWarn>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineDebug>true</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
-    <NoWarn>
-    </NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
-    <Optimize>true</Optimize>
-    <NoWarn>
-    </NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -67,7 +45,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x86\Debug\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
+    <DocumentationFile>MetaGeta.ScriptHost.xml</DocumentationFile>
     <NoWarn>
     </NoWarn>
     <DebugType>full</DebugType>
@@ -77,7 +55,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x86\Release\</OutputPath>
-    <DocumentationFile>TVDBPlugin.xml</DocumentationFile>
+    <DocumentationFile>MetaGeta.ScriptHost.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>
     </NoWarn>
@@ -86,9 +64,25 @@
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="IronPython, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ironpython\IronPython.dll</HintPath>
+    </Reference>
+    <Reference Include="IronPython.Modules, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ironpython\IronPython.Modules.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting, Version=0.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ironpython\Microsoft.Scripting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.Core, Version=0.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ironpython\Microsoft.Scripting.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -99,14 +93,13 @@
     <Reference Include="System.Data.DataSetExtensions">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="TvdbConnector, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\tvdblib\bin\TvdbConnector.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Import Include="MetaGeta" />
+    <Import Include="MetaGeta.Browser" />
     <Import Include="MetaGeta.DataStore" />
-    <Import Include="MetaGeta.TVShowPlugin" />
+    <Import Include="MetaGeta.ScriptHost" />
+    <Import Include="MetaGeta.Utilities" />
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="System" />
     <Import Include="System.Collections" />
@@ -115,11 +108,9 @@
     <Import Include="System.Diagnostics" />
     <Import Include="System.Linq" />
     <Import Include="System.Xml.Linq" />
-    <Import Include="TvdbConnector" />
-    <Import Include="TvdbConnector.Cache" />
-    <Import Include="TvdbConnector.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Main.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -135,7 +126,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="TVDBPlugin.vb" />
+    <Compile Include="ScriptInterface.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -157,6 +148,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MediaInfoPlugin\MediaInfoPlugin.vbproj">
+      <Project>{1B13DEB6-1B78-4D85-B3DB-F5282AF3DECD}</Project>
+      <Name>MediaInfoPlugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MetaGeta.Browser\MetaGeta.Browser.vbproj">
+      <Project>{EE5E61B2-81A2-421A-9A07-B93E03179F4D}</Project>
+      <Name>MetaGeta.Browser</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MetaGeta.DataStore\MetaGeta.DataStore.vbproj">
       <Project>{C293768F-6C79-4B6D-8F2B-1DF2F0F6A038}</Project>
       <Name>MetaGeta.DataStore</Name>
@@ -165,10 +164,23 @@
       <Project>{F62A4017-8F99-4904-995D-3977B9A5260E}</Project>
       <Name>MetaGeta.Utilities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TranscodePlugin\TranscodePlugin.vbproj">
+      <Project>{9D2AE6E9-248A-4A52-8122-A08727B82D78}</Project>
+      <Name>TranscodePlugin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TVDBPlugin\TVDBPlugin.vbproj">
+      <Project>{DDCB24BA-F1F8-4B0E-9171-B596C682BFA1}</Project>
+      <Name>TVDBPlugin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TVShowPlugin\TVShowPlugin.vbproj">
       <Project>{C7A11128-E589-4016-8735-3FF3A50E12ED}</Project>
       <Name>TVShowPlugin</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Microsoft.Scripting.ExtensionAttribute.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
