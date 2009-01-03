@@ -47,7 +47,9 @@ Public Class ScriptInterface
         WriteAtomicParsleyTag(f.Path, "TVEpisode", f.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value)
         WriteAtomicParsleyTag(f.Path, "TVEpisodeNum", f.Tags.Item(TVShowDataStoreTemplate.EpisodeNumber).Value)
         WriteAtomicParsleyTag(f.Path, "description", f.Tags.Item(TVShowDataStoreTemplate.EpisodeDescription).Value)
-        WriteAtomicParsleyTag(f.Path, "artwork", f.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).Value)
+        If f.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).IsSet Then
+            WriteAtomicParsleyTag(f.Path, "artwork", f.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).Value)
+        End If
         WriteAtomicParsleyTag(f.Path, "stik", "TV Show")
         WriteAtomicParsleyTag(f.Path, "genre", "TV Shows")
 
