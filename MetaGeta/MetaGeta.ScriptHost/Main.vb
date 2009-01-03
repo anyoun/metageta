@@ -23,6 +23,9 @@ Module Main
             Dim es = engine.GetService(Of ExceptionOperations)()
             Console.Error.WriteLine(es.FormatException(ex))
         End Try
+
+        Console.WriteLine("Done. Press any key to continue...")
+        Console.ReadKey()
     End Sub
 
 End Module
