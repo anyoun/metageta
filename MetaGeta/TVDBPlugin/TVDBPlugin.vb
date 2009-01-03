@@ -54,6 +54,7 @@ Public Class TVDBPlugin
                 file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsInteger = exactMatch.Id
                 Return exactMatch.Id
             Else
+                Console.WriteLine("Couldn't find series: ""{0}"".", seriesName)
                 Return Nothing
             End If
         End If

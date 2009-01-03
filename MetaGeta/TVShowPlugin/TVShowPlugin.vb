@@ -99,6 +99,9 @@ Public Class EducatedGuessImporter
 
     Private m_DataStore As MGDataStore
 
+    Private Shared ReadOnly c_AliasFrom As String() = {"The Venture Brothers"}
+    Private Shared ReadOnly c_AliasTo As String() = {"The Venture Bros."}
+
     Public Const myniceName As String = "Educated Guess TV Show importer"
     'Public intMaxLDForMatch As Integer = 3
     Public chPhraseDelimiters() As Char = {"-"c}
@@ -150,18 +153,17 @@ Public Class EducatedGuessImporter
         End If
 
         'now, find aliases before breaking apart into phrases
-        'Dim ar As DSEducateGuessImporter.aliasesRow
-        'For Each ar In ds.aliases
-        '    If ar.From <> "" AndAlso ar.From <> " " AndAlso fileName.IndexOf(ar.From) <> -1 Then 'regular aliasing
-        '        fileName = fileName.Remove(fileName.IndexOf(ar.From), ar.From.Length)
-        '        sett(tags, "SeriesTitle", ar.Dest)
-        '        gotSeriesTitle = True
-        '    ElseIf fileName.IndexOf(ar.Dest) <> -1 Then 'help for shows like 24
-        '        fileName = fileName.Remove(fileName.IndexOf(ar.Dest), ar.Dest.Length)
-        '        sett(tags, "SeriesTitle", ar.Dest)
-        '        gotSeriesTitle = True
-        '    End If
-        'Next
+        For i As Integer = 0 To c_AliasFrom.Count
+            If c_AliasFrom(i) <> "" AndAlso c_AliasFrom(i) <> " " AndAlso fileName.IndexOf(c_AliasFrom(i)) <> -1 Then 'regular aliasing
+                fileName = fileName.Remove(fileName.IndexOf(c_AliasFrom(i)), c_AliasFrom(i).Length)
+                sett(tags, "SeriesTitle", c_AliasTo(i))
+                gotSeriesTitle = True
+            ElseIf fileName.IndexOf(c_AliasTo(i)) <> -1 Then 'help for shows like 24
+                fileName = fileName.Remove(fileName.IndexOf(c_AliasTo(i)), c_AliasTo(i).Length)
+                sett(tags, "SeriesTitle", c_AliasTo(i))
+                gotSeriesTitle = True
+            End If
+        Next
 
         'Debug.WriteLine("Ready to continue with EducatedGuess using " & fileName)
         'bracketed junk is now all out of the way and replaced with "-"
@@ -728,6 +730,19 @@ Public Class EducatedGuessImporter
                 'Debug.WriteLine("Found Encoder: " & brcktPhrases(longestBracketedPhrase))
                 sett(tags, TVShowDataStoreTemplate.Group, brcktPhrases(longestBracketedPhrase))
             End If
+
+            'now, find aliases before breaking apart into phrases
+            For i As Integer = 0 To c_AliasFrom.Count - 1
+                If c_AliasFrom(i) <> "" AndAlso c_AliasFrom(i) <> " " AndAlso fileName.IndexOf(c_AliasFrom(i)) <> -1 Then 'regular aliasing
+                    fileName = fileName.Remove(fileName.IndexOf(c_AliasFrom(i)), c_AliasFrom(i).Length)
+                    sett(tags, "SeriesTitle", c_AliasTo(i))
+                    gotSeriesTitle = True
+                ElseIf fileName.IndexOf(c_AliasTo(i)) <> -1 Then 'help for shows like 24
+                    fileName = fileName.Remove(fileName.IndexOf(c_AliasTo(i)), c_AliasTo(i).Length)
+                    sett(tags, "SeriesTitle", c_AliasTo(i))
+                    gotSeriesTitle = True
+                End If
+            Next
 
             'bracketed junk is now all out of the way and replaced with "-"
             'now to build a similar array of the numbers
