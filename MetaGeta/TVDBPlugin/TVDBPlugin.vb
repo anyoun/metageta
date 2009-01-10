@@ -37,6 +37,7 @@ Public Class TVDBPlugin
             file.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value = exactEpisode.Id.ToString()
 
             If exactEpisode.Banner.LoadBanner() Then
+                Console.WriteLine("Found banner: ""{0}"".", exactEpisode.Banner.BannerPath)
                 Dim imagefile = System.IO.Path.GetTempFileName()
                 exactEpisode.Banner.Banner.Save(imagefile)
                 file.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).Value = imagefile
@@ -51,6 +52,7 @@ Public Class TVDBPlugin
             Dim searchResult = m_tvdbHandler.SearchSeries(seriesName)
             Dim exactMatch = searchResult.Find(Function(sr) sr.SeriesName = seriesName)
             If Not exactMatch Is Nothing Then
+                Console.WriteLine("Found series: ""{0}"".", exactMatch.SeriesName)
                 file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsInteger = exactMatch.Id
                 Return exactMatch.Id
             Else
@@ -68,6 +70,12 @@ Public Class TVDBPlugin
     Private Function GetEpisode(ByVal series As TvdbSeries, ByVal file As MGFile) As TvdbEpisode
         Dim seasonNumber = file.Tags.Item(TVShowDataStoreTemplate.SeasonNumber).ValueAsInteger
         Dim episodeNumber = file.Tags.Item(TVShowDataStoreTemplate.EpisodeNumber).ValueAsInteger
-        Return m_tvdbHandler.GetEpisode(series.Id, seasonNumber, episodeNumber, TvdbEpisode.EpisodeOrdering.DefaultOrder, TvdbLanguage.DefaultLanguage)
+        Dim ep = m_tvdbHandler.GetEpisode(series.Id, seasonNumber, episodeNumber, TvdbEpisode.EpisodeOrdering.DefaultOrder, TvdbLanguage.DefaultLanguage)
+        If Not ep Is Nothing Then
+            Console.WriteLine("Found episode: {0} - s{1}e{2} - {3}.", series.SeriesName, seasonNumber, episodeNumber, ep.EpisodeName)
+        Else
+            Console.WriteLine("Couldn't find episode: {0} - s{1}e{2}.", series.SeriesName, seasonNumber, episodeNumber)
+        End If
+        Return ep
     End Function
 End Class
