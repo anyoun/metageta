@@ -1,0 +1,24 @@
+﻿<Window
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2006" 
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" 
+	x:Class="ImportProgressDisplay"
+	x:Name="Window"
+	Title="Importing Files" Height="423" Width="676">
+
+    <!--
+    xmlns:MetaGeta2="clr-namespace:MetaGeta.DataStore;assembly=MetaGeta.DataStore"
+    , diag:PresentationTraceSources.TraceLevel=High
+    	Width="850" Height="580" 
+    -->
+
+    <Grid x:Name="LayoutRoot">
+		<ListBox ItemsSource="{Binding Path=CompletedItems, Mode=OneWay}" Margin="8,41,8,78"/>
+		<Button IsEnabled="False" HorizontalAlignment="Right" Margin="0,0,8,8" x:Name="btnCancel" VerticalAlignment="Bottom" Width="72.053" Height="35" Content="Cancel"/>
+		<ProgressBar Margin="8,0,84,8" VerticalAlignment="Bottom" Height="35" LargeChange="0" Maximum="1" Value="{Binding Path=PercentDone, Mode=OneWay}"/>
+		<Label Margin="8,0,53,47" VerticalAlignment="Bottom" Height="27" Content="{Binding Path=CurrentItem}"/>
+		<Label Margin="8,8,8,0" VerticalAlignment="Top" Height="33" Content="Imported Files:" FontSize="16" FontStyle="Italic"/>
+	</Grid>
+</Window>

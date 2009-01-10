@@ -1,0 +1,8 @@
+﻿<Window x:Class="MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="MainWindow" Height="419" Width="697" Name="Window1">
+    <DockPanel Name="DockPanel1" >
+        <TextBox Name="TextBox1" />
+    </DockPanel>
+</Window>

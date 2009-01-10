@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{F9EF
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MetaGeta.ScriptHost", "MetaGeta.ScriptHost\MetaGeta.ScriptHost.vbproj", "{D263E2C0-C6CC-44A8-87D6-98BCF0E26104}"
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MetaGeta.GUI", "MetaGeta.GUI\MetaGeta.GUI.vbproj", "{DE21B094-96AE-4996-A1F6-C59D2C8D698C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +102,14 @@ Global
 		{D263E2C0-C6CC-44A8-87D6-98BCF0E26104}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D263E2C0-C6CC-44A8-87D6-98BCF0E26104}.Release|x86.ActiveCfg = Release|x86
 		{D263E2C0-C6CC-44A8-87D6-98BCF0E26104}.Release|x86.Build.0 = Release|x86
+		{DE21B094-96AE-4996-A1F6-C59D2C8D698C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE21B094-96AE-4996-A1F6-C59D2C8D698C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE21B094-96AE-4996-A1F6-C59D2C8D698C}.Debug|x86.ActiveCfg = Debug|x86
+		{DE21B094-96AE-4996-A1F6-C59D2C8D698C}.Debug|x86.Build.0 = Debug|x86
+		{DE21B094-96AE-4996-A1F6-C59D2C8D698C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE21B094-96AE-4996-A1F6-C59D2C8D698C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE21B094-96AE-4996-A1F6-C59D2C8D698C}.Release|x86.ActiveCfg = Release|x86
+		{DE21B094-96AE-4996-A1F6-C59D2C8D698C}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
