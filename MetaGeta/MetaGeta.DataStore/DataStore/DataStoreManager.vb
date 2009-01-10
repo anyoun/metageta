@@ -15,33 +15,33 @@
     End Sub
 
 
-    Public Function BeginImportAll(ByVal ds As MGDataStore) As FileProgress
-        Dim state As New ImportCallbackState
-        state.DataStore = ds
+    'Public Function BeginImportAll(ByVal ds As MGDataStore) As FileProgress
+    '    Dim state As New ImportCallbackState
+    '    state.DataStore = ds
 
-        state.FilesToImport = Directory.GetFiles("\\larvandad\public\Anime", "*.mp4", SearchOption.AllDirectories).Union( _
-                                Directory.GetFiles("\\larvandad\public2\Anime", "*.mp4", SearchOption.AllDirectories))
-        state.Progress = New FileProgress(state.FilesToImport.Count)
+    '    state.FilesToImport = Directory.GetFiles("\\larvandad\public\Anime", "*.mp4", SearchOption.AllDirectories).Union( _
+    '                            Directory.GetFiles("\\larvandad\public2\Anime", "*.mp4", SearchOption.AllDirectories))
+    '    state.Progress = New FileProgress(state.FilesToImport)
 
-        ThreadPool.QueueUserWorkItem(AddressOf Import, state)
+    '    ThreadPool.QueueUserWorkItem(AddressOf Import, state)
 
-        Return state.Progress
-    End Function
+    '    Return state.Progress
+    'End Function
 
-    Private Class ImportCallbackState
-        Public FilesToImport As IEnumerable(Of String)
-        Public Progress As FileProgress
-        Public DataStore As MGDataStore
-    End Class
+    'Private Class ImportCallbackState
+    '    Public FilesToImport As IEnumerable(Of String)
+    '    Public Progress As FileProgress
+    '    Public DataStore As MGDataStore
+    'End Class
 
-    Private Sub Import(ByVal obj As Object)
-        Dim state = DirectCast(obj, ImportCallbackState)
-        For Each file As String In state.FilesToImport
-            state.Progress.StartWorkingOnNextItem(file)
-            state.DataStore.NewFile(New Uri(file, UriKind.Absolute))
-        Next
-        state.Progress.SetDone()
-    End Sub
+    'Private Sub Import(ByVal obj As Object)
+    '    Dim state = DirectCast(obj, ImportCallbackState)
+    '    For Each file As String In state.FilesToImport
+    '        state.Progress.StartWorkingOnNextItem(file)
+    '        state.DataStore.NewFile(New Uri(file, UriKind.Absolute))
+    '    Next
+    '    state.Progress.SetDone()
+    'End Sub
 
 #End Region
 
@@ -81,107 +81,4 @@
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
     End Sub
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
-End Class
-
-Public Class FileProgress
-    Implements INotifyPropertyChanged
-
-    Private m_CompletedItems As New List(Of String)
-    Private m_CurrentItem As String
-    Private m_TotalItems As Integer
-    Private m_Done As Boolean = False
-
-    Public Sub New(ByVal totalItems As Integer)
-        m_TotalItems = totalItems
-        m_CurrentItem = String.Empty
-
-        OnCompletedItemsChanged()
-        OnCurrentItemChanged()
-        OnIsDoneChanged()
-        OnPercentDoneChanged()
-    End Sub
-
-    Public ReadOnly Property PercentDone() As Double
-        Get
-            SyncLock Me
-                If m_Done Then
-                    Return 1
-                Else
-                    Return m_CompletedItems.Count / m_TotalItems
-                End If
-            End SyncLock
-        End Get
-    End Property
-    Public ReadOnly Property CurrentItem() As String
-        Get
-            SyncLock Me
-                If m_Done Then
-                    Return String.Empty
-                Else
-                    Return m_CurrentItem
-                End If
-            End SyncLock
-        End Get
-    End Property
-    Public ReadOnly Property CompletedItems() As IList(Of String)
-        Get
-            SyncLock Me
-                Return New List(Of String)(m_CompletedItems)
-            End SyncLock
-        End Get
-    End Property
-
-    Public ReadOnly Property IsDone() As Boolean
-        Get
-            SyncLock Me
-                Return m_Done
-            End SyncLock
-        End Get
-    End Property
-
-    Public Sub StartWorkingOnNextItem(ByVal nextItem As String)
-        SyncLock Me
-            If m_CurrentItem <> String.Empty Then
-                m_CompletedItems.Add(m_CurrentItem)
-            End If
-            m_CurrentItem = nextItem
-            OnCompletedItemsChanged()
-            OnCurrentItemChanged()
-            OnPercentDoneChanged()
-        End SyncLock
-    End Sub
-
-    Public Sub SetDone()
-        SyncLock Me
-            m_Done = True
-
-            If m_CurrentItem <> String.Empty Then
-                m_CompletedItems.Add(m_CurrentItem)
-            End If
-            m_CurrentItem = String.Empty
-
-            OnCompletedItemsChanged()
-            OnCurrentItemChanged()
-            OnIsDoneChanged()
-            OnPercentDoneChanged()
-
-        End SyncLock
-    End Sub
-
-    Private Sub OnCompletedItemsChanged()
-        OnPropertyChanged("CompletedItems")
-    End Sub
-    Private Sub OnIsDoneChanged()
-        OnPropertyChanged("IsDone")
-    End Sub
-    Private Sub OnCurrentItemChanged()
-        OnPropertyChanged("CurrentItem")
-    End Sub
-    Private Sub OnPercentDoneChanged()
-        OnPropertyChanged("PercentDone")
-    End Sub
-    Private Sub OnPropertyChanged(ByVal name As String)
-        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
-    End Sub
-    Public Event PropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs) Implements INotifyPropertyChanged.PropertyChanged
 End Class

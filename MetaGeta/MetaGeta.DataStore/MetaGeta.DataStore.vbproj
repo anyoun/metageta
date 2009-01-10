@@ -92,6 +92,8 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileProgress.vb" />
+    <Compile Include="IProgressReporter.vb" />
     <Compile Include="Model\TagCollection.vb" />
     <Compile Include="DataStore\DataStore.vb" />
     <Compile Include="DataStore\DataStoreManager.vb" />
