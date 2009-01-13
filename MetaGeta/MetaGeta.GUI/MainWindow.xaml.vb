@@ -3,32 +3,49 @@ Imports System.Text
 
 Partial Public Class MainWindow
 
-    Private Sub Window1_Loaded(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles Window1.Loaded
+    Private ReadOnly dsm As New DataStoreManager()
+    Private ds As MGDataStore
+
+    Private Sub Window1_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
         Dim t As New System.Threading.Thread(AddressOf ImportTagAndWrite)
         t.Start()
     End Sub
 
-    Sub ImportTagAndWrite()
-        Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
-        Dim dsm = New DataStoreManager()
-        dsm.NewDataStore("TV Shows", template)
-        Dim ds = dsm.DataStores(0)
-
-        AddTaggingPluginByName(ds, "MetaGeta.MediaInfoPlugin.MediaInfoPlugin, MediaInfoPlugin")
-        AddTaggingPluginByName(ds, "MetaGeta.TVShowPlugin.EducatedGuessImporter, TVShowPlugin")
-        AddTaggingPluginByName(ds, "MetaGeta.TVDBPlugin.TVDBPlugin, TVDBPlugin")
-
-        AddDirectory(ds, "C:\Users\willt\Desktop\ipod\The Venture Brothers s03e01.mp4")
-        RunTaggingPlugins(ds)
-
-        Dim text = ToCsv(ds)
-        Dispatcher.Invoke(Windows.Threading.DispatcherPriority.Normal, Function() TextBox1.Text = text)
-
-        WriteAllTags(ds)
-
+    Private Sub Window1_Closing(ByVal sender As Object, ByVal e As EventArgs) Handles Window1.Closed
         ds.Close()
     End Sub
 
+    Sub ImportTagAndWrite()
+        Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
+        dsm.NewDataStore("TV Shows", template)
+        ds = dsm.DataStores(0)
+
+        'AddTaggingPluginByName(ds, "MetaGeta.MediaInfoPlugin.MediaInfoPlugin, MediaInfoPlugin")
+        AddTaggingPluginByName(ds, "MetaGeta.TVShowPlugin.EducatedGuessImporter, TVShowPlugin")
+        AddTaggingPluginByName(ds, "MetaGeta.TVDBPlugin.TVDBPlugin, TVDBPlugin")
+
+        AddDirectory(ds, "C:\Users\willt\Desktop\ipod\")
+        RunTaggingPlugins(ds)
+
+        'WriteAllTags(ds)
+        Dispatcher.Invoke(Windows.Threading.DispatcherPriority.Normal, New System.Threading.ThreadStart(AddressOf Display))
+    End Sub
+
+    Sub Display()
+        System.Diagnostics.PresentationTraceSources.SetTraceLevel(lvItems, PresentationTraceLevel.High)
+        Dim grid = CType(lvItems.View, GridView)
+        For Each t In ds.Template.GetDimensionNames()
+            Dim col = New GridViewColumn
+            Dim b As New Binding()
+            b.Converter = New MGFileConverter()
+            b.ConverterParameter = t
+            b.Mode = BindingMode.OneWay
+            col.DisplayMemberBinding = b
+            col.Header = t
+            grid.Columns.Add(col)
+        Next
+        lvItems.ItemsSource = ds
+    End Sub
 
     Public Sub AddTaggingPluginByName(ByVal ds As MGDataStore, ByVal assemblyQualifiedTypeName As String)
         Dim t = Type.GetType(assemblyQualifiedTypeName, True)
@@ -108,4 +125,18 @@ Partial Public Class MainWindow
         Return s.Substring(0, Math.Min(255, s.Length))
     End Function
 
+End Class
+
+<ValueConversion(GetType(MGFile), GetType(String), ParameterType:=GetType(String))> _
+Public Class MGFileConverter
+    Implements IValueConverter
+
+    Public Function Convert(ByVal value As Object, ByVal targetType As System.Type, ByVal parameter As Object, ByVal culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
+        Dim file As MGFile = CType(value, MGFile)
+        Return file.Tags.Item(CType(parameter, String)).Value
+    End Function
+
+    Public Function ConvertBack(ByVal value As Object, ByVal targetType As System.Type, ByVal parameter As Object, ByVal culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
 End Class

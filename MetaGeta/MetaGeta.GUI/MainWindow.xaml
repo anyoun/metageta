@@ -3,6 +3,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="MainWindow" Height="419" Width="697" Name="Window1">
     <DockPanel Name="DockPanel1" >
-        <TextBox Name="TextBox1" />
+        <ListView Name="lvItems" DockPanel.Dock="Top">
+            <ListView.View>
+                <GridView AllowsColumnReorder="False" />
+            </ListView.View>
+        </ListView>
     </DockPanel>
 </Window>

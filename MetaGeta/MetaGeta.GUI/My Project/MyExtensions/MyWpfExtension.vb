@@ -17,7 +17,7 @@ Namespace My
         <Global.System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")>  _
         Friend ReadOnly Property Application() As Application
             Get
-                Return Global.System.Windows.Application.Current
+                Return CType(Global.System.Windows.Application.Current, GUI.Application)
             End Get
         End Property
         ''' <summary>
