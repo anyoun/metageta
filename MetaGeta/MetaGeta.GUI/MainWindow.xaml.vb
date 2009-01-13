@@ -1,7 +1,10 @@
 ﻿Imports System.IO
 Imports System.Text
+Imports log4net.Config
+Imports System.Reflection
 
 Partial Public Class MainWindow
+    Private Shared ReadOnly log As ILog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
 
     Private ReadOnly dsm As New DataStoreManager()
     Private ds As MGDataStore
@@ -16,6 +19,7 @@ Partial Public Class MainWindow
     End Sub
 
     Sub ImportTagAndWrite()
+        log.Info("Staring Importing...")
         Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
         dsm.NewDataStore("TV Shows", template)
         ds = dsm.DataStores(0)
@@ -29,6 +33,7 @@ Partial Public Class MainWindow
 
         'WriteAllTags(ds)
         Dispatcher.Invoke(Windows.Threading.DispatcherPriority.Normal, New System.Threading.ThreadStart(AddressOf Display))
+        log.Info("Done")
     End Sub
 
     Sub Display()

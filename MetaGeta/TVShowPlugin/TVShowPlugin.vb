@@ -1,6 +1,10 @@
+Imports System.Text
+
 <Serializable()> _
 Public Class EducatedGuessImporter
     Implements IMGTaggingPlugin
+
+    Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Public Sub New()
     End Sub
@@ -422,20 +426,22 @@ Public Class EducatedGuessImporter
         phrases.Add(currPhrase)
 
         'Output the before and after to illustrate the spliting
-        Debug.Write(input & " -> ")
+        Dim sb As New StringBuilder()
+        sb.Append(input)
+        sb.Append(" -> ")
         For Each p As Phrase In phrases
             'Debug.Write(p(x) & "(" & p(x).GetType.FullName & ")")
             If TypeOf p Is NumberPhrase Then
-                Debug.Write(CType(p, NumberPhrase).Value & "#")
+                sb.Append(CType(p, NumberPhrase).Value & "#")
             End If
             If TypeOf p Is LetterPhrase Then
-                Debug.Write(CType(p, LetterPhrase).Value & "!")
+                sb.Append(CType(p, LetterPhrase).Value & "!")
             End If
             If TypeOf p Is NothingPhrase Then
-                Debug.Write("*")
+                sb.Append("*")
             End If
         Next
-        Debug.Write(ControlChars.NewLine)
+        log.DebugFormat(sb.ToString())
 
 
         Return phrases
