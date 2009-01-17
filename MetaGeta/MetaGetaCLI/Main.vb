@@ -33,7 +33,7 @@ Module Main
             Console.WriteLine("Can't find path: {0}", path.LocalPath)
         End If
 
-        ds.RunTaggingPlugins()
+        'ds.RunTaggingPlugins()
 
         Dim names = From s In template.GetDimensionNames() Order By s Select s
         Console.WriteLine(names.JoinToString(","))

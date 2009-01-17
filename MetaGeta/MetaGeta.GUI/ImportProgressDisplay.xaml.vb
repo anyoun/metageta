@@ -19,15 +19,17 @@ Partial Public Class ImportProgressDisplay
     End Sub
 
     Private Sub Progress_PropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs)
-        If DirectCast(sender, FileProgress).IsDone Then
+        Dim fp = DirectCast(sender, FileProgress)
+        If fp.IsDone Then
             Me.Dispatcher.BeginInvoke(Windows.Threading.DispatcherPriority.Normal, New MethodDelegate(AddressOf OnIsDone))
         End If
     End Sub
 
     Private Sub OnIsDone()
-        btnCancel.Content = "Done"
-        btnCancel.IsEnabled = True
-        btnCancel.IsDefault = True
+        'btnCancel.Content = "Done"
+        'btnCancel.IsEnabled = True
+        'btnCancel.IsDefault = True
+        Me.Close()
     End Sub
     Private Delegate Sub MethodDelegate()
 

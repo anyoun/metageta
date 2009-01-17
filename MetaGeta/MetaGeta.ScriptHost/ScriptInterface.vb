@@ -22,7 +22,7 @@ Public Class ScriptInterface
     End Sub
 
     Public Sub RunTaggingPlugins(ByVal ds As MGDataStore)
-        ds.RunTaggingPlugins()
+        'ds.RunTaggingPlugins()
     End Sub
 
     Public Function ToCsv(ByVal ds As MGDataStore) As String

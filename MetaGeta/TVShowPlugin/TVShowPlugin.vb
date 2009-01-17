@@ -691,9 +691,8 @@ Public Class EducatedGuessImporter
 
     End Sub
 
-    Public Sub Process() Implements IMGTaggingPlugin.Process
-
-        For Each file As MGFile In m_DataStore
+    Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
+        For Each file As MGFile In New ProgressHelper(reporter, m_DataStore)
             Dim s As String
             Dim gotSeriesTitle As Boolean = False
             Dim longestBracketedPhrase As Integer

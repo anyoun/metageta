@@ -27,8 +27,7 @@ Public Class MGFile
         End Get
     End Property
 
-
-    Public Function Equals1(ByVal other As MGFile) As Boolean Implements System.IEquatable(Of MGFile).Equals
+    Public Overloads Function Equals(ByVal other As MGFile) As Boolean Implements System.IEquatable(Of MGFile).Equals
         Return other.Path = Path AndAlso other.ID = ID
     End Function
 
@@ -46,8 +45,6 @@ Public Class MGFileIDComparer
         Return x.ID.CompareTo(y.ID)
     End Function
 End Class
-
-
 
 Public Class MGFileEventArgs
     Inherits EventArgs

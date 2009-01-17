@@ -22,15 +22,15 @@ Public Class MGDataStore
         RaiseEvent ItemAdded(Me, New MGFileEventArgs(f))
     End Sub
 
-    Public Sub RunTaggingPlugins()
-        For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
-            plugin.Process()
-        Next
-    End Sub
     Public Sub AddTaggingPlugin(ByVal plugin As IMGTaggingPlugin)
         plugin.Startup(Me)
         m_TaggingPlugins.Add(plugin)
     End Sub
+    Public ReadOnly Property Plugins() As IEnumerable(Of IMGTaggingPlugin)
+        Get
+            Return m_TaggingPlugins
+        End Get
+    End Property
 
     Public Function GetFilesWhere(ByVal tag As MGTag) As FileSet
         Return New FileSet(From file In m_Items Where file.Tags.Item(tag.Name).Equals(tag))
@@ -101,5 +101,9 @@ Public Class MGDataStore
     Public Function GetEnumerator1() As System.Collections.IEnumerator Implements System.Collections.IEnumerable.GetEnumerator
         Return GetEnumerator()
     End Function
+
 End Class
 
+Public Class Column(Of T)
+
+End Class

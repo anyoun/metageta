@@ -1,6 +1,6 @@
 ﻿Public Interface IMGTaggingPlugin
     Inherits IMGPluginBase
 
-    Sub Process()
+    Sub Process(ByVal reporter As IProgressReportCallback)
 
 End Interface

@@ -1,12 +1,5 @@
-﻿Public Interface IProgressReporter
-    Inherits INotifyPropertyChanged
-
-    ReadOnly Property AllItems() As IEnumerable
-    ReadOnly Property CompletedItems() As IEnumerable
-
-    ReadOnly Property TotalPercentDone() As Double
-    ReadOnly Property IsDone() As Boolean
-
-    ReadOnly Property CurrentItem() As Object
-    ReadOnly Property CurrentItemPercentDone() As Double
+﻿Public Interface IProgressReportCallback
+    Sub SetItems(ByVal items As ICollection)
+    Sub SetCurrentItem(ByVal index As Integer)
+    Sub SetItemProgress(ByVal percent As Double)
 End Interface

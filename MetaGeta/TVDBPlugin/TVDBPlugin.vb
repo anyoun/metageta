@@ -25,12 +25,14 @@ Public Class TVDBPlugin
         m_tvdbHandler.SaveCache()
     End Sub
 
-    Public Sub Process() Implements IMGTaggingPlugin.Process
+
+    Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
         'prompt user for series name lookups??
 
-        For Each file As MGFile In m_DataStore
+        For Each file As MGFile In New ProgressHelper(reporter, m_DataStore)
+
             Dim seriesID = GetSeriesID(file)
-            If seriesID Is Nothing Then Return
+            If seriesID Is Nothing Then Continue For
             Dim series = GetSeries(seriesID.Value)
 
             file.Tags.Item(TVShowDataStoreTemplate.SeriesDescription).Value = series.Overview
@@ -52,8 +54,8 @@ Public Class TVDBPlugin
 
                 End If
             End If
-
         Next
+
     End Sub
 
     Private Function GetSeriesID(ByVal file As MGFile) As Integer?

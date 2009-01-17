@@ -11,6 +11,7 @@ Partial Public Class MainWindow
 
     Private Sub Window1_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
         Dim t As New System.Threading.Thread(AddressOf ImportTagAndWrite)
+        t.SetApartmentState(System.Threading.ApartmentState.STA)
         t.Start()
     End Sub
 
@@ -28,12 +29,25 @@ Partial Public Class MainWindow
         AddTaggingPluginByName(ds, "MetaGeta.TVShowPlugin.EducatedGuessImporter, TVShowPlugin")
         AddTaggingPluginByName(ds, "MetaGeta.TVDBPlugin.TVDBPlugin, TVDBPlugin")
 
-        AddDirectory(ds, "C:\Users\willt\Desktop\ipod\")
-        RunTaggingPlugins(ds)
+        AddDirectory(ds, "F:\ipod\")
+
+        For Each plugin As IMGTaggingPlugin In ds.Plugins
+            Dim fp As New FileProgress(plugin.GetType().Name)
+            Dim t As New System.Threading.Thread(AddressOf ShowWindow)
+            t.SetApartmentState(System.Threading.ApartmentState.STA)
+            t.Start(fp)
+            plugin.Process(fp)
+            t.Join()
+        Next
 
         'WriteAllTags(ds)
         Dispatcher.Invoke(Windows.Threading.DispatcherPriority.Normal, New System.Threading.ThreadStart(AddressOf Display))
         log.Info("Done")
+    End Sub
+
+    Sub ShowWindow(ByVal fp As Object)
+        Dim window = New ImportProgressDisplay(CType(fp, FileProgress))
+        window.ShowDialog()
     End Sub
 
     Sub Display()
@@ -68,10 +82,6 @@ Partial Public Class MainWindow
         Else
             Throw New Exception(String.Format("Can't find path: {0}", dir))
         End If
-    End Sub
-
-    Public Sub RunTaggingPlugins(ByVal ds As MGDataStore)
-        ds.RunTaggingPlugins()
     End Sub
 
     Public Function ToCsv(ByVal ds As MGDataStore) As String
