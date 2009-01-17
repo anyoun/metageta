@@ -98,7 +98,7 @@ Public Class TVDBPlugin
         Dim episodeNumber = file.Tags.Item(TVShowDataStoreTemplate.EpisodeNumber).ValueAsInteger
         Dim ep As TvdbEpisode = Nothing
         Try
-            ep = m_tvdbHandler.GetEpisode(series.Id, seasonNumber, episodeNumber, TvdbEpisode.EpisodeOrdering.DefaultOrder, TvdbLanguage.DefaultLanguage)
+            ep = series.Episodes.Find(Function(episode) episode.EpisodeNumber = episodeNumber AndAlso episode.SeasonNumber = seasonNumber)
         Catch ex As Exception
             log.WarnFormat("TVDB exception", ex)
         End Try
