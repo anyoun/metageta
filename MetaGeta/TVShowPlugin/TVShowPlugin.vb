@@ -7,6 +7,7 @@ Public Class EducatedGuessImporter
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Public Sub New()
+
     End Sub
 
 #Region "From http://www.merriampark.com/ld.htm"
@@ -40,7 +41,6 @@ Public Class EducatedGuessImporter
         Dim cost As Integer ' cost
 
         ' Step 1
-
         n = Len(s)
         m = Len(t)
         If n = 0 Then
@@ -53,182 +53,37 @@ Public Class EducatedGuessImporter
         End If
         'ReDim d(0 To n, 0 To m) As Integer
         Dim d(n, m) As Integer ' matrix
-
         ' Step 2
-
         For i = 0 To n
             d(i, 0) = i
         Next i
-
         For j = 0 To m
             d(0, j) = j
         Next j
-
         ' Step 3
-
         For i = 1 To n
-
             s_i = Mid$(s, i, 1)
-
             ' Step 4
-
             For j = 1 To m
-
                 t_j = Mid$(t, j, 1)
-
                 ' Step 5
-
                 If s_i = t_j Then
                     cost = 0
                 Else
                     cost = 1
                 End If
-
                 ' Step 6
-
                 d(i, j) = Minimum(d(i - 1, j) + 1, d(i, j - 1) + 1, d(i - 1, j - 1) + cost)
-
             Next j
-
         Next i
-
         ' Step 7
-
         LD = d(n, m)
         Erase d
-
     End Function
 
 #End Region
 
     Private m_DataStore As MGDataStore
-
-    Private Shared ReadOnly c_AliasFrom As String() = {"The Venture Brothers"}
-    Private Shared ReadOnly c_AliasTo As String() = {"The Venture Bros."}
-
-    Public Const myniceName As String = "Educated Guess TV Show importer"
-    'Public intMaxLDForMatch As Integer = 3
-    Public chPhraseDelimiters() As Char = {"-"c}
-    'Public myiHost As IMGHost
-    'Public ds As New DSEducateGuessImporter
-
-    Public Sub Import(ByVal File As System.Uri, ByVal Silent As Boolean)
-        'Debug.WriteLine("Educated Guess " & filename)
-        Dim s As String
-        Dim gotSeriesTitle As Boolean = False
-        Dim longestBracketedPhrase As Integer
-
-        Dim tags As New Generic.Dictionary(Of String, MGTag)
-
-        Dim fileName As String = System.IO.Path.GetFileNameWithoutExtension(File.ToString)
-        Dim fileSize As Long = (New IO.FileInfo(fileName)).Length
-
-
-        'new algorithm: break up into 2 types of "phrases":
-        'numbers & words and bracketed junk (encoder, CRC32)
-        'a const array will hold the phrase delimiters
-        'then work from there
-        'recognize "ep", "episode", etc
-
-        'turn all underscores and periods into spaces
-        fileName = fileName.Replace("_", " ")
-        fileName = fileName.Replace(".", " ")
-
-        Dim brcktPhrases As New Generic.List(Of String)
-        brcktPhrases = getBracketedPhrases(fileName)
-
-        'idetify CRC32
-        Dim IsHex As Boolean = True
-        For Each s In brcktPhrases
-            If isCRC32(s) Then
-                sett(tags, TVShowDataStoreTemplate.CRC32, s)
-                brcktPhrases.Remove(s)
-                Exit For
-            End If
-        Next
-
-        'idetify encoder:
-        longestBracketedPhrase = getLongest(brcktPhrases)
-        If Not longestBracketedPhrase = -1 Then
-            brcktPhrases(longestBracketedPhrase) = brcktPhrases(longestBracketedPhrase).Trim(" "c)
-            'info.encoder = brcktPhrases(longestStart)
-            'Debug.WriteLine("Found Encoder: " & brcktPhrases(longestBracketedPhrase))
-            sett(tags, TVShowDataStoreTemplate.Group, brcktPhrases(longestBracketedPhrase))
-        End If
-
-        'now, find aliases before breaking apart into phrases
-        For i As Integer = 0 To c_AliasFrom.Count
-            If c_AliasFrom(i) <> "" AndAlso c_AliasFrom(i) <> " " AndAlso fileName.IndexOf(c_AliasFrom(i)) <> -1 Then 'regular aliasing
-                fileName = fileName.Remove(fileName.IndexOf(c_AliasFrom(i)), c_AliasFrom(i).Length)
-                sett(tags, "SeriesTitle", c_AliasTo(i))
-                gotSeriesTitle = True
-            ElseIf fileName.IndexOf(c_AliasTo(i)) <> -1 Then 'help for shows like 24
-                fileName = fileName.Remove(fileName.IndexOf(c_AliasTo(i)), c_AliasTo(i).Length)
-                sett(tags, "SeriesTitle", c_AliasTo(i))
-                gotSeriesTitle = True
-            End If
-        Next
-
-        'Debug.WriteLine("Ready to continue with EducatedGuess using " & fileName)
-        'bracketed junk is now all out of the way and replaced with "-"
-        'now to build a similar array of the numbers
-
-        Dim phrases As Generic.List(Of Phrase) = getNumberAndWordPhrases(fileName)
-        'now do stuff
-        'Debug.WriteLine("hi")
-        tags = processPhrases(phrases, tags, gotSeriesTitle)
-
-        'now autocorrect
-        'If tags.ContainsKey("SeriesTitle") Then
-        '    Dim title As String = tags("SeriesTitle").Value
-        '    Dim t, d As String
-        '    Dim dist As Double
-        '    For Each ar In ds.aliases()
-        '        t = title.ToLower.Trim(" ")
-        '        d = ar.Dest.ToLower.Trim(" ")
-        '        If t.Length <> 0 AndAlso d.Length <> 0 Then
-        '            dist = LD(t, d) / (t.Length + d.Length)
-        '            If dist < ds.AutocorrectDistance(0).distance Then
-        '                sett(tags, "SeriesTitle", ar.Dest)
-        '            End If
-        '        End If
-        '    Next
-        'End If
-
-        'Where should this episode go?
-        'Dim EpisodeItem As MGItem
-
-        ''Get item
-
-        'If EpisodeItem Is Nothing Then
-        '    'Create a new episode item
-        '    EpisodeItem = myiHost.CreateNewItem(Me)
-        '    'Copy all the tags over
-        '    For Each tag As MGMetaText In tags.Values
-        '        EpisodeItem.Tags.Add(tag.Name, tag)
-        '    Next
-
-        '    'Add this datafile
-        '    'If there is part info, should be "part x"
-        '    EpisodeItem.Files.Add("Video", New MGDataFile(File, EpisodeItem.ID, fileSize))
-        '    myiHost.ChangeItem(Me, EpisodeItem)
-        'Else
-        '    'Already exists - multipart episode?
-        '    'Add this datafile and any new info and move on
-        '    'Should handle multiple parts here
-
-        '    'Create a new item, etc
-
-        '    For Each tag As MGMetaText In tags.Values
-        '        If Not EpisodeItem.Tags.ContainsKey(tag.Name) Then
-        '            EpisodeItem.Tags.Add(tag.Name, tag)
-        '        End If
-        '    Next
-        '    myiHost.ChangeItem(Me, EpisodeItem)
-        'End If
-
-
-    End Sub
 
     Private Function processPhrases(ByRef phrases As Generic.List(Of Phrase), ByRef tags As Generic.Dictionary(Of String, MGTag), ByRef foundSeriesTitle As Boolean) As Generic.Dictionary(Of String, MGTag)
         'Capitalization no longer matters for magic words
@@ -521,7 +376,6 @@ Public Class EducatedGuessImporter
         Dim y As Integer
 
         For y = 0 To myArray.Count - 1
-
             If myArray(y).Length > longestLen Then
                 longestLen = myArray(y).Length
                 longestStart = y
@@ -565,77 +419,6 @@ Public Class EducatedGuessImporter
         Return False
     End Function
 
-    Private Function readANumber(ByVal charray() As Char) As Integer
-        Dim y As Integer
-        Dim x As Integer
-        Dim intTemp As Integer
-        Dim intArrayTemp(50) As Integer
-        Dim index As Integer
-        index = 0
-        y = 0
-        intTemp = 0
-
-        If charray.Length < 1 Then
-            Return 0
-        End If
-        'read the number
-        While Char.IsDigit(charray(index))
-            intArrayTemp(y) = Val(charray(index))
-            'Debug.Write(CStr(intArrayTemp(y)))
-            index = index + 1
-            y = y + 1
-            If y >= charray.Length Then
-                Exit While
-            End If
-        End While
-
-        'turn the individual numbers into a single number
-        For x = 1 To y
-            intTemp = CInt(intTemp + (intArrayTemp(y - x) * 10 ^ (x - 1)))
-        Next
-
-        Return intTemp
-
-    End Function
-
-
-    'Public Sub initialize(ByRef host As MetaGetaInterfaces.IMGHost, ByRef strmPrefs As System.IO.StreamReader) Implements MetaGetaInterfaces.IMGImporter.initialize
-    '    myiHost = host
-    '    If strmPrefs.Peek <> -1 Then
-    '        ds.ReadXml(strmPrefs)
-    '    End If
-    '    Try
-    '        ds.AutocorrectDistance(0).distance += 0
-    '    Catch ex As Exception
-    '        ds.AutocorrectDistance.AddAutocorrectDistanceRow(0.1)
-    '    End Try
-    'End Sub
-
-    'Public Sub openPropertiesWindow() Implements MetaGetaInterfaces.IMGImporter.openPropertiesWindow
-    '    Dim props As New EducatedGuessImporterProperties
-    '    props.aliases = New ArrayList
-    '    Dim al As CAlias
-    '    Dim ar As DSEducateGuessImporter.aliasesRow
-    '    For Each ar In ds.aliases
-    '        al = New CAlias
-    '        al.Dest = ar.Dest
-    '        al.From = ar.From
-    '        props.aliases.Add(al)
-    '    Next
-    '    props.udDistance.Value() = ds.AutocorrectDistance(0).distance
-
-    '    If props.ShowDialog() = Windows.Forms.DialogResult.OK Then
-    '        ds.AutocorrectDistance(0).distance = props.udDistance.Value
-    '        ds.aliases.Clear()
-    '        For Each al In props.aliases
-    '            ds.aliases.AddaliasesRow(al.From, al.Dest)
-    '        Next
-    '    Else
-    '        'nothing
-    '    End If
-
-
-    'End Sub
 
     Private Sub sett(ByRef tags As Generic.Dictionary(Of String, MGTag), ByRef name As String, ByRef value As String)
         If tags.ContainsKey(name) Then
@@ -769,5 +552,10 @@ Public Class EducatedGuessImporter
 
 #Region "Constants"
     Private Shared ReadOnly c_IgnoredStrings As String() = {"divx", "x264", "h264", "264", "1280x720", "720p", "1080p"}
+    Private Shared ReadOnly c_AliasFrom As String() = {"The Venture Brothers"}
+    Private Shared ReadOnly c_AliasTo As String() = {"The Venture Bros."}
+
+    Public Const c_NiceName As String = "Educated Guess TV Show importer"
+    'Public intMaxLDForMatch As Integer = 3
 #End Region
 End Class
