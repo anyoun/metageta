@@ -19,11 +19,12 @@ Public Class FileSet
     End Sub
 
     Public Function GetAllTags(ByVal tagName As String) As IEnumerable(Of MGTag)
-        Dim tags As New List(Of MGTag)
-        For Each file As MGFile In m_Items
-            tags.Add(file.Tags.Item(tagName))
-        Next
-        Return From t In tags Group By t.Value Into tg = First() Select tg
+        Throw New NotImplementedException()
+        'Dim tags As New List(Of MGTag)
+        'For Each file As MGFile In m_Items
+        '    tags.Add(file.Tags.Item(tagName))
+        'Next
+        'Return From t In tags Group By t.Value Into tg = First() Select tg
     End Function
 
     Public Function GetEnumerator() As System.Collections.Generic.IEnumerator(Of MGFile) Implements IEnumerable(Of MGFile).GetEnumerator

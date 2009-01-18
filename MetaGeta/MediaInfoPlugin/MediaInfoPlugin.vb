@@ -18,18 +18,18 @@ Public Class MediaInfoPlugin
 
     Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
         For Each file As MGFile In New ProgressHelper(reporter, m_DataStore)
-            Dim fileInfo = m_MediaInfo.ReadFile(file.Path.LocalPath)
+            Dim fileInfo = m_MediaInfo.ReadFile(file.FileName)
 
             If fileInfo.AudioStreams.Count > 0 Then
                 Dim audio = fileInfo.AudioStreams.First()
-                file.Tags.SetTag(New MGTag("AudioCodec", audio.CodecString))
+                file.SetTag("AudioCodec", audio.CodecString)
             End If
 
             If fileInfo.VideoStreams.Count > 0 Then
                 Dim video = fileInfo.VideoStreams.First()
-                file.Tags.SetTag(New MGTag("VideoCodec", video.CodecString))
-                file.Tags.SetTag(New MGTag("Resolution", String.Format("{0}x{1}", video.WidthPx, video.HeightPx)))
-                file.Tags.SetTag(New MGTag("PlayTime", video.PlayTime.ToString()))
+                file.SetTag("VideoCodec", video.CodecString)
+                file.SetTag("Resolution", String.Format("{0}x{1}", video.WidthPx, video.HeightPx))
+                file.SetTag("PlayTime", video.PlayTime.ToString())
             End If
         Next
     End Sub

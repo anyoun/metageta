@@ -35,22 +35,22 @@ Public Class TVDBPlugin
             If seriesID Is Nothing Then Continue For
             Dim series = GetSeries(seriesID.Value)
 
-            file.Tags.Item(TVShowDataStoreTemplate.SeriesDescription).Value = series.Overview
+            file.SetTag(TVShowDataStoreTemplate.SeriesDescription, series.Overview)
 
             Dim exactEpisode = GetEpisode(series, file)
 
             If exactEpisode IsNot Nothing Then
 
-                file.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value = exactEpisode.EpisodeName
-                file.Tags.Item(TVShowDataStoreTemplate.EpisodeDescription).Value = exactEpisode.Overview
-                file.Tags.Item(TVShowDataStoreTemplate.EpisodeID).Value = exactEpisode.Id.ToString()
+                file.SetTag(TVShowDataStoreTemplate.EpisodeTitle, exactEpisode.EpisodeName)
+                file.SetTag(TVShowDataStoreTemplate.EpisodeDescription, exactEpisode.Overview)
+                file.SetTag(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id.ToString())
 
                 If False AndAlso exactEpisode.Banner.LoadBanner() Then
                     log.DebugFormat("Found banner: ""{0}"".", exactEpisode.Banner.BannerPath)
 
                     Dim imagefile = System.IO.Path.GetTempFileName()
                     exactEpisode.Banner.Banner.Save(imagefile)
-                    file.Tags.Item(TVShowDataStoreTemplate.EpisodeBanner).Value = imagefile
+                    file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, imagefile)
 
                 End If
             End If
@@ -59,11 +59,11 @@ Public Class TVDBPlugin
     End Sub
 
     Private Function GetSeriesID(ByVal file As MGFile) As Integer?
-        If file.Tags.Item(TVShowDataStoreTemplate.SeriesID).IsSet Then
-            Return file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsInteger
+        If file.GetTag(TVShowDataStoreTemplate.SeriesID) <> Nothing Then
+            Return Integer.Parse(file.GetTag(TVShowDataStoreTemplate.SeriesID))
         End If
 
-        Dim seriesName = file.Tags.Item(TVShowDataStoreTemplate.SeriesTitle).Value
+        Dim seriesName = file.GetTag(TVShowDataStoreTemplate.SeriesTitle)
         Dim seriesID As Integer?
 
         If Not m_SeriesNameDictionary.TryGetValue(seriesName, seriesID) Then
@@ -79,7 +79,7 @@ Public Class TVDBPlugin
             m_SeriesNameDictionary.Add(seriesName, seriesID)
         End If
         If seriesID.HasValue Then
-            file.Tags.Item(TVShowDataStoreTemplate.SeriesID).ValueAsInteger = seriesID.Value
+            file.SetTag(TVShowDataStoreTemplate.SeriesID, seriesID.Value.ToString())
             Return seriesID.Value
         Else
             Return Nothing
@@ -94,8 +94,8 @@ Public Class TVDBPlugin
     End Function
 
     Private Function GetEpisode(ByVal series As TvdbSeries, ByVal file As MGFile) As TvdbEpisode
-        Dim seasonNumber = file.Tags.Item(TVShowDataStoreTemplate.SeasonNumber).ValueAsInteger
-        Dim episodeNumber = file.Tags.Item(TVShowDataStoreTemplate.EpisodeNumber).ValueAsInteger
+        Dim seasonNumber = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.SeasonNumber))
+        Dim episodeNumber = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.EpisodeNumber))
         Dim ep As TvdbEpisode = Nothing
         Try
             ep = series.Episodes.Find(Function(episode) episode.EpisodeNumber = episodeNumber AndAlso episode.SeasonNumber = seasonNumber)

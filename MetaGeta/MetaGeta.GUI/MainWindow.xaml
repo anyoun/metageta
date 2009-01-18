@@ -3,7 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="MetaGeta" Height="419" Width="697" Name="Window1">
     <DockPanel Name="DockPanel1" >
-        <TabControl Name="TabControl1" DockPanel.Dock="Bottom">
+        <Button Height="23" Name="btnImport" DockPanel.Dock="Bottom">Import</Button>
+        <TabControl Name="TabControl1" DockPanel.Dock="Top">
             <TabItem Name="tabItems" Header="Items">
                 <ListView Name="lvItems">
                     <ListView.View>

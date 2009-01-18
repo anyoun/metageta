@@ -7,6 +7,10 @@
                              CRC32, Group, AudioCodec, VideoCodec, Resolution, PlayTime}
     End Function
 
+    Public Function GetName() As String Implements IDataStoreTemplate.GetName
+        Return "TVShow"
+    End Function
+
 #Region "Constants"
     Public Const SeriesTitle As String = "SeriesTitle"
     Public Const EpisodeTitle As String = "EpisodeTitle"

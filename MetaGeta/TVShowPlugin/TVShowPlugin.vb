@@ -85,7 +85,7 @@ Public Class EducatedGuessImporter
 
     Private m_DataStore As MGDataStore
 
-    Private Function processPhrases(ByRef phrases As Generic.List(Of Phrase), ByRef tags As Generic.Dictionary(Of String, MGTag), ByRef foundSeriesTitle As Boolean) As Generic.Dictionary(Of String, MGTag)
+    Private Sub processPhrases(ByVal phrases As Generic.List(Of Phrase), ByVal tags As Generic.Dictionary(Of String, String), ByVal foundSeriesTitle As Boolean)
         'Capitalization no longer matters for magic words
         Dim episodeWords() As String = {"e", "ep", "episode"}
         Dim justFoundEpWord As Boolean = False
@@ -112,13 +112,13 @@ Public Class EducatedGuessImporter
             If TypeOf p Is NumberPhrase Then
                 Dim np As NumberPhrase = CType(p, NumberPhrase)
                 If justFoundEpWord Then
-                    sett(tags, TVShowDataStoreTemplate.EpisodeNumber, np.Value.ToString())
+                    tags(TVShowDataStoreTemplate.EpisodeNumber) = np.Value.ToString()
                     foundEp = True
                 ElseIf justFoundSeWord Then
-                    sett(tags, TVShowDataStoreTemplate.SeasonNumber, np.Value.ToString())
+                    tags(TVShowDataStoreTemplate.SeasonNumber) = np.Value.ToString()
                     foundSe = True
                 ElseIf justFoundPaWord Then
-                    sett(tags, TVShowDataStoreTemplate.PartNumber, np.Value.ToString())
+                    tags(TVShowDataStoreTemplate.PartNumber) = np.Value.ToString()
                     foundPa = True
                 End If
 
@@ -130,19 +130,17 @@ Public Class EducatedGuessImporter
                 justFoundSeWord = False
                 justFoundPaWord = False
                 If Not foundPa And countOfNumbers > 2 Then
-                    'tags.setTag("SeasonNumber", tags.getTag("EpisodeNumber"), False)
-                    'tags.setTag("EpisodeNumber", ph(x), False)
-                    sett(tags, TVShowDataStoreTemplate.PartNumber, np.Value.ToString())
+                    tags(TVShowDataStoreTemplate.PartNumber) = np.Value.ToString()
                 ElseIf Not foundSe And Not foundPa And countOfNumbers > 1 Then
-                    sett(tags, TVShowDataStoreTemplate.SeasonNumber, tags(TVShowDataStoreTemplate.EpisodeNumber).Value)
-                    sett(tags, TVShowDataStoreTemplate.EpisodeNumber, np.Value.ToString())
+                    tags(TVShowDataStoreTemplate.SeasonNumber) = tags(TVShowDataStoreTemplate.EpisodeNumber)
+                    tags(TVShowDataStoreTemplate.EpisodeNumber) = np.Value.ToString()
                 ElseIf Not foundEp And countOfNumbers = 1 Then
                     If np.Value > 100 Then
                         'probably be season then ep number concatted
-                        sett(tags, TVShowDataStoreTemplate.EpisodeNumber, (np.Value Mod 100).ToString)
-                        sett(tags, TVShowDataStoreTemplate.SeasonNumber, Int(np.Value / 100).ToString)
+                        tags(TVShowDataStoreTemplate.EpisodeNumber) = (np.Value Mod 100).ToString()
+                        tags(TVShowDataStoreTemplate.SeasonNumber) = Int(np.Value / 100).ToString()
                     Else
-                        sett(tags, TVShowDataStoreTemplate.EpisodeNumber, np.Value.ToString())
+                        tags(TVShowDataStoreTemplate.EpisodeNumber) = np.Value.ToString()
                     End If
 
                 End If
@@ -178,17 +176,17 @@ Public Class EducatedGuessImporter
                 Next
 
                 If gettingSeTi Then
-                    sett(tags, TVShowDataStoreTemplate.SeriesTitle, tags(TVShowDataStoreTemplate.SeriesTitle).Value & " " & lp.Value)
+                    tags(TVShowDataStoreTemplate.SeriesTitle) = tags(TVShowDataStoreTemplate.SeriesTitle) & " " & lp.Value
                 ElseIf gettingEpTi Then
-                    sett(tags, TVShowDataStoreTemplate.EpisodeTitle, tags(TVShowDataStoreTemplate.EpisodeTitle).Value & " " & lp.Value)
+                    tags(TVShowDataStoreTemplate.EpisodeTitle) = tags(TVShowDataStoreTemplate.EpisodeTitle) & " " & lp.Value
                 ElseIf countOfWords = 0 And Not justFoundSeWord And Not justFoundEpWord Then
                     'Debug.WriteLine("SeriesTitle=" & ph(x))
-                    sett(tags, TVShowDataStoreTemplate.SeriesTitle, lp.Value)
+                    tags(TVShowDataStoreTemplate.SeriesTitle) = lp.Value
                     foundSeriesTitle = True
                     gettingSeTi = True
                 ElseIf countOfWords > 0 And Not justFoundSeWord And Not justFoundEpWord Then
                     'Debug.WriteLine("EpisodeTitle=" & ph(x))
-                    sett(tags, TVShowDataStoreTemplate.EpisodeTitle, lp.Value)
+                    tags(TVShowDataStoreTemplate.EpisodeTitle) = lp.Value
                     gettingEpTi = True
                 End If
 
@@ -204,16 +202,10 @@ Public Class EducatedGuessImporter
 
         If Not tags.ContainsKey(TVShowDataStoreTemplate.EpisodeTitle) _
             And tags.ContainsKey(TVShowDataStoreTemplate.EpisodeNumber) Then
-            sett(tags, TVShowDataStoreTemplate.EpisodeTitle, String.Format("Episode {0}", tags(TVShowDataStoreTemplate.EpisodeNumber).Value))
+            tags(TVShowDataStoreTemplate.EpisodeTitle) = String.Format("Episode {0}", tags(TVShowDataStoreTemplate.EpisodeNumber))
         End If
 
-        If Not foundSeriesTitle Then
-            'Debug.WriteLine("Breaking...")
-        End If
-
-        Return tags
-
-    End Function
+    End Sub
 
     Private Function getNumberAndWordPhrases(ByVal input As String) As Generic.List(Of Phrase)
         Dim phrases As New Generic.List(Of Phrase)
@@ -419,14 +411,7 @@ Public Class EducatedGuessImporter
         Return False
     End Function
 
-
-    Private Sub sett(ByRef tags As Generic.Dictionary(Of String, MGTag), ByRef name As String, ByRef value As String)
-        If tags.ContainsKey(name) Then
-            tags(name).Value = value
-        Else
-            tags.Add(name, New MGTag(name, value))
-        End If
-    End Sub
+#Region "Phrase Types"
 
     Private Class Phrase
         'nothing here
@@ -469,6 +454,8 @@ Public Class EducatedGuessImporter
         'no contents
     End Class
 
+#End Region
+
     Public Sub Startup(ByVal dataStore As MGDataStore) Implements IMGTaggingPlugin.Startup
         m_DataStore = dataStore
 
@@ -480,12 +467,10 @@ Public Class EducatedGuessImporter
             Dim gotSeriesTitle As Boolean = False
             Dim longestBracketedPhrase As Integer
 
-            Dim tags As New Generic.Dictionary(Of String, MGTag)
+            Dim tags As New Generic.Dictionary(Of String, String)
 
-            Dim fullPath As String = file.Path.LocalPath
+            Dim fullPath As String = file.FileName
             Dim fileName As String = System.IO.Path.GetFileNameWithoutExtension(fullPath)
-            Dim fileSize As Long = 20 '(New IO.FileInfo(fullPath)).Length
-
 
             'new algorithm: break up into 2 types of "phrases":
             'numbers & words and bracketed junk (encoder, CRC32)
@@ -504,7 +489,7 @@ Public Class EducatedGuessImporter
             Dim IsHex As Boolean = True
             For Each s In brcktPhrases
                 If isCRC32(s) Then
-                    sett(tags, TVShowDataStoreTemplate.CRC32, s)
+                    tags(TVShowDataStoreTemplate.CRC32) = s
                     brcktPhrases.Remove(s)
                     Exit For
                 End If
@@ -516,18 +501,18 @@ Public Class EducatedGuessImporter
                 brcktPhrases(longestBracketedPhrase) = brcktPhrases(longestBracketedPhrase).Trim(" "c)
                 'info.encoder = brcktPhrases(longestStart)
                 'Debug.WriteLine("Found Encoder: " & brcktPhrases(longestBracketedPhrase))
-                sett(tags, TVShowDataStoreTemplate.Group, brcktPhrases(longestBracketedPhrase))
+                tags(TVShowDataStoreTemplate.Group) = brcktPhrases(longestBracketedPhrase)
             End If
 
             'now, find aliases before breaking apart into phrases
             For i As Integer = 0 To c_AliasFrom.Count - 1
                 If c_AliasFrom(i) <> "" AndAlso c_AliasFrom(i) <> " " AndAlso fileName.IndexOf(c_AliasFrom(i)) <> -1 Then 'regular aliasing
                     fileName = fileName.Remove(fileName.IndexOf(c_AliasFrom(i)), c_AliasFrom(i).Length)
-                    sett(tags, "SeriesTitle", c_AliasTo(i))
+                    tags("SeriesTitle") = c_AliasTo(i)
                     gotSeriesTitle = True
                 ElseIf fileName.IndexOf(c_AliasTo(i)) <> -1 Then 'help for shows like 24
                     fileName = fileName.Remove(fileName.IndexOf(c_AliasTo(i)), c_AliasTo(i).Length)
-                    sett(tags, "SeriesTitle", c_AliasTo(i))
+                    tags("SeriesTitle") = c_AliasTo(i)
                     gotSeriesTitle = True
                 End If
             Next
@@ -537,11 +522,11 @@ Public Class EducatedGuessImporter
 
             Dim phrases As Generic.List(Of Phrase) = getNumberAndWordPhrases(fileName)
             'now do stuff
-            tags = processPhrases(phrases, tags, gotSeriesTitle)
+            processPhrases(phrases, tags, gotSeriesTitle)
 
 
-            For Each tag As MGTag In tags.Values
-                file.Tags.SetTag(tag)
+            For Each tag In tags
+                file.SetTag(tag.Key, tag.Value)
             Next
         Next
     End Sub

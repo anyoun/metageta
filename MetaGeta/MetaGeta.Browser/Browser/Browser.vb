@@ -50,14 +50,14 @@
 
 
     Private Sub UpdateCurrent()
-        m_CurrentFiles = m_DataStore.GetAllFiles()
-        For Each tag As MGTag In m_CurrentLocation
-            If (m_CurrentFiles Is Nothing) Then
-                m_CurrentFiles = m_DataStore.GetFilesWhere(tag)
-            Else
-                m_CurrentFiles = FileSet.Intesect(m_CurrentFiles, m_DataStore.GetFilesWhere(tag))
-            End If
-        Next
+        'm_CurrentFiles = m_DataStore.GetAllFiles()
+        'For Each tag As MGTag In m_CurrentLocation
+        '    If (m_CurrentFiles Is Nothing) Then
+        '        m_CurrentFiles = m_DataStore.GetFilesWhere(tag)
+        '    Else
+        '        m_CurrentFiles = FileSet.Intesect(m_CurrentFiles, m_DataStore.GetFilesWhere(tag))
+        '    End If
+        'Next
     End Sub
 
     Private ReadOnly Property NextTagName() As String

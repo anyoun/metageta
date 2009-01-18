@@ -4,20 +4,22 @@ Public Class MGTagCollection
 
     Private ReadOnly m_Items As New Dictionary(Of String, MGTag)
 
+    Public Sub New(ByVal tags As IEnumerable(Of MGTag))
+        For Each tag In tags
+            m_Items.Add(tag.Name, tag)
+        Next
+    End Sub
+
     Public Overloads ReadOnly Property Item(ByVal tagName As String) As MGTag
         Get
             Dim tag As MGTag = Nothing
-            If Not m_Items.TryGetValue(tagName, tag) Then
-                tag = New MGTag(tagName)
-                m_Items.Add(tag.Name, tag)
+            If m_Items.TryGetValue(tagName, tag) Then
+                Return tag
+            Else
+                Return Nothing
             End If
-            Return tag
         End Get
     End Property
-
-    Public Sub SetTag(ByVal tag As MGTag)
-        m_Items(tag.Name) = tag
-    End Sub
 
     Public Function GetEnumerator() As System.Collections.Generic.IEnumerator(Of MGTag) Implements System.Collections.Generic.IEnumerable(Of MGTag).GetEnumerator
         Return m_Items.Values.GetEnumerator()

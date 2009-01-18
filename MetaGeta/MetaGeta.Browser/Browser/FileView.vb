@@ -4,7 +4,7 @@
     Private m_Files As IEnumerable(Of MGFile)
 
     Friend Sub New(ByVal files As IEnumerable(Of MGFile))
-        m_Files = From f In files Order By f.Name
+        m_Files = From f In files Order By f.FileName
     End Sub
 
     Public Function GetEnumerator() As System.Collections.Generic.IEnumerator(Of MGFile) Implements System.Collections.Generic.IEnumerable(Of MGFile).GetEnumerator

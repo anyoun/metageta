@@ -105,11 +105,18 @@
     End Sub
 
     Public Sub SetItems(ByVal items As System.Collections.ICollection) Implements IProgressReportCallback.SetItems
+        Dim done = False
         SyncLock m_Lock
             m_AllFiles = items
+            If m_AllFiles.Count = 0 Then
+                done = True
+            End If
         End SyncLock
         OnCurrentItemChanged()
         OnCompletedItemsChanged()
+        If done Then
+            OnIsDoneChanged()
+        End If
     End Sub
 #End Region
 

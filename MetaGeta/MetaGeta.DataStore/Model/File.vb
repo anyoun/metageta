@@ -2,40 +2,41 @@
 Public Class MGFile
     Implements IEquatable(Of MGFile)
 
-    Private m_ID As Guid
-    Private m_Path As Uri
-    Private m_Tags As New MGTagCollection
+    Private ReadOnly m_ID As Long
+    Private ReadOnly m_DataStore As MGDataStore
 
-    Friend Sub New(ByVal path As Uri, ByVal id As Guid)
+    Friend Sub New(ByVal id As Long, ByVal datastore As MGDataStore)
         m_ID = id
-        m_Path = path
+        m_DataStore = datastore
     End Sub
 
-    Public ReadOnly Property Path() As Uri
-        Get
-            Return m_Path
-        End Get
-    End Property
-    Public ReadOnly Property ID() As Guid
+    Public Function GetTag(ByVal tagName As String) As String
+        Return m_DataStore.GetTag(m_ID, tagName)
+    End Function
+
+    Public Sub SetTag(ByVal tagName As String, ByVal tagValue As String)
+        m_DataStore.SetTag(m_ID, tagName, tagValue)
+    End Sub
+
+    Public ReadOnly Property ID() As Long
         Get
             Return m_ID
         End Get
     End Property
-    Public ReadOnly Property Tags() As MGTagCollection
-        Get
-            Return m_Tags
-        End Get
-    End Property
 
     Public Overloads Function Equals(ByVal other As MGFile) As Boolean Implements System.IEquatable(Of MGFile).Equals
-        Return other.Path = Path AndAlso other.ID = ID
+        Return other.ID = ID
     End Function
 
-    Public ReadOnly Property Name() As String
+    Public ReadOnly Property FileName() As String
         Get
-            Return Path.LocalPath
+            Return GetTag("FileName")
         End Get
     End Property
+
+    Public Function GetTags() As MGTagCollection
+        Throw New NotImplementedException()
+    End Function
 End Class
 
 Public Class MGFileIDComparer
