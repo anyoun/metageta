@@ -12,9 +12,48 @@
         m_DbConnection.ConnectionString = "Data Source=metageta.db3"
         m_DbConnection.Open()
 
+        Dim version As Long
+        Using cmd = m_DbConnection.CreateCommand()
+            cmd.CommandText = "PRAGMA user_version"
+            version = CType(cmd.ExecuteScalar(), Long)
+        End Using
+
+        If version < 1 Then
+            Dim createTablesSql = <string>
+                CREATE TABLE [DataStore](
+                    [DatastoreID] integer primary key autoincrement, 
+                    [Name] varchar,
+                    [Description] varchar,
+                    [TemplateName] varchar
+                );
+                CREATE TABLE [PluginSetting](
+                    [PluginSettingID] integer primary key autoincrement,
+                    [DatastoreID] integer references [DataStore]([DatastoreID]), 
+                    [PluginTypeName] varchar,
+                    [Name] varchar, 
+                    [Value] varchar
+                );
+                CREATE TABLE [File](
+                    [FileID] integer primary key autoincrement,
+                    [DatastoreID] integer references [DataStore]([DatastoreID])
+                );
+                CREATE TABLE [Tag](
+                    [TagID] integer primary key autoincrement,
+                    [FileID] integer references [File]([FileID]), 
+                    [Name] varchar, 
+                    [Value] varchar
+                );
+                PRAGMA user_version = 1;
+            </string>.Value
+            Using cmd = m_DbConnection.CreateCommand()
+                cmd.CommandText = createTablesSql
+                cmd.ExecuteNonQuery()
+            End Using
+        End If
+
         Dim files As New List(Of MGFile)
         Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "SELECT datastore_id, name, description, template_name FROM datastore"
+            cmd.CommandText = "SELECT [DatastoreID], [Name], [Description], [TemplateName] FROM [DataStore]"
             Using rdr = cmd.ExecuteReader()
                 While rdr.Read()
                     Dim id = rdr.GetInt64(0)
@@ -41,7 +80,7 @@
     Public Function NewDataStore(ByVal name As String, ByVal template As IDataStoreTemplate) As MGDataStore
         Dim dataStoreID As Long
         Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "INSERT INTO datastore(name, description, template_name) VALUES(?,?,?);SELECT last_insert_rowid() AS [ID]"
+            cmd.CommandText = "INSERT INTO [DataStore]([Name], [Description], [TemplateName]) VALUES(?,?,?);SELECT last_insert_rowid() AS [ID]"
             cmd.AddParam(name)
             cmd.AddParam("")
             cmd.AddParam(template.GetName())

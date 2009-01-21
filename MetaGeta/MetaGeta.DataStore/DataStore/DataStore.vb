@@ -25,7 +25,7 @@ Public Class MGDataStore
         Using tran = m_DbConnection.BeginTransaction()
             Using cmd = m_DbConnection.CreateCommand()
                 cmd.Transaction = tran
-                cmd.CommandText = "INSERT INTO file(datastore_id) VALUES(?);SELECT last_insert_rowid() AS [ID]"
+                cmd.CommandText = "INSERT INTO [File]([DatastoreID]) VALUES(?);SELECT last_insert_rowid() AS [ID]"
                 cmd.AddParam(m_ID)
                 fileID = CType(cmd.ExecuteScalar(), Long)
             End Using
@@ -40,7 +40,7 @@ Public Class MGDataStore
     Friend Function GetTag(ByVal fileId As Long, ByVal tagName As String, Optional ByVal tran As DbTransaction = Nothing) As String
         Using cmd = m_DbConnection.CreateCommand()
             cmd.Transaction = tran
-            cmd.CommandText = "SELECT tag_value FROM tag WHERE file_id = ? AND tag_name = ?"
+            cmd.CommandText = "SELECT [Value] FROM [Tag] WHERE [FileID] = ? AND [Name] = ?"
             cmd.AddParam(fileId)
             cmd.AddParam(tagName)
             Return CType(cmd.ExecuteScalar(), String)
@@ -50,7 +50,7 @@ Public Class MGDataStore
     Friend Sub SetTag(ByVal fileId As Long, ByVal tagName As String, ByVal tagValue As String, Optional ByVal tran As DbTransaction = Nothing)
         Using cmd = m_DbConnection.CreateCommand()
             cmd.Transaction = tran
-            cmd.CommandText = "INSERT INTO tag(file_id, tag_name, tag_value) VALUES(?, ?, ?)"
+            cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
             cmd.AddParam(fileId)
             cmd.AddParam(tagName)
             cmd.AddParam(tagValue)
@@ -61,7 +61,7 @@ Public Class MGDataStore
     Private Function GetFiles() As IList(Of MGFile)
         Dim files As New List(Of MGFile)
         Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "SELECT file_id FROM file WHERE datastore_id = ?"
+            cmd.CommandText = "SELECT [FileID] FROM [File] WHERE [DatastoreID] = ?"
             cmd.AddParam(m_ID)
             Using rdr = cmd.ExecuteReader()
                 While rdr.Read()
@@ -75,7 +75,7 @@ Public Class MGDataStore
     Friend Function GetTag(ByVal fileId As Long) As MGTagCollection
         Dim tags As New List(Of MGTag)
         Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "SELECT tag_name, tag_value FROM tag WHERE file_id = ?"
+            cmd.CommandText = "SELECT [Name], [Value] FROM [Tag] WHERE [FileID] = ?"
             cmd.AddParam(fileId)
             Using rdr = cmd.ExecuteReader()
                 While rdr.Read()
