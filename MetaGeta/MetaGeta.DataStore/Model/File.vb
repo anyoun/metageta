@@ -11,11 +11,11 @@ Public Class MGFile
     End Sub
 
     Public Function GetTag(ByVal tagName As String) As String
-        Return m_DataStore.GetTag(m_ID, tagName)
+        Return m_DataStore.GetTag(Me, tagName)
     End Function
 
     Public Sub SetTag(ByVal tagName As String, ByVal tagValue As String)
-        m_DataStore.SetTag(m_ID, tagName, tagValue)
+        m_DataStore.SetTag(Me, tagName, tagValue)
     End Sub
 
     Public ReadOnly Property ID() As Long

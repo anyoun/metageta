@@ -5,7 +5,7 @@ Public Class MGDataStore
     'Private m_Items As New List(Of MGFile)
 
     Private ReadOnly m_Template As IDataStoreTemplate
-    Private ReadOnly m_DbConnection As DbConnection
+    Private ReadOnly m_DataMapper As DataMapper
     Private ReadOnly m_ID As Long
     Private m_Name As String
     Private m_Description As String
@@ -13,77 +13,33 @@ Public Class MGDataStore
     <NonSerialized()> _
     Private m_TaggingPlugins As New List(Of IMGTaggingPlugin)
 
-    Friend Sub New(ByVal id As Long, ByVal template As IDataStoreTemplate, ByVal name As String, ByVal connection As DbConnection)
+    Friend Sub New(ByVal id As Long, ByVal template As IDataStoreTemplate, ByVal name As String, ByVal dataMapper As DataMapper)
         m_ID = id
         m_Template = template
         m_Name = name
-        m_DbConnection = connection
+        m_DataMapper = dataMapper
     End Sub
 
     Public Sub CreateFile(ByVal path As Uri)
-        Dim fileID As Long
-        Using tran = m_DbConnection.BeginTransaction()
-            Using cmd = m_DbConnection.CreateCommand()
-                cmd.Transaction = tran
-                cmd.CommandText = "INSERT INTO [File]([DatastoreID]) VALUES(?);SELECT last_insert_rowid() AS [ID]"
-                cmd.AddParam(m_ID)
-                fileID = CType(cmd.ExecuteScalar(), Long)
-            End Using
-            SetTag(fileID, "FileName", path.AbsoluteUri, tran)
-            tran.Commit()
-        End Using
-
-        Dim f As New MGFile(fileID, Me)
+        Dim f = m_DataMapper.WriteNewFile(Me)
+        SetTag(f, "FileName", path.AbsoluteUri)
         RaiseEvent ItemAdded(Me, New MGFileEventArgs(f))
     End Sub
 
-    Friend Function GetTag(ByVal fileId As Long, ByVal tagName As String, Optional ByVal tran As DbTransaction = Nothing) As String
-        Using cmd = m_DbConnection.CreateCommand()
-            cmd.Transaction = tran
-            cmd.CommandText = "SELECT [Value] FROM [Tag] WHERE [FileID] = ? AND [Name] = ?"
-            cmd.AddParam(fileId)
-            cmd.AddParam(tagName)
-            Return CType(cmd.ExecuteScalar(), String)
-        End Using
+    Friend Function GetTag(ByVal file As MGFile, ByVal tagName As String, Optional ByVal tran As DbTransaction = Nothing) As String
+        Return m_DataMapper.GetTag(file, tagName)
     End Function
 
-    Friend Sub SetTag(ByVal fileId As Long, ByVal tagName As String, ByVal tagValue As String, Optional ByVal tran As DbTransaction = Nothing)
-        Using cmd = m_DbConnection.CreateCommand()
-            cmd.Transaction = tran
-            cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
-            cmd.AddParam(fileId)
-            cmd.AddParam(tagName)
-            cmd.AddParam(tagValue)
-            cmd.ExecuteNonQuery()
-        End Using
+    Friend Sub SetTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String, Optional ByVal tran As DbTransaction = Nothing)
+        m_DataMapper.SetTag(file, tagName, tagValue)
     End Sub
 
     Private Function GetFiles() As IList(Of MGFile)
-        Dim files As New List(Of MGFile)
-        Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "SELECT [FileID] FROM [File] WHERE [DatastoreID] = ?"
-            cmd.AddParam(m_ID)
-            Using rdr = cmd.ExecuteReader()
-                While rdr.Read()
-                    files.Add(New MGFile(rdr.GetInt64(0), Me))
-                End While
-            End Using
-        End Using
-        Return files
+        Return m_DataMapper.Getfiles(Me)
     End Function
 
     Friend Function GetTag(ByVal fileId As Long) As MGTagCollection
-        Dim tags As New List(Of MGTag)
-        Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "SELECT [Name], [Value] FROM [Tag] WHERE [FileID] = ?"
-            cmd.AddParam(fileId)
-            Using rdr = cmd.ExecuteReader()
-                While rdr.Read()
-                    tags.Add(New MGTag(rdr.GetString(0), rdr.GetString(1)))
-                End While
-            End Using
-        End Using
-        Return New MGTagCollection(tags)
+        Return m_DataMapper.GetAllTags(fileId)
     End Function
 
     Public Sub AddTaggingPlugin(ByVal assemblyQualifiedTypeName As String)
@@ -125,6 +81,12 @@ Public Class MGDataStore
     Public ReadOnly Property Template() As IDataStoreTemplate
         Get
             Return m_Template
+        End Get
+    End Property
+
+    Public ReadOnly Property ID() As Long
+        Get
+            Return m_ID
         End Get
     End Property
 
