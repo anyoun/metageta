@@ -10,6 +10,14 @@ Public Class EducatedGuessImporter
 
     End Sub
 
+    Public Sub Startup(ByVal dataStore As MGDataStore) Implements IMGTaggingPlugin.Startup
+        m_DataStore = dataStore
+    End Sub
+
+    Public Sub Shutdown() Implements IMGTaggingPlugin.Shutdown
+
+    End Sub
+
 #Region "From http://www.merriampark.com/ld.htm"
 
     Private Function Minimum(ByVal a As Integer, ByVal b As Integer, ByVal c As Integer) As Integer
@@ -208,13 +216,13 @@ Public Class EducatedGuessImporter
     End Sub
 
     Private Function getNumberAndWordPhrases(ByVal input As String) As Generic.List(Of Phrase)
-        Dim phrases As New Generic.List(Of Phrase)
-        Dim currPhrase As Phrase = New NothingPhrase
 
-        For Each ignoredString As String In c_IgnoredStrings
+        For Each ignoredString In c_IgnoredStrings
             input = input.Replace(ignoredString, String.Empty)
         Next
 
+        Dim phrases As New Generic.List(Of Phrase)
+        Dim currPhrase As Phrase = New NothingPhrase
         For Each ch As Char In input
 
             If isItLetter(ch) Then
@@ -277,7 +285,6 @@ Public Class EducatedGuessImporter
         sb.Append(input)
         sb.Append(" -> ")
         For Each p As Phrase In phrases
-            'Debug.Write(p(x) & "(" & p(x).GetType.FullName & ")")
             If TypeOf p Is NumberPhrase Then
                 sb.Append(CType(p, NumberPhrase).Value & "#")
             End If
@@ -290,9 +297,7 @@ Public Class EducatedGuessImporter
         Next
         log.DebugFormat(sb.ToString())
 
-
         Return phrases
-
     End Function
 
     Private Function getBracketedPhrases(ByRef input As String) As Generic.List(Of String)
@@ -395,7 +400,6 @@ Public Class EducatedGuessImporter
                 Return False
             End If
         Next
-        'Debug.WriteLine("Found CRC32: " & phrase)
         Return True
     End Function
     Private Function isItNumber(ByVal thechar As Char) As Boolean
@@ -456,11 +460,6 @@ Public Class EducatedGuessImporter
 
 #End Region
 
-    Public Sub Startup(ByVal dataStore As MGDataStore) Implements IMGTaggingPlugin.Startup
-        m_DataStore = dataStore
-
-    End Sub
-
     Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
         For Each file As MGFile In New ProgressHelper(reporter, m_DataStore)
             Dim s As String
@@ -478,9 +477,10 @@ Public Class EducatedGuessImporter
             'then work from there
             'recognize "ep", "episode", etc
 
-            'turn all underscores and periods into spaces
-            fileName = fileName.Replace("_", " ")
-            fileName = fileName.Replace(".", " ")
+            'turn all underscores, periods, etc into spaces
+            For Each s In c_StringsToConvertToSpaces
+                fileName = fileName.Replace(s, " ")
+            Next
 
             Dim brcktPhrases As New Generic.List(Of String)
             brcktPhrases = getBracketedPhrases(fileName)
@@ -531,11 +531,8 @@ Public Class EducatedGuessImporter
         Next
     End Sub
 
-    Public Sub Shutdown() Implements IMGTaggingPlugin.Shutdown
-
-    End Sub
-
 #Region "Constants"
+    Private Shared ReadOnly c_StringsToConvertToSpaces As String() = {".", "_", "%20"}
     Private Shared ReadOnly c_IgnoredStrings As String() = {"divx", "x264", "h264", "264", "1280x720", "720p", "1080p"}
     Private Shared ReadOnly c_AliasFrom As String() = {"The Venture Brothers"}
     Private Shared ReadOnly c_AliasTo As String() = {"The Venture Bros."}
