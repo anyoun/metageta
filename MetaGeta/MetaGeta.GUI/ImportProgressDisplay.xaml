@@ -16,7 +16,7 @@
     -->
     <Window.Resources>
         <DataTemplate DataType="{x:Type mgds:MGFile}" x:Name="MGFileNameTemplate">
-            <TextBlock Text="{Binding Path=Name}" Grid.Column="0"/>
+            <TextBlock Text="{Binding Path=FileName}" Grid.Column="0"/>
         </DataTemplate>
     </Window.Resources>
 
