@@ -18,6 +18,19 @@ Public Class EducatedGuessImporter
 
     End Sub
 
+    Public Function GetFriendlyName() As String Implements DataStore.IMGPluginBase.GetFriendlyName
+        Return "Educated Guess TV Show Importer"
+    End Function
+
+    Public Function GetUniqueName() As String Implements DataStore.IMGPluginBase.GetUniqueName
+        Return "EducatedGuessTVShowImporter"
+    End Function
+
+    Public Function GetVersion() As Version Implements DataStore.IMGPluginBase.GetVersion
+        Return New Version(1, 0, 0, 0)
+    End Function
+
+
 #Region "From http://www.merriampark.com/ld.htm"
 
     Private Function Minimum(ByVal a As Integer, ByVal b As Integer, ByVal c As Integer) As Integer
@@ -537,7 +550,7 @@ Public Class EducatedGuessImporter
     Private Shared ReadOnly c_AliasFrom As String() = {"The Venture Brothers"}
     Private Shared ReadOnly c_AliasTo As String() = {"The Venture Bros."}
 
-    Public Const c_NiceName As String = "Educated Guess TV Show importer"
     'Public intMaxLDForMatch As Integer = 3
 #End Region
+
 End Class

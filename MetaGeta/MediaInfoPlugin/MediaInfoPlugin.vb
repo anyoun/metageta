@@ -16,6 +16,19 @@ Public Class MediaInfoPlugin
         m_MediaInfo = New MediaInfoWrapper()
     End Sub
 
+    Public Function GetFriendlyName() As String Implements DataStore.IMGPluginBase.GetFriendlyName
+        Return "MediaInfo Plugin"
+    End Function
+
+    Public Function GetUniqueName() As String Implements DataStore.IMGPluginBase.GetUniqueName
+        Return "MediaInfoPlugin"
+    End Function
+
+    Public Function GetVersion() As Version Implements DataStore.IMGPluginBase.GetVersion
+        Return New Version(1, 0, 0, 0)
+    End Function
+
+
     Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
         For Each file As MGFile In New ProgressHelper(reporter, m_DataStore)
             Dim fileInfo = m_MediaInfo.ReadFile(file.FileName)

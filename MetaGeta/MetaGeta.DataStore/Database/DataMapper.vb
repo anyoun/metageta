@@ -160,4 +160,24 @@
     End Sub
 #End Region
 
+    Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginName As String, ByVal settingName As String) As String
+        Using cmd = m_DbConnection.CreateCommand()
+            cmd.CommandText = "SELECT [Value] FROM [PluginSetting] WHERE [DatastoreID] = ? AND [PluginTypeName] = ? AND [Name] = ?"
+            cmd.AddParam(dataStore.ID)
+            cmd.AddParam(pluginName)
+            cmd.AddParam(settingName)
+            Return CType(cmd.ExecuteScalar(), String)
+        End Using
+    End Function
+    Public Sub WritePluginSetting(ByVal dataStore As MGDataStore, ByVal pluginName As String, ByVal settingName As String, ByVal settingValue As String)
+        Using cmd = m_DbConnection.CreateCommand()
+            cmd.CommandText = "INSERT INTO [PluginSetting]([DatastoreID], [PluginTypeName], [Name], [Value]) VALUES(?, ?, ?, ?)"
+            cmd.AddParam(dataStore.ID)
+            cmd.AddParam(pluginName)
+            cmd.AddParam(settingName)
+            cmd.AddParam(settingValue)
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
 End Class

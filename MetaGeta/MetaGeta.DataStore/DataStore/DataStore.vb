@@ -2,8 +2,6 @@
 Public Class MGDataStore
     Implements IEnumerable(Of MGFile)
 
-    'Private m_Items As New List(Of MGFile)
-
     Private ReadOnly m_Template As IDataStoreTemplate
     Private ReadOnly m_DataMapper As DataMapper
     Private m_ID As Long = -1
@@ -19,6 +17,12 @@ Public Class MGDataStore
         m_DataMapper = dataMapper
     End Sub
 
+    Public Sub Close()
+        For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
+            plugin.Shutdown()
+        Next
+    End Sub
+
     Public Function CreateFile(ByVal path As Uri) As MGFile
         Dim f As New MGFile(Me)
         m_DataMapper.WriteNewFile(f, Me)
@@ -30,7 +34,6 @@ Public Class MGDataStore
     Friend Function GetTag(ByVal file As MGFile, ByVal tagName As String, Optional ByVal tran As DbTransaction = Nothing) As String
         Return m_DataMapper.GetTag(file, tagName)
     End Function
-
     Friend Sub SetTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String, Optional ByVal tran As DbTransaction = Nothing)
         m_DataMapper.WriteTag(file, tagName, tagValue)
     End Sub
@@ -38,8 +41,10 @@ Public Class MGDataStore
     Private Function GetFiles() As IList(Of MGFile)
         Return m_DataMapper.Getfiles(Me)
     End Function
-
-    Friend Function GetTag(ByVal fileId As Long) As MGTagCollection
+    Public Function GetAllFiles() As FileSet
+        Return New FileSet(GetFiles())
+    End Function
+    Friend Function GetAllTags(ByVal fileId As Long) As MGTagCollection
         Return m_DataMapper.GetAllTags(fileId)
     End Function
 
@@ -59,9 +64,6 @@ Public Class MGDataStore
         End Get
     End Property
 
-    Public Function GetAllFiles() As FileSet
-        Return New FileSet(GetFiles())
-    End Function
 
     Public Property Name() As String
         Get
@@ -84,7 +86,6 @@ Public Class MGDataStore
             Return m_Template
         End Get
     End Property
-
     Public Property ID() As Long
         Get
             Return m_ID
@@ -94,32 +95,11 @@ Public Class MGDataStore
         End Set
     End Property
 
-#Region "Disk Persistance"
-
-    Public Sub WriteToFile(ByVal filename As String)
-        Using fileStream As Stream = File.OpenWrite(filename)
-            Dim bf As New System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-            bf.Serialize(fileStream, Me)
-        End Using
-    End Sub
-
-    Public Shared Function ReadFromFile(ByVal filename As String) As MGDataStore
-        Dim ds As MGDataStore
-        Using fileStream As Stream = File.OpenRead(filename)
-            Dim bf As New System.Runtime.Serialization.Formatters.Binary.BinaryFormatter()
-            ds = (DirectCast(bf.Deserialize(fileStream), MGDataStore))
-        End Using
-
-        ds.m_TaggingPlugins = New List(Of IMGTaggingPlugin)
-        Return ds
+    Public Function GetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String) As String
+        Return m_DataMapper.GetPluginSetting(Me, plugin.GetUniqueName(), settingName)
     End Function
-
-#End Region
-
-    Public Sub Close()
-        For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
-            plugin.Shutdown()
-        Next
+    Public Sub SetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String, ByVal settingValue As String)
+        m_DataMapper.WritePluginSetting(Me, plugin.GetUniqueName(), settingName, settingValue)
     End Sub
 
     Public Event ItemAdded As EventHandler(Of MGFileEventArgs)

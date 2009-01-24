@@ -25,6 +25,18 @@ Public Class TVDBPlugin
         m_tvdbHandler.SaveCache()
     End Sub
 
+    Public Function GetFriendlyName() As String Implements DataStore.IMGPluginBase.GetFriendlyName
+        Return "The TVDB Plugin"
+    End Function
+
+    Public Function GetUniqueName() As String Implements DataStore.IMGPluginBase.GetUniqueName
+        Return "TVDBPlugin"
+    End Function
+
+    Public Function GetVersion() As Version Implements DataStore.IMGPluginBase.GetVersion
+        Return New Version(1, 0, 0, 0)
+    End Function
+
 
     Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
         'prompt user for series name lookups??
