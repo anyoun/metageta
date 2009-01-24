@@ -6,32 +6,33 @@ Public Class MGDataStore
 
     Private ReadOnly m_Template As IDataStoreTemplate
     Private ReadOnly m_DataMapper As DataMapper
-    Private ReadOnly m_ID As Long
+    Private m_ID As Long = -1
     Private m_Name As String
     Private m_Description As String
 
     <NonSerialized()> _
     Private m_TaggingPlugins As New List(Of IMGTaggingPlugin)
 
-    Friend Sub New(ByVal id As Long, ByVal template As IDataStoreTemplate, ByVal name As String, ByVal dataMapper As DataMapper)
-        m_ID = id
+    Friend Sub New(ByVal template As IDataStoreTemplate, ByVal name As String, ByVal dataMapper As DataMapper)
         m_Template = template
         m_Name = name
         m_DataMapper = dataMapper
     End Sub
 
-    Public Sub CreateFile(ByVal path As Uri)
-        Dim f = m_DataMapper.WriteNewFile(Me)
+    Public Function CreateFile(ByVal path As Uri) As MGFile
+        Dim f As New MGFile(Me)
+        m_DataMapper.WriteNewFile(f, Me)
         SetTag(f, "FileName", path.AbsoluteUri)
         RaiseEvent ItemAdded(Me, New MGFileEventArgs(f))
-    End Sub
+        Return f
+    End Function
 
     Friend Function GetTag(ByVal file As MGFile, ByVal tagName As String, Optional ByVal tran As DbTransaction = Nothing) As String
         Return m_DataMapper.GetTag(file, tagName)
     End Function
 
     Friend Sub SetTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String, Optional ByVal tran As DbTransaction = Nothing)
-        m_DataMapper.SetTag(file, tagName, tagValue)
+        m_DataMapper.WriteTag(file, tagName, tagValue)
     End Sub
 
     Private Function GetFiles() As IList(Of MGFile)
@@ -84,10 +85,13 @@ Public Class MGDataStore
         End Get
     End Property
 
-    Public ReadOnly Property ID() As Long
+    Public Property ID() As Long
         Get
             Return m_ID
         End Get
+        Set(ByVal value As Long)
+            m_ID = value
+        End Set
     End Property
 
 #Region "Disk Persistance"

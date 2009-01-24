@@ -67,7 +67,27 @@
         End If
     End Sub
 
-    Public Function ReadDataStores() As IEnumerable(Of MGDataStore)
+#Region "Creating"
+    Public Sub WriteNewDataStore(ByVal dataStore As MGDataStore)
+        Using cmd = m_DbConnection.CreateCommand()
+            cmd.CommandText = "INSERT INTO [DataStore]([Name], [Description], [TemplateName]) VALUES(?,?,?);SELECT last_insert_rowid() AS [ID]"
+            cmd.AddParam(dataStore.Name)
+            cmd.AddParam(dataStore.Description)
+            cmd.AddParam(dataStore.Template.GetName())
+            dataStore.ID = CType(cmd.ExecuteScalar(), Long)
+        End Using
+    End Sub
+    Public Sub WriteNewFile(ByVal file As MGFile, ByVal dataStore As MGDataStore)
+        Using cmd = m_DbConnection.CreateCommand()
+            cmd.CommandText = "INSERT INTO [File]([DatastoreID]) VALUES(?);SELECT last_insert_rowid() AS [ID]"
+            cmd.AddParam(dataStore.ID)
+            file.ID = CType(cmd.ExecuteScalar(), Long)
+        End Using
+    End Sub
+#End Region
+
+#Region "Reading"
+    Public Function GetDataStores() As IEnumerable(Of MGDataStore)
         Dim dataStores As New List(Of MGDataStore)
         Using cmd = m_DbConnection.CreateCommand()
             cmd.CommandText = "SELECT [DatastoreID], [Name], [Description], [TemplateName] FROM [DataStore]"
@@ -78,39 +98,16 @@
                     Dim description = rdr.GetString(2)
                     Dim templateName = rdr.GetString(3)
                     Dim template = TemplateFinder.GetTemplateByName(templateName)
-                    Dim ds As New MGDataStore(id, template, name, Me)
-                    ds.Description = description
+                    Dim ds As New MGDataStore(template, name, Me) With { _
+                        .ID = id, _
+                        .Description = description _
+                    }
                     dataStores.Add(ds)
                 End While
             End Using
         End Using
         Return dataStores
     End Function
-
-    Public Function WriteNewDataStore(ByVal name As String, ByVal template As IDataStoreTemplate) As MGDataStore
-        Dim dataStoreID As Long
-        Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "INSERT INTO [DataStore]([Name], [Description], [TemplateName]) VALUES(?,?,?);SELECT last_insert_rowid() AS [ID]"
-            cmd.AddParam(name)
-            cmd.AddParam("")
-            cmd.AddParam(template.GetName())
-            dataStoreID = CType(cmd.ExecuteScalar(), Long)
-        End Using
-
-        Return New MGDataStore(dataStoreID, template, name, Me)
-    End Function
-
-    Public Function WriteNewFile(ByVal dataStore As MGDataStore) As MGFile
-        Dim fileID As Long
-        Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "INSERT INTO [File]([DatastoreID]) VALUES(?);SELECT last_insert_rowid() AS [ID]"
-            cmd.AddParam(dataStore.ID)
-            fileID = CType(cmd.ExecuteScalar(), Long)
-        End Using
-
-        Return New MGFile(fileID, dataStore)
-    End Function
-
     Public Function GetTag(ByVal file As MGFile, ByVal tagName As String) As String
         Using cmd = m_DbConnection.CreateCommand()
             cmd.CommandText = "SELECT [Value] FROM [Tag] WHERE [FileID] = ? AND [Name] = ?"
@@ -119,17 +116,6 @@
             Return CType(cmd.ExecuteScalar(), String)
         End Using
     End Function
-
-    Public Sub SetTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String)
-        Using cmd = m_DbConnection.CreateCommand()
-            cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
-            cmd.AddParam(file.ID)
-            cmd.AddParam(tagName)
-            cmd.AddParam(tagValue)
-            cmd.ExecuteNonQuery()
-        End Using
-    End Sub
-
     Public Function GetFiles(ByVal dataStore As MGDataStore) As IList(Of MGFile)
         Dim files As New List(Of MGFile)
         Using cmd = m_DbConnection.CreateCommand()
@@ -143,7 +129,6 @@
         End Using
         Return files
     End Function
-
     Public Function GetAllTags(ByVal fileId As Long) As MGTagCollection
         Dim tags As New List(Of MGTag)
         Using cmd = m_DbConnection.CreateCommand()
@@ -157,5 +142,22 @@
         End Using
         Return New MGTagCollection(tags)
     End Function
+#End Region
+
+#Region "Writing Changes"
+    Public Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String)
+        WriteTag(file, tagName, tagValue, Nothing)
+    End Sub
+    Private Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String, ByVal tran As DbTransaction)
+        Using cmd = m_DbConnection.CreateCommand()
+            cmd.Transaction = tran
+            cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
+            cmd.AddParam(file.ID)
+            cmd.AddParam(tagName)
+            cmd.AddParam(tagValue)
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+#End Region
 
 End Class

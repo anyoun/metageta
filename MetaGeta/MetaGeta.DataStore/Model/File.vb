@@ -2,12 +2,16 @@
 Public Class MGFile
     Implements IEquatable(Of MGFile)
 
-    Private ReadOnly m_ID As Long
+    Private m_ID As Long = -1
     Private ReadOnly m_DataStore As MGDataStore
 
-    Friend Sub New(ByVal id As Long, ByVal datastore As MGDataStore)
-        m_ID = id
+
+    Friend Sub New(ByVal datastore As MGDataStore)
         m_DataStore = datastore
+    End Sub
+    Friend Sub New(ByVal id As Long, ByVal datastore As MGDataStore)
+        Me.New(datastore)
+        m_ID = id
     End Sub
 
     Public Function GetTag(ByVal tagName As String) As String
@@ -18,10 +22,13 @@ Public Class MGFile
         m_DataStore.SetTag(Me, tagName, tagValue)
     End Sub
 
-    Public ReadOnly Property ID() As Long
+    Public Property ID() As Long
         Get
             Return m_ID
         End Get
+        Set(ByVal value As Long)
+            m_ID = value
+        End Set
     End Property
 
     Public Overloads Function Equals(ByVal other As MGFile) As Boolean Implements System.IEquatable(Of MGFile).Equals

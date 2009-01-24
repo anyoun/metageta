@@ -9,7 +9,7 @@
 
     Public Sub Startup()
         m_DataMapper.Initialize()
-        m_DataStores.AddRange(m_DataMapper.ReadDataStores())
+        m_DataStores.AddRange(m_DataMapper.GetDataStores())
         OnDataStoresChanged()
     End Sub
 
@@ -21,7 +21,8 @@
     End Sub
 
     Public Function NewDataStore(ByVal name As String, ByVal template As IDataStoreTemplate) As MGDataStore
-        Dim data = m_DataMapper.WriteNewDataStore(name, template)
+        Dim data As New MGDataStore(template, name, m_DataMapper)
+        m_DataMapper.WriteNewDataStore(data)
         m_DataStores.Add(data)
         OnDataStoresChanged()
         Return data
