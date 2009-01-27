@@ -2,14 +2,16 @@
 Public Class MGDataStore
     Implements IEnumerable(Of MGFile)
 
+    Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
+
     Private ReadOnly m_Template As IDataStoreTemplate
     Private ReadOnly m_DataMapper As DataMapper
     Private m_ID As Long = -1
     Private m_Name As String
-    Private m_Description As String
+    Private m_Description As String = ""
 
-    <NonSerialized()> _
-    Private m_TaggingPlugins As New List(Of IMGTaggingPlugin)
+    Private ReadOnly m_TaggingPlugins As New List(Of IMGTaggingPlugin)
+    Private ReadOnly m_FileSourcePlugins As New List(Of IMGFileSourcePlugin)
 
     Friend Sub New(ByVal template As IDataStoreTemplate, ByVal name As String, ByVal dataMapper As DataMapper)
         m_Template = template
@@ -24,9 +26,10 @@ Public Class MGDataStore
     End Sub
 
     Public Function CreateFile(ByVal path As Uri) As MGFile
+        log.DebugFormat("CreateFile() ""{0}""", path.AbsolutePath)
         Dim f As New MGFile(Me)
         m_DataMapper.WriteNewFile(f, Me)
-        SetTag(f, "FileName", path.AbsoluteUri)
+        f.SetTag(MGFile.FileNameKey, path.AbsoluteUri)
         RaiseEvent ItemAdded(Me, New MGFileEventArgs(f))
         Return f
     End Function
@@ -48,21 +51,54 @@ Public Class MGDataStore
         Return m_DataMapper.GetAllTags(fileId)
     End Function
 
+    Public Function GetAllTagOnFiles(ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile))
+        Return m_DataMapper.GetAllTagOnFiles(Me, tagName)
+    End Function
+
+
+#Region "Plugins"
+
     Public Sub AddTaggingPlugin(ByVal assemblyQualifiedTypeName As String)
-        Dim t = Type.GetType(assemblyQualifiedTypeName, True)
-        Dim plugin = CType(Activator.CreateInstance(t), IMGTaggingPlugin)
-        AddTaggingPlugin(plugin)
+        AddTaggingPlugin(Type.GetType(assemblyQualifiedTypeName, True))
     End Sub
-    Public Sub AddTaggingPlugin(ByVal plugin As IMGTaggingPlugin)
+    Public Sub AddTaggingPlugin(ByVal type As Type)
+        log.DebugFormat("Loading tagging plugin {0}", type)
+        Dim plugin = CType(Activator.CreateInstance(type), IMGTaggingPlugin)
         plugin.Startup(Me)
         m_TaggingPlugins.Add(plugin)
     End Sub
 
-    Public ReadOnly Property Plugins() As IEnumerable(Of IMGTaggingPlugin)
+    Public Sub AddFileSourcePlugin(ByVal assemblyQualifiedTypeName As String)
+        AddTaggingPlugin(Type.GetType(assemblyQualifiedTypeName, True))
+    End Sub
+    Public Sub AddFileSourcePlugin(ByVal type As Type)
+        log.DebugFormat("Loading file source plugin {0}", type)
+        Dim plugin = CType(Activator.CreateInstance(type), IMGFileSourcePlugin)
+        plugin.Startup(Me)
+        m_FileSourcePlugins.Add(plugin)
+    End Sub
+
+    Public ReadOnly Property TaggingPlugins() As IEnumerable(Of IMGTaggingPlugin)
         Get
             Return m_TaggingPlugins
         End Get
     End Property
+
+    Public ReadOnly Property FileSourcePlugins() As IEnumerable(Of IMGFileSourcePlugin)
+        Get
+            Return m_FileSourcePlugins
+        End Get
+    End Property
+
+#End Region
+
+    Public Sub RefreshFileSources()
+        For Each fs In m_FileSourcePlugins
+            For Each file In fs.GetFilesToAdd()
+                CreateFile(file)
+            Next
+        Next
+    End Sub
 
 
     Public Property Name() As String
@@ -114,18 +150,6 @@ Public Class MGDataStore
     Public Function GetEnumerator1() As System.Collections.IEnumerator Implements System.Collections.IEnumerable.GetEnumerator
         Return GetEnumerator()
     End Function
-
-    Public Sub AddDirectory(ByVal dir As String)
-        If File.Exists(dir) Then
-            CreateFile(New Uri(dir))
-        ElseIf Directory.Exists(dir) Then
-            For Each file In Directory.GetFiles(dir)
-                CreateFile(New Uri(file))
-            Next
-        Else
-            Throw New Exception(String.Format("Can't find path: {0}", dir))
-        End If
-    End Sub
 
     Public Function ToCsv() As String
         Dim sb As New StringBuilder()

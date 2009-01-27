@@ -115,9 +115,6 @@
     <Import Include="MetaGeta.Browser" />
     <Import Include="MetaGeta.DataStore" />
     <Import Include="MetaGeta.GUI" />
-    <Import Include="MetaGeta.MediaInfoPlugin" />
-    <Import Include="MetaGeta.TVDBPlugin" />
-    <Import Include="MetaGeta.TVShowPlugin" />
     <Import Include="MetaGeta.Utilities" />
     <Import Include="System.Linq" />
     <Import Include="System.Xml.Linq" />
@@ -191,6 +188,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DirectoryFileSourcePlugin\DirectoryFileSourcePlugin.vbproj">
+      <Project>{B7FACBDA-885E-42D7-968D-2BA174A70B2E}</Project>
+      <Name>DirectoryFileSourcePlugin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaInfoPlugin\MediaInfoPlugin.vbproj">
       <Project>{1B13DEB6-1B78-4D85-B3DB-F5282AF3DECD}</Project>
       <Name>MediaInfoPlugin</Name>

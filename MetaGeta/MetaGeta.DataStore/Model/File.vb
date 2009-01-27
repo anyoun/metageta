@@ -37,13 +37,31 @@ Public Class MGFile
 
     Public ReadOnly Property FileName() As String
         Get
-            Return GetTag("FileName")
+            Dim fn = GetTag(FileNameKey)
+            If fn Is Nothing Then
+                Throw New Exception("Can't find filename for file.")
+            End If
+            Return New Uri(fn).LocalPath
         End Get
     End Property
 
     Public Function GetTags() As MGTagCollection
         Throw New NotImplementedException()
     End Function
+
+#Region "Constants"
+    Public Shared ReadOnly Property FileNameKey() As String
+        Get
+            Return "FileName"
+        End Get
+    End Property
+    Public Shared ReadOnly Property TimeStampKey() As String
+        Get
+            Return "TimeStamp"
+        End Get
+    End Property
+#End Region
+
 End Class
 
 Public Class MGFileIDComparer

@@ -32,14 +32,19 @@ Partial Public Class MainWindow
         Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
         ds = dsm.NewDataStore("TV Shows", template)
 
-        'ds.AddTaggingPlugin("MetaGeta.MediaInfoPlugin.MediaInfoPlugin, MediaInfoPlugin")
-        ds.AddTaggingPlugin("MetaGeta.TVShowPlugin.EducatedGuessImporter, TVShowPlugin")
-        ds.AddTaggingPlugin("MetaGeta.TVDBPlugin.TVDBPlugin, TVDBPlugin")
+        ds.AddTaggingPlugin(GetType(MetaGeta.MediaInfoPlugin.MediaInfoPlugin))
+        ds.AddTaggingPlugin(GetType(MetaGeta.TVShowPlugin.EducatedGuessImporter))
+        ds.AddTaggingPlugin(GetType(MetaGeta.TVDBPlugin.TVDBPlugin))
 
-        ds.AddDirectory("F:\ipod\")
+        ds.AddFileSourcePlugin(GetType(MetaGeta.DirectoryFileSourcePlugin.DirectoryFileSourcePlugin))
 
-        For Each plugin As IMGTaggingPlugin In ds.Plugins
-            Dim fp As New FileProgress(plugin.GetType().Name)
+        'ds.AddDirectory("F:\ipod\")
+        ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "DirectoriesToWatch", "F:\ipod\")
+        ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "Extensions", "mp4")
+        ds.RefreshFileSources()
+
+        For Each plugin As IMGTaggingPlugin In ds.TaggingPlugins
+            Dim fp As New FileProgress(plugin.GetFriendlyName())
             Dim t As New System.Threading.Thread(AddressOf ShowWindow)
             t.SetApartmentState(System.Threading.ApartmentState.STA)
             t.Start(fp)
@@ -60,7 +65,7 @@ Partial Public Class MainWindow
     Sub Display()
         System.Diagnostics.PresentationTraceSources.SetTraceLevel(lvItems, PresentationTraceLevel.High)
         Dim grid = CType(lvItems.View, GridView)
-        For Each t In ds.Template.GetDimensionNames()
+        For Each t In ds.Template.GetColumnNames()
             Dim col = New GridViewColumn
             Dim b As New Binding()
             b.Converter = New MGFileConverter()

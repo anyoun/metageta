@@ -5,16 +5,16 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{F62A4017-8F99-4904-995D-3977B9A5260E}</ProjectGuid>
+    <ProjectGuid>{B7FACBDA-885E-42D7-968D-2BA174A70B2E}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>MetaGeta.Utilities</RootNamespace>
-    <AssemblyName>MetaGeta.Utilities</AssemblyName>
+    <RootNamespace>MetaGeta.DirectoryFileSourcePlugin</RootNamespace>
+    <AssemblyName>DirectoryFileSourcePlugin</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <OptionExplicit>On</OptionExplicit>
     <OptionCompare>Binary</OptionCompare>
-    <OptionStrict>On</OptionStrict>
+    <OptionStrict>Off</OptionStrict>
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -23,10 +23,8 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>MetaGeta.Utilities.xml</DocumentationFile>
-    <NoWarn>
-    </NoWarn>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+    <DocumentationFile>DirectoryFileSourcePlugin.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,48 +32,46 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>MetaGeta.Utilities.xml</DocumentationFile>
-    <NoWarn>
-    </NoWarn>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
+    <DocumentationFile>DirectoryFileSourcePlugin.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x86\Debug\</OutputPath>
-    <DocumentationFile>MetaGeta.Utilities.xml</DocumentationFile>
+    <DocumentationFile>DirectoryFileSourcePlugin.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x86\Release\</OutputPath>
-    <DocumentationFile>MetaGeta.Utilities.xml</DocumentationFile>
+    <DocumentationFile>DirectoryFileSourcePlugin.xml</DocumentationFile>
     <Optimize>true</Optimize>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x64\Debug\</OutputPath>
-    <DocumentationFile>MetaGeta.Utilities.xml</DocumentationFile>
+    <DocumentationFile>DirectoryFileSourcePlugin.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x64\Release\</OutputPath>
-    <DocumentationFile>MetaGeta.Utilities.xml</DocumentationFile>
+    <DocumentationFile>DirectoryFileSourcePlugin.xml</DocumentationFile>
     <Optimize>true</Optimize>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
@@ -83,7 +79,6 @@
       <HintPath>..\..\log4net\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core">
@@ -97,18 +92,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Import Include="MetaGeta" />
+    <Import Include="MetaGeta.DataStore" />
+    <Import Include="MetaGeta.Utilities" />
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="System" />
     <Import Include="System.Collections" />
     <Import Include="System.Collections.Generic" />
     <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
+    <Import Include="System.IO" />
     <Import Include="System.Linq" />
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbHelpers.vb" />
-    <Compile Include="LinqExtensions.vb" />
+    <Compile Include="DirectoryFileSourcePlugin.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -124,9 +122,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Set.vb" />
-    <Compile Include="StringHelpers.vb" />
-    <Compile Include="Tuple.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -146,6 +141,16 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MetaGeta.DataStore\MetaGeta.DataStore.vbproj">
+      <Project>{C293768F-6C79-4B6D-8F2B-1DF2F0F6A038}</Project>
+      <Name>MetaGeta.DataStore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MetaGeta.Utilities\MetaGeta.Utilities.vbproj">
+      <Project>{F62A4017-8F99-4904-995D-3977B9A5260E}</Project>
+      <Name>MetaGeta.Utilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

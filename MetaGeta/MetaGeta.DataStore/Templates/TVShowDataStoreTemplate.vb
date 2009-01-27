@@ -7,6 +7,11 @@
                              CRC32, Group, AudioCodec, VideoCodec, Resolution, PlayTime}
     End Function
 
+    Public Function GetColumnNames() As String() Implements IDataStoreTemplate.GetColumnNames
+        Return New String() {SeriesTitle, EpisodeTitle, EpisodeNumber, SeasonNumber, PartNumber, _
+                             CRC32, Group, AudioCodec, VideoCodec, Resolution, PlayTime}
+    End Function
+
     Public Function GetName() As String Implements IDataStoreTemplate.GetName
         Return "TVShow"
     End Function

@@ -1,6 +1,6 @@
-﻿Public Interface IMGFilesourcePlugin
+﻿Public Interface IMGFileSourcePlugin
     Inherits IMGPluginBase
 
-    Function GetFiles() As IEnumerable(Of Uri)
+    Function GetFilesToAdd() As ICollection(Of Uri)
 
 End Interface

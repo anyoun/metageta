@@ -1,27 +1,47 @@
 ﻿Public Class DataMapper
-    Private ReadOnly m_DbConnection As DbConnection
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
+    Private Shared ReadOnly s_ConnectionSlot As LocalDataStoreSlot
+    Private Shared ReadOnly s_Connections As New List(Of DbConnection)
+
+    Private ReadOnly Property Connection() As DbConnection
+        Get
+            Dim conn = CType(Thread.GetData(s_ConnectionSlot), DbConnection)
+            If conn Is Nothing Then
+                conn = DbProviderFactories.GetFactory("System.Data.SQLite").CreateConnection()
+                conn.ConnectionString = "Data Source=metageta.db3"
+                log.InfoFormat("New connection: ""{0}"", opening...", conn.ConnectionString)
+                conn.Open()
+
+                Thread.SetData(s_ConnectionSlot, conn)
+                s_Connections.Add(conn)
+            End If
+            Return conn
+        End Get
+    End Property
+
+    Shared Sub New()
+        s_ConnectionSlot = Thread.AllocateDataSlot()
+    End Sub
+
     Public Sub New()
-        m_DbConnection = DbProviderFactories.GetFactory("System.Data.SQLite").CreateConnection()
+
     End Sub
 
     Public Sub Initialize()
-        m_DbConnection.ConnectionString = "Data Source=metageta.db3"
-        log.DebugFormat("Connection string: ""{0}"".", m_DbConnection.ConnectionString)
-        log.Info("Opening connection...")
-        m_DbConnection.Open()
-
         CheckDatabaseVersion()
     End Sub
 
     Public Sub Close()
-        m_DbConnection.Close()
+        'Must be synchronous...
+        For Each conn In s_Connections
+            conn.Close()
+        Next
     End Sub
 
     Private Sub CheckDatabaseVersion()
         Dim version As Long
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "PRAGMA user_version"
             version = CType(cmd.ExecuteScalar(), Long)
         End Using
@@ -56,7 +76,7 @@
                 );
                 PRAGMA user_version = 1;
             </string>.Value
-            Using cmd = m_DbConnection.CreateCommand()
+            Using cmd = Connection.CreateCommand()
                 cmd.CommandText = createTablesSql
                 cmd.ExecuteNonQuery()
             End Using
@@ -69,7 +89,7 @@
 
 #Region "Creating"
     Public Sub WriteNewDataStore(ByVal dataStore As MGDataStore)
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "INSERT INTO [DataStore]([Name], [Description], [TemplateName]) VALUES(?,?,?);SELECT last_insert_rowid() AS [ID]"
             cmd.AddParam(dataStore.Name)
             cmd.AddParam(dataStore.Description)
@@ -78,7 +98,7 @@
         End Using
     End Sub
     Public Sub WriteNewFile(ByVal file As MGFile, ByVal dataStore As MGDataStore)
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "INSERT INTO [File]([DatastoreID]) VALUES(?);SELECT last_insert_rowid() AS [ID]"
             cmd.AddParam(dataStore.ID)
             file.ID = CType(cmd.ExecuteScalar(), Long)
@@ -88,8 +108,9 @@
 
 #Region "Reading"
     Public Function GetDataStores() As IEnumerable(Of MGDataStore)
+        log.Debug("Loading DataStores...")
         Dim dataStores As New List(Of MGDataStore)
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [DatastoreID], [Name], [Description], [TemplateName] FROM [DataStore]"
             Using rdr = cmd.ExecuteReader()
                 While rdr.Read()
@@ -109,7 +130,7 @@
         Return dataStores
     End Function
     Public Function GetTag(ByVal file As MGFile, ByVal tagName As String) As String
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Value] FROM [Tag] WHERE [FileID] = ? AND [Name] = ?"
             cmd.AddParam(file.ID)
             cmd.AddParam(tagName)
@@ -118,7 +139,7 @@
     End Function
     Public Function GetFiles(ByVal dataStore As MGDataStore) As IList(Of MGFile)
         Dim files As New List(Of MGFile)
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [FileID] FROM [File] WHERE [DatastoreID] = ?"
             cmd.AddParam(dataStore.ID)
             Using rdr = cmd.ExecuteReader()
@@ -129,9 +150,25 @@
         End Using
         Return files
     End Function
+    Public Function GetAllTagOnFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile))
+        Dim files As New List(Of Tuple(Of MGTag, MGFile))
+        Using cmd = Connection.CreateCommand()
+            cmd.CommandText = "SELECT [File].[FileID], [Tag].[Value] FROM [File] LEFT OUTER JOIN [Tag] on [Tag].[FileID] = [File].[FileID] WHERE [DatastoreID] = ? AND [Tag].[Name] = ?"
+            cmd.AddParam(dataStore.ID)
+            cmd.AddParam(tagName)
+            Using rdr = cmd.ExecuteReader()
+                While rdr.Read()
+                    Dim fileID = rdr.GetInt64(0)
+                    Dim tagValue = rdr.GetString(1)
+                    files.Add(New Tuple(Of MGTag, MGFile)(New MGTag(tagName, tagValue), New MGFile(fileID, dataStore)))
+                End While
+            End Using
+        End Using
+        Return files
+    End Function
     Public Function GetAllTags(ByVal fileId As Long) As MGTagCollection
         Dim tags As New List(Of MGTag)
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Name], [Value] FROM [Tag] WHERE [FileID] = ?"
             cmd.AddParam(fileId)
             Using rdr = cmd.ExecuteReader()
@@ -146,22 +183,29 @@
 
 #Region "Writing Changes"
     Public Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String)
-        WriteTag(file, tagName, tagValue, Nothing)
-    End Sub
-    Private Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String, ByVal tran As DbTransaction)
-        Using cmd = m_DbConnection.CreateCommand()
-            cmd.Transaction = tran
-            cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
-            cmd.AddParam(file.ID)
-            cmd.AddParam(tagName)
-            cmd.AddParam(tagValue)
-            cmd.ExecuteNonQuery()
+        Using tran = Connection.BeginTransaction()
+            Using cmd = Connection.CreateCommand()
+                cmd.Transaction = tran
+                cmd.CommandText = "DELETE FROM [Tag] WHERE [FileID] = ? AND [Name] = ?"
+                cmd.AddParam(file.ID)
+                cmd.AddParam(tagName)
+                cmd.ExecuteNonQuery()
+            End Using
+            Using cmd = Connection.CreateCommand()
+                cmd.Transaction = tran
+                cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
+                cmd.AddParam(file.ID)
+                cmd.AddParam(tagName)
+                cmd.AddParam(tagValue)
+                cmd.ExecuteNonQuery()
+            End Using
+            tran.Commit()
         End Using
     End Sub
 #End Region
 
     Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginName As String, ByVal settingName As String) As String
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Value] FROM [PluginSetting] WHERE [DatastoreID] = ? AND [PluginTypeName] = ? AND [Name] = ?"
             cmd.AddParam(dataStore.ID)
             cmd.AddParam(pluginName)
@@ -170,7 +214,7 @@
         End Using
     End Function
     Public Sub WritePluginSetting(ByVal dataStore As MGDataStore, ByVal pluginName As String, ByVal settingName As String, ByVal settingValue As String)
-        Using cmd = m_DbConnection.CreateCommand()
+        Using cmd = Connection.CreateCommand()
             cmd.CommandText = "INSERT INTO [PluginSetting]([DatastoreID], [PluginTypeName], [Name], [Value]) VALUES(?, ?, ?, ?)"
             cmd.AddParam(dataStore.ID)
             cmd.AddParam(pluginName)
