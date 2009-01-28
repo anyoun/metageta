@@ -41,7 +41,7 @@ Public Class TVDBPlugin
     Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
         'prompt user for series name lookups??
 
-        For Each file As MGFile In New ProgressHelper(reporter, m_DataStore)
+        For Each file As MGFile In New ProgressHelper(reporter, m_DataStore.Files)
 
             Dim seriesID = GetSeriesID(file)
             If seriesID Is Nothing Then Continue For

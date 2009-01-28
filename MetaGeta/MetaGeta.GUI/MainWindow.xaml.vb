@@ -11,36 +11,36 @@ Partial Public Class MainWindow
 
     Private Sub Window1_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
         dsm.Startup()
-        If dsm.DataStores.Count > 0 Then
-            ds = dsm.DataStores(0)
-            Display()
-        End If
+
+        System.Diagnostics.PresentationTraceSources.SetTraceLevel(lvItems, PresentationTraceLevel.High)
+        Me.DataContext = dsm
     End Sub
 
     Private Sub Window1_Closing(ByVal sender As Object, ByVal e As EventArgs) Handles Window1.Closed
         dsm.Shutdown()
     End Sub
 
-    Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnImport.Click
-        Dim t As New System.Threading.Thread(AddressOf ImportTagAndWrite)
-        t.SetApartmentState(System.Threading.ApartmentState.STA)
-        t.Start()
+    Private Sub lvItems_DataContextChanged(ByVal sender As System.Object, ByVal e As System.Windows.DependencyPropertyChangedEventArgs) Handles lvItems.DataContextChanged
+        Dim grid = CType(lvItems.View, GridView)
+        grid.Columns.Clear()
+        Dim ds = CType(lvItems.DataContext, MGDataStore)
+        If ds Is Nothing Then Return
+
+        For Each t In ds.Template.GetColumnNames()
+            Dim col = New GridViewColumn
+            Dim b As New Binding()
+            b.Converter = New MGFileConverter()
+            b.ConverterParameter = t
+            b.Mode = BindingMode.OneWay
+            col.DisplayMemberBinding = b
+            col.Header = t
+            grid.Columns.Add(col)
+        Next
     End Sub
 
-    Sub ImportTagAndWrite()
+    Sub RefreshAndImport()
         log.Info("Staring Importing...")
-        Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
-        ds = dsm.NewDataStore("TV Shows", template)
 
-        ds.AddTaggingPlugin(GetType(MetaGeta.MediaInfoPlugin.MediaInfoPlugin))
-        ds.AddTaggingPlugin(GetType(MetaGeta.TVShowPlugin.EducatedGuessImporter))
-        ds.AddTaggingPlugin(GetType(MetaGeta.TVDBPlugin.TVDBPlugin))
-
-        ds.AddFileSourcePlugin(GetType(MetaGeta.DirectoryFileSourcePlugin.DirectoryFileSourcePlugin))
-
-        'ds.AddDirectory("F:\ipod\")
-        ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "DirectoriesToWatch", "F:\ipod\")
-        ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "Extensions", "mp4")
         ds.RefreshFileSources()
 
         For Each plugin As IMGTaggingPlugin In ds.TaggingPlugins
@@ -52,8 +52,6 @@ Partial Public Class MainWindow
             t.Join()
         Next
 
-        'WriteAllTags(ds)
-        Dispatcher.Invoke(Windows.Threading.DispatcherPriority.Normal, New System.Threading.ThreadStart(AddressOf Display))
         log.Info("Done")
     End Sub
 
@@ -62,24 +60,10 @@ Partial Public Class MainWindow
         window.ShowDialog()
     End Sub
 
-    Sub Display()
-        System.Diagnostics.PresentationTraceSources.SetTraceLevel(lvItems, PresentationTraceLevel.High)
-        Dim grid = CType(lvItems.View, GridView)
-        For Each t In ds.Template.GetColumnNames()
-            Dim col = New GridViewColumn
-            Dim b As New Binding()
-            b.Converter = New MGFileConverter()
-            b.ConverterParameter = t
-            b.Mode = BindingMode.OneWay
-            col.DisplayMemberBinding = b
-            col.Header = t
-            grid.Columns.Add(col)
-        Next
-        lvItems.ItemsSource = ds
-    End Sub
+#Region "Writing tags"
 
     Public Sub WriteAllTags(ByVal ds As MGDataStore)
-        For Each file As MGFile In ds
+        For Each file As MGFile In ds.Files
             WriteTags(file)
         Next
     End Sub
@@ -124,6 +108,36 @@ Partial Public Class MainWindow
     Private Function CapLength(ByVal s As String) As String
         Return s.Substring(0, Math.Min(255, s.Length))
     End Function
+
+#End Region
+
+#Region "Event handlers"
+
+    Private Sub btnNew_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnNewDataStore.Click
+        Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
+        ds = dsm.NewDataStore("TV Shows", template)
+
+        ds.AddTaggingPlugin(GetType(MetaGeta.MediaInfoPlugin.MediaInfoPlugin))
+        ds.AddTaggingPlugin(GetType(MetaGeta.TVShowPlugin.EducatedGuessImporter))
+        ds.AddTaggingPlugin(GetType(MetaGeta.TVDBPlugin.TVDBPlugin))
+
+        ds.AddFileSourcePlugin(GetType(MetaGeta.DirectoryFileSourcePlugin.DirectoryFileSourcePlugin))
+
+        ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "DirectoriesToWatch", "F:\ipod\")
+        ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "Extensions", "mp4")
+    End Sub
+
+    Private Sub btnRemoveDataStore_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnRemoveDataStore.Click
+
+    End Sub
+
+    Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnImport.Click
+        Dim t As New System.Threading.Thread(AddressOf RefreshAndImport)
+        t.SetApartmentState(System.Threading.ApartmentState.STA)
+        t.Start()
+    End Sub
+
+#End Region
 
 End Class
 

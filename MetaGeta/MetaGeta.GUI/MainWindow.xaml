@@ -1,17 +1,32 @@
 ﻿<Window x:Class="MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="MetaGeta" Height="419" Width="697" Name="Window1">
+    Title="MetaGeta" Height="470" Width="899" Name="Window1"
+    xmlns:mgds="clr-namespace:MetaGeta.DataStore;assembly=MetaGeta.DataStore">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type mgds:MGDataStore}" x:Name="MGDataStoreTemplate">
+            <TextBlock Text="{Binding Path=Name}" Grid.Column="0"/>
+        </DataTemplate>
+    </Window.Resources>
+
     <DockPanel Name="DockPanel1" >
-        <Button Height="23" Name="btnImport" DockPanel.Dock="Bottom">Import</Button>
-        <TabControl Name="TabControl1" DockPanel.Dock="Top">
-            <TabItem Name="tabItems" Header="Items">
-                <ListView Name="lvItems">
-                    <ListView.View>
-                        <GridView AllowsColumnReorder="False" />
-                    </ListView.View>
-                </ListView>
-            </TabItem>
-        </TabControl>
+        <Grid DockPanel.Dock="Left" Width="200">
+            <Button Name="btnNewDataStore" Margin="6,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="20" Width="20">+</Button>
+            <Button Name="btnRemoveDataStore" Margin="32,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="20" Width="20">-</Button>
+            <ListBox Name="lbDataStores" Margin="6,6,6,32" ItemsSource="{Binding Path=DataStores}" />
+            <Button Name="btnImport" Margin="0,0,6,6" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="68">Import</Button>
+        </Grid>
+
+        <Grid>
+            <ListView Name="lvItems" Margin="6"
+                      DataContext="{Binding ElementName=lbDataStores, Path=SelectedItem}"
+                      ItemsSource="{Binding Path=Files}"
+                      >
+                <ListView.View>
+                    <GridView AllowsColumnReorder="False" />
+                </ListView.View>
+            </ListView>
+        </Grid>
+
     </DockPanel>
 </Window>

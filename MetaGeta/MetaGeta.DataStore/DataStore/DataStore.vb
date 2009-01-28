@@ -1,7 +1,5 @@
 <Serializable()> _
 Public Class MGDataStore
-    Implements IEnumerable(Of MGFile)
-
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private ReadOnly m_Template As IDataStoreTemplate
@@ -41,12 +39,6 @@ Public Class MGDataStore
         m_DataMapper.WriteTag(file, tagName, tagValue)
     End Sub
 
-    Private Function GetFiles() As IList(Of MGFile)
-        Return m_DataMapper.Getfiles(Me)
-    End Function
-    Public Function GetAllFiles() As FileSet
-        Return New FileSet(GetFiles())
-    End Function
     Friend Function GetAllTags(ByVal fileId As Long) As MGTagCollection
         Return m_DataMapper.GetAllTags(fileId)
     End Function
@@ -54,6 +46,12 @@ Public Class MGDataStore
     Public Function GetAllTagOnFiles(ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile))
         Return m_DataMapper.GetAllTagOnFiles(Me, tagName)
     End Function
+
+    Public ReadOnly Property Files() As IList(Of MGFile)
+        Get
+            Return m_DataMapper.GetFiles(Me)
+        End Get
+    End Property
 
 
 #Region "Plugins"
@@ -144,17 +142,10 @@ Public Class MGDataStore
         Return "MGDataStore: " & Name
     End Function
 
-    Public Function GetEnumerator() As System.Collections.Generic.IEnumerator(Of MGFile) Implements System.Collections.Generic.IEnumerable(Of MGFile).GetEnumerator
-        Return GetFiles().GetEnumerator()
-    End Function
-    Public Function GetEnumerator1() As System.Collections.IEnumerator Implements System.Collections.IEnumerable.GetEnumerator
-        Return GetEnumerator()
-    End Function
-
     Public Function ToCsv() As String
         Dim sb As New StringBuilder()
         sb.AppendLine(Aggregate s In Template.GetDimensionNames() Order By s Into JoinToCsv(s))
-        For Each f In Me
+        For Each f In Me.Files
             sb.AppendLine(Aggregate t In f.GetTags() Order By t.Name Into JoinToCsv(t.Value))
         Next
         Return sb.ToString()
