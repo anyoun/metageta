@@ -473,8 +473,8 @@ Public Class EducatedGuessImporter
 
 #End Region
 
-    Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
-        For Each file As MGFile In New ProgressHelper(reporter, m_DataStore.Files)
+    Public Sub Process(ByVal files As IEnumerable(Of MGFile), ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
+        For Each file As MGFile In New ProgressHelper(reporter, files)
             Dim s As String
             Dim gotSeriesTitle As Boolean = False
             Dim longestBracketedPhrase As Integer

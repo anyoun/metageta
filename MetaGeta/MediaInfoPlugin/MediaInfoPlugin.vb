@@ -29,8 +29,8 @@ Public Class MediaInfoPlugin
     End Function
 
 
-    Public Sub Process(ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
-        For Each file As MGFile In New ProgressHelper(reporter, m_DataStore.Files)
+    Public Sub Process(ByVal files As IEnumerable(Of MGFile), ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
+        For Each file As MGFile In New ProgressHelper(reporter, files)
             Dim fileInfo = m_MediaInfo.ReadFile(file.FileName)
 
             If fileInfo.AudioStreams.Count > 0 Then

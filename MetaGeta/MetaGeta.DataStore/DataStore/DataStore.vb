@@ -1,5 +1,7 @@
 <Serializable()> _
 Public Class MGDataStore
+    Implements INotifyPropertyChanged
+
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private ReadOnly m_Template As IDataStoreTemplate
@@ -91,11 +93,14 @@ Public Class MGDataStore
 #End Region
 
     Public Sub RefreshFileSources()
-        For Each fs In m_FileSourcePlugins
-            For Each file In fs.GetFilesToAdd()
-                CreateFile(file)
-            Next
+        Dim files = (From fs In Me.FileSourcePlugins From file In fs.GetFilesToAdd() Select CreateFile(file)).ToList()
+
+        For Each plugin As IMGTaggingPlugin In Me.TaggingPlugins
+            Dim fp As New FileProgress(plugin.GetFriendlyName())
+            plugin.Process(files, fp)
         Next
+
+        OnFilesChanged()
     End Sub
 
 
@@ -150,5 +155,26 @@ Public Class MGDataStore
         Next
         Return sb.ToString()
     End Function
+
+#Region "Property Changed"
+
+    Private Sub OnNameChanged()
+        OnPropertyChanged("Name")
+    End Sub
+
+    Private Sub OnDescriptionChanged()
+        OnPropertyChanged("Description")
+    End Sub
+
+    Private Sub OnFilesChanged()
+        OnPropertyChanged("Files")
+    End Sub
+
+    Private Sub OnPropertyChanged(ByVal propertyName As String)
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propertyName))
+    End Sub
+
+    Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+#End Region
 
 End Class
