@@ -64,6 +64,7 @@
                     [Name] varchar, 
                     [Value] varchar
                 );
+                CREATE UNIQUE INDEX [ixPluginSetting] ON [PluginSetting]([DatastoreID], [PluginTypeName], [Name]);
                 CREATE TABLE [File](
                     [FileID] integer primary key autoincrement,
                     [DatastoreID] integer references [DataStore]([DatastoreID])
@@ -74,6 +75,7 @@
                     [Name] varchar, 
                     [Value] varchar
                 );
+                CREATE UNIQUE INDEX [ixTag] ON [Tag]([FileID], [Name]);
                 PRAGMA user_version = 1;
             </string>.Value
             Using cmd = Connection.CreateCommand()
@@ -183,23 +185,12 @@
 
 #Region "Writing Changes"
     Public Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String)
-        Using tran = Connection.BeginTransaction()
-            Using cmd = Connection.CreateCommand()
-                cmd.Transaction = tran
-                cmd.CommandText = "DELETE FROM [Tag] WHERE [FileID] = ? AND [Name] = ?"
-                cmd.AddParam(file.ID)
-                cmd.AddParam(tagName)
-                cmd.ExecuteNonQuery()
-            End Using
-            Using cmd = Connection.CreateCommand()
-                cmd.Transaction = tran
-                cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
-                cmd.AddParam(file.ID)
-                cmd.AddParam(tagName)
-                cmd.AddParam(tagValue)
-                cmd.ExecuteNonQuery()
-            End Using
-            tran.Commit()
+        Using cmd = Connection.CreateCommand()
+            cmd.CommandText = "INSERT OR REPLACE INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
+            cmd.AddParam(file.ID)
+            cmd.AddParam(tagName)
+            cmd.AddParam(tagValue)
+            cmd.ExecuteNonQuery()
         End Using
     End Sub
 #End Region
@@ -215,7 +206,7 @@
     End Function
     Public Sub WritePluginSetting(ByVal dataStore As MGDataStore, ByVal pluginName As String, ByVal settingName As String, ByVal settingValue As String)
         Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "INSERT INTO [PluginSetting]([DatastoreID], [PluginTypeName], [Name], [Value]) VALUES(?, ?, ?, ?)"
+            cmd.CommandText = "INSERT OR REPLACE INTO [PluginSetting]([DatastoreID], [PluginTypeName], [Name], [Value]) VALUES(?, ?, ?, ?)"
             cmd.AddParam(dataStore.ID)
             cmd.AddParam(pluginName)
             cmd.AddParam(settingName)
