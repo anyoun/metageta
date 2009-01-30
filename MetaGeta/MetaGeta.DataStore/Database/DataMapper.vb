@@ -2,14 +2,16 @@
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private Shared ReadOnly s_ConnectionSlot As LocalDataStoreSlot
-    Private Shared ReadOnly s_Connections As New List(Of DbConnection)
+
+    Private ReadOnly s_Connections As New List(Of DbConnection)
+    Private ReadOnly m_FileName As String
 
     Private ReadOnly Property Connection() As DbConnection
         Get
             Dim conn = CType(Thread.GetData(s_ConnectionSlot), DbConnection)
             If conn Is Nothing Then
                 conn = DbProviderFactories.GetFactory("System.Data.SQLite").CreateConnection()
-                conn.ConnectionString = "Data Source=metageta.db3"
+                conn.ConnectionString = String.Format("Data Source={0}", m_FileName)
                 log.InfoFormat("New connection: ""{0}"", opening...", conn.ConnectionString)
                 conn.Open()
 
@@ -24,8 +26,8 @@
         s_ConnectionSlot = Thread.AllocateDataSlot()
     End Sub
 
-    Public Sub New()
-
+    Public Sub New(ByVal filename As String)
+        m_FileName = filename
     End Sub
 
     Public Sub Initialize()

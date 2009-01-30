@@ -2,47 +2,59 @@
 Imports System.Text
 Imports log4net.Config
 Imports System.Reflection
+Imports System.ComponentModel
 
 Partial Public Class MainWindow
+    Implements INotifyPropertyChanged
     Private Shared ReadOnly log As ILog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
 
-    Private ReadOnly dsm As New DataStoreManager()
+    Private Sub MainWindow_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
+        'dsm.Startup()
+        'For Each ds In dsm.DataStores
+        '    AddPlugins(ds)
+        'Next
 
-    Private Sub Window1_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
-        dsm.Startup()
-        For Each ds In dsm.DataStores
-            AddPlugins(ds)
-        Next
-
-        System.Diagnostics.PresentationTraceSources.SetTraceLevel(lvItems, PresentationTraceLevel.High)
-        Me.DataContext = dsm
+        OnMyPropertyChanged("SelectedDataStoreColumnsView")
     End Sub
 
-    Private Sub Window1_Closing(ByVal sender As Object, ByVal e As EventArgs) Handles Window1.Closed
-        dsm.Shutdown()
+    Private Sub MainWindow_Closing(ByVal sender As Object, ByVal e As EventArgs) Handles Window1.Closing
+        m_DataStoreManager.Shutdown()
     End Sub
 
-    Private Sub lvItems_DataContextChanged(ByVal sender As System.Object, ByVal e As System.Windows.DependencyPropertyChangedEventArgs) Handles lvItems.DataContextChanged
-        Dim grid = CType(lvItems.View, GridView)
-        grid.Columns.Clear()
-        Dim ds = CType(lvItems.DataContext, MGDataStore)
-        If ds Is Nothing Then Return
-
-        For Each t In ds.Template.GetColumnNames()
-            Dim col = New GridViewColumn
-            Dim b As New Binding()
-            b.Converter = New MGFileConverter()
-            b.ConverterParameter = t
-            b.Mode = BindingMode.OneWay
-            col.DisplayMemberBinding = b
-            col.Header = t
-            grid.Columns.Add(col)
-        Next
+    Private Sub RightHandGrid_DataContextChanged(ByVal sender As System.Object, ByVal e As System.Windows.DependencyPropertyChangedEventArgs) Handles RightHandGrid.DataContextChanged
+        OnMyPropertyChanged("SelectedDataStoreColumnsView")
     End Sub
+
+    Private ReadOnly Property m_DataStoreManager() As DataStoreManager
+        Get
+            Return CType(Me.DataContext, DataStoreManager)
+        End Get
+    End Property
 
     Private ReadOnly Property SelectedDataStore() As MGDataStore
         Get
             Return CType(lvItems.DataContext, MGDataStore)
+        End Get
+    End Property
+
+    Public ReadOnly Property SelectedDataStoreColumnsView() As ViewBase
+        Get
+            Dim grid As New GridView()
+            If Not SelectedDataStore Is Nothing Then
+                grid.Columns.Clear()
+
+                For Each t In SelectedDataStore.Template.GetColumnNames()
+                    Dim col = New GridViewColumn
+                    Dim b As New Binding()
+                    b.Converter = New MGFileConverter()
+                    b.ConverterParameter = t
+                    b.Mode = BindingMode.OneWay
+                    col.DisplayMemberBinding = b
+                    col.Header = t
+                    grid.Columns.Add(col)
+                Next
+            End If
+            Return grid
         End Get
     End Property
 
@@ -124,7 +136,7 @@ Partial Public Class MainWindow
 
     Private Sub btnNew_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnNewDataStore.Click
         Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
-        Dim ds = dsm.NewDataStore("TV Shows", template)
+        Dim ds = m_DataStoreManager.NewDataStore("TV Shows", template)
 
         AddPlugins(ds)
 
@@ -152,6 +164,10 @@ Partial Public Class MainWindow
 
 #End Region
 
+    Private Sub OnMyPropertyChanged(ByVal name As String)
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
+    End Sub
+    Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class
 
 <ValueConversion(GetType(MGFile), GetType(String), ParameterType:=GetType(String))> _

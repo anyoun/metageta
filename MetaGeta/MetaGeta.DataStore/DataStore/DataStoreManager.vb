@@ -1,10 +1,11 @@
 ﻿Public Class DataStoreManager
     Implements INotifyPropertyChanged
 
-    Private ReadOnly m_DataMapper As New DataMapper()
+    Private ReadOnly m_DataMapper As DataMapper
     Private ReadOnly m_DataStores As New ObservableCollection(Of MGDataStore)
 
-    Public Sub New()
+    Public Sub New(Optional ByVal filename As String = "metageta.db3")
+        m_DataMapper = New DataMapper(filename)
     End Sub
 
     Public Sub Startup()
@@ -41,4 +42,13 @@
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
     End Sub
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+End Class
+
+Public Class DesignTimeDataStoreManager
+    Inherits DataStoreManager
+
+    Public Sub New()
+        MyBase.New("c:\temp\metageta.db3")
+        Me.Startup()
+    End Sub
 End Class
