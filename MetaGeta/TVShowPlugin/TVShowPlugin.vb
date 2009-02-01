@@ -6,11 +6,19 @@ Public Class EducatedGuessImporter
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
+    Private m_ID As Long
+
+    Public ReadOnly Property ID() As Long Implements IMGTaggingPlugin.PluginID
+        Get
+            Return m_ID
+        End Get
+    End Property
+
     Public Sub New()
 
     End Sub
 
-    Public Sub Startup(ByVal dataStore As MGDataStore) Implements IMGTaggingPlugin.Startup
+    Public Sub Startup(ByVal dataStore As MGDataStore, ByVal id As Long) Implements IMGTaggingPlugin.Startup
         m_DataStore = dataStore
     End Sub
 

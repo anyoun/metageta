@@ -8,7 +8,7 @@
         <DataTemplate DataType="{x:Type mgds:MGDataStore}" x:Name="MGDataStoreTemplate">
             <TextBlock Text="{Binding Path=Name}" Grid.Column="0"/>
         </DataTemplate>
-    	<ObjectDataProvider x:Key="DataStoreManagerDS" d:IsDataSource="True" ObjectType="{x:Type mgds:DesignTimeDataStoreManager}"/>
+    	<ObjectDataProvider x:Key="DataStoreManagerDS" d:IsDataSource="True" ObjectType="{x:Type mgds:DataStoreManager}"/>
     </Window.Resources>
 	<Window.DataContext>
 		<Binding Mode="OneWay" Source="{StaticResource DataStoreManagerDS}"/>

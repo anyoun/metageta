@@ -14,8 +14,10 @@ Public Class TVDBPlugin
     Private m_DataStore As MGDataStore
     Private m_tvdbHandler As Tvdb
     Private m_SeriesNameDictionary As New Dictionary(Of String, Integer?)
+    Private m_ID As Long
 
-    Public Sub Startup(ByVal dataStore As MetaGeta.DataStore.MGDataStore) Implements IMGTaggingPlugin.Startup
+
+    Public Sub Startup(ByVal dataStore As MetaGeta.DataStore.MGDataStore, ByVal id As Long) Implements IMGTaggingPlugin.Startup
         m_DataStore = dataStore
         m_tvdbHandler = New Tvdb(New XmlCacheProvider("C:\temp\tvdbcache"), "BC8024C516DFDA3B")
         m_tvdbHandler.InitCache()
@@ -24,6 +26,12 @@ Public Class TVDBPlugin
     Public Sub Shutdown() Implements IMGTaggingPlugin.Shutdown
         m_tvdbHandler.SaveCache()
     End Sub
+
+    Public ReadOnly Property ID() As Long Implements IMGPluginBase.PluginID
+        Get
+            Return m_ID
+        End Get
+    End Property
 
     Public Function GetFriendlyName() As String Implements DataStore.IMGPluginBase.GetFriendlyName
         Return "The TVDB Plugin"

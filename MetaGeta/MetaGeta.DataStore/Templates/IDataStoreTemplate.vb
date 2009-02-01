@@ -1,6 +1,7 @@
 ﻿Public Interface IDataStoreTemplate
     Function GetDimensionNames() As String()
     Function GetColumnNames() As String()
+    Function GetPluginTypeNames() As String()
     Function GetName() As String
 End Interface
 

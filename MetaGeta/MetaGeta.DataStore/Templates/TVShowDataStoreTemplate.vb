@@ -12,6 +12,14 @@
                              CRC32, Group, AudioCodec, VideoCodec, Resolution, PlayTime}
     End Function
 
+    Public Function GetPluginTypeNames() As String() Implements IDataStoreTemplate.GetPluginTypeNames
+        Return New String() { _
+                             "MetaGeta.TVShowPlugin.EducatedGuessImporter, TVShowPlugin", _
+                             "MetaGeta.DirectoryFileSourcePlugin.DirectoryFileSourcePlugin, DirectoryFileSourcePlugin"}
+        '"MetaGeta.TVDBPlugin.TVDBPlugin, TVDBPlugin", _
+        '"MetaGeta.MediaInfoPlugin.MediaInfoPlugin, MediaInfoPlugin", _
+    End Function
+
     Public Function GetName() As String Implements IDataStoreTemplate.GetName
         Return "TVShow"
     End Function

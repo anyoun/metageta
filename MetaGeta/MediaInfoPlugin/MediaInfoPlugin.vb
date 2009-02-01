@@ -6,12 +6,19 @@ Public Class MediaInfoPlugin
 
     Private m_DataStore As MGDataStore
     Private m_MediaInfo As MediaInfoWrapper
+    Private m_ID As Long
 
     Public Sub New()
 
     End Sub
 
-    Public Sub Startup(ByVal dataStore As MGDataStore) Implements IMGTaggingPlugin.Startup
+    Public ReadOnly Property ID() As Long Implements IMGTaggingPlugin.PluginID
+        Get
+            Return m_ID
+        End Get
+    End Property
+
+    Public Sub Startup(ByVal dataStore As MGDataStore, ByVal id As Long) Implements IMGTaggingPlugin.Startup
         m_DataStore = dataStore
         m_MediaInfo = New MediaInfoWrapper()
     End Sub

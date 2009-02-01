@@ -8,24 +8,25 @@ Partial Public Class MainWindow
     Implements INotifyPropertyChanged
     Private Shared ReadOnly log As ILog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
 
-    Private Sub MainWindow_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
-        'dsm.Startup()
-        'For Each ds In dsm.DataStores
-        '    AddPlugins(ds)
-        'Next
+    Public Sub New()
+        DataStoreManager.IsInDesignMode = DesignerProperties.GetIsInDesignMode(Me)
+        InitializeComponent()
+        lbDataStores.SelectedIndex = -1
+    End Sub
 
+    Private Sub MainWindow_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
         OnMyPropertyChanged("SelectedDataStoreColumnsView")
     End Sub
 
     Private Sub MainWindow_Closing(ByVal sender As Object, ByVal e As EventArgs) Handles Window1.Closing
-        m_DataStoreManager.Shutdown()
+        DataStoreManager.Shutdown()
     End Sub
 
     Private Sub RightHandGrid_DataContextChanged(ByVal sender As System.Object, ByVal e As System.Windows.DependencyPropertyChangedEventArgs) Handles RightHandGrid.DataContextChanged
         OnMyPropertyChanged("SelectedDataStoreColumnsView")
     End Sub
 
-    Private ReadOnly Property m_DataStoreManager() As DataStoreManager
+    Private ReadOnly Property DataStoreManager() As DataStoreManager
         Get
             Return CType(Me.DataContext, DataStoreManager)
         End Get
@@ -33,7 +34,7 @@ Partial Public Class MainWindow
 
     Private ReadOnly Property SelectedDataStore() As MGDataStore
         Get
-            Return CType(lvItems.DataContext, MGDataStore)
+            Return CType(lbDataStores.SelectedItem, MGDataStore)
         End Get
     End Property
 
@@ -62,15 +63,6 @@ Partial Public Class MainWindow
         log.Info("Staring Importing...")
 
         CType(ds, MGDataStore).RefreshFileSources()
-
-        'For Each plugin As IMGTaggingPlugin In ds.TaggingPlugins
-        '    Dim fp As New FileProgress(plugin.GetFriendlyName())
-        '    Dim t As New System.Threading.Thread(AddressOf ShowWindow)
-        '    t.SetApartmentState(System.Threading.ApartmentState.STA)
-        '    t.Start(fp)
-        '    plugin.Process(fp)
-        '    t.Join()
-        'Next
 
         log.Info("Done")
         MessageBox.Show("Import Complete", "Import")
@@ -136,24 +128,14 @@ Partial Public Class MainWindow
 
     Private Sub btnNew_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnNewDataStore.Click
         Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
-        Dim ds = m_DataStoreManager.NewDataStore("TV Shows", template)
-
-        AddPlugins(ds)
+        Dim ds = DataStoreManager.NewDataStore("TV Shows", template)
 
         ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "DirectoriesToWatch", "F:\ipod\")
         ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "Extensions", "mp4")
     End Sub
 
-    Private Sub AddPlugins(ByVal ds As MGDataStore)
-        ds.AddTaggingPlugin(GetType(MetaGeta.MediaInfoPlugin.MediaInfoPlugin))
-        ds.AddTaggingPlugin(GetType(MetaGeta.TVShowPlugin.EducatedGuessImporter))
-        ds.AddTaggingPlugin(GetType(MetaGeta.TVDBPlugin.TVDBPlugin))
-
-        ds.AddFileSourcePlugin(GetType(MetaGeta.DirectoryFileSourcePlugin.DirectoryFileSourcePlugin))
-    End Sub
-
     Private Sub btnRemoveDataStore_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnRemoveDataStore.Click
-
+        DataStoreManager.DataStores.Remove(SelectedDataStore)
     End Sub
 
     Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnImport.Click

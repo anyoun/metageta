@@ -4,8 +4,18 @@
     Private ReadOnly m_DataMapper As DataMapper
     Private ReadOnly m_DataStores As New ObservableCollection(Of MGDataStore)
 
-    Public Sub New(Optional ByVal filename As String = "metageta.db3")
+    Public Sub New()
+        Dim filename As String
+        If IsInDesignMode Then
+            filename = "c:\temp\metageta.db3"
+        Else
+            filename = "metageta.db3"
+        End If
         m_DataMapper = New DataMapper(filename)
+
+        m_DataMapper.Initialize()
+        m_DataStores.AddRange(m_DataMapper.GetDataStores())
+        OnDataStoresChanged()
     End Sub
 
     Public Sub Startup()
@@ -22,11 +32,19 @@
     End Sub
 
     Public Function NewDataStore(ByVal name As String, ByVal template As IDataStoreTemplate) As MGDataStore
-        Dim data As New MGDataStore(template, name, m_DataMapper)
-        m_DataMapper.WriteNewDataStore(data)
-        m_DataStores.Add(data)
+        Dim plugins As New List(Of IMGPluginBase)
+        For Each pluginTypeName In template.GetPluginTypeNames()
+            Dim t = Type.GetType(pluginTypeName)
+            If t Is Nothing Then
+                Throw New Exception(String.Format("Can't find type ""{0}"".", pluginTypeName))
+            End If
+            plugins.Add(CType(Activator.CreateInstance(t), IMGPluginBase))
+        Next
+        Dim data As New MGDataStore(template, name, plugins, m_DataMapper)
+        m_DataMapper.WriteNewDataStore(Data)
+        m_DataStores.Add(Data)
         OnDataStoresChanged()
-        Return data
+        Return Data
     End Function
 
     Public ReadOnly Property DataStores() As ObservableCollection(Of MGDataStore)
@@ -42,13 +60,18 @@
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
     End Sub
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
-End Class
 
-Public Class DesignTimeDataStoreManager
-    Inherits DataStoreManager
+#Region "Design Mode"
+    Private Shared s_IsInDesignMode As Boolean = False
 
-    Public Sub New()
-        MyBase.New("c:\temp\metageta.db3")
-        Me.Startup()
-    End Sub
+    Public Shared Property IsInDesignMode() As Boolean
+        Get
+            Return s_IsInDesignMode
+        End Get
+        Set(ByVal value As Boolean)
+            s_IsInDesignMode = value
+        End Set
+    End Property
+#End Region
+
 End Class

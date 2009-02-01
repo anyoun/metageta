@@ -13,10 +13,13 @@ Public Class MGDataStore
     Private ReadOnly m_TaggingPlugins As New List(Of IMGTaggingPlugin)
     Private ReadOnly m_FileSourcePlugins As New List(Of IMGFileSourcePlugin)
 
-    Friend Sub New(ByVal template As IDataStoreTemplate, ByVal name As String, ByVal dataMapper As DataMapper)
+    Friend Sub New(ByVal template As IDataStoreTemplate, ByVal name As String, ByVal plugins As IEnumerable(Of IMGPluginBase), ByVal dataMapper As DataMapper)
         m_Template = template
         m_Name = name
         m_DataMapper = dataMapper
+        For Each plugin In plugins
+            AddPlugin(plugin)
+        Next
     End Sub
 
     Public Sub Close()
@@ -58,24 +61,22 @@ Public Class MGDataStore
 
 #Region "Plugins"
 
-    Public Sub AddTaggingPlugin(ByVal assemblyQualifiedTypeName As String)
-        AddTaggingPlugin(Type.GetType(assemblyQualifiedTypeName, True))
-    End Sub
-    Public Sub AddTaggingPlugin(ByVal type As Type)
-        log.DebugFormat("Loading tagging plugin {0}", type)
-        Dim plugin = CType(Activator.CreateInstance(type), IMGTaggingPlugin)
-        plugin.Startup(Me)
-        m_TaggingPlugins.Add(plugin)
+    Friend Sub AddPlugin(ByVal plugin As IMGPluginBase)
+        AddPlugin(plugin, -1, callStartup:=False)
     End Sub
 
-    Public Sub AddFileSourcePlugin(ByVal assemblyQualifiedTypeName As String)
-        AddTaggingPlugin(Type.GetType(assemblyQualifiedTypeName, True))
+    Friend Sub AddPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
+        AddPlugin(plugin, id, callStartup:=True)
     End Sub
-    Public Sub AddFileSourcePlugin(ByVal type As Type)
-        log.DebugFormat("Loading file source plugin {0}", type)
-        Dim plugin = CType(Activator.CreateInstance(type), IMGFileSourcePlugin)
-        plugin.Startup(Me)
-        m_FileSourcePlugins.Add(plugin)
+
+    Private Sub AddPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long, ByVal callStartup As Boolean)
+        log.InfoFormat("Adding plugin: {0}", plugin.GetUniqueName())
+        If TypeOf plugin Is IMGTaggingPlugin Then
+            m_TaggingPlugins.Add(CType(plugin, IMGTaggingPlugin))
+        ElseIf TypeOf plugin Is IMGFileSourcePlugin Then
+            m_FileSourcePlugins.Add(CType(plugin, IMGFileSourcePlugin))
+        End If
+        If callStartup Then plugin.Startup(Me, id)
     End Sub
 
     Public ReadOnly Property TaggingPlugins() As IEnumerable(Of IMGTaggingPlugin)
@@ -87,6 +88,12 @@ Public Class MGDataStore
     Public ReadOnly Property FileSourcePlugins() As IEnumerable(Of IMGFileSourcePlugin)
         Get
             Return m_FileSourcePlugins
+        End Get
+    End Property
+
+    Public ReadOnly Property Plugins() As IEnumerable(Of IMGPluginBase)
+        Get
+            Return TaggingPlugins.Cast(Of IMGPluginBase)().Union(FileSourcePlugins.Cast(Of IMGPluginBase)())
         End Get
     End Property
 
@@ -102,7 +109,6 @@ Public Class MGDataStore
 
         OnFilesChanged()
     End Sub
-
 
     Public Property Name() As String
         Get
@@ -135,10 +141,10 @@ Public Class MGDataStore
     End Property
 
     Public Function GetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String) As String
-        Return m_DataMapper.GetPluginSetting(Me, plugin.GetUniqueName(), settingName)
+        Return m_DataMapper.GetPluginSetting(Me, plugin.PluginID, settingName)
     End Function
     Public Sub SetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String, ByVal settingValue As String)
-        m_DataMapper.WritePluginSetting(Me, plugin.GetUniqueName(), settingName, settingValue)
+        m_DataMapper.WritePluginSetting(Me, plugin.PluginID, settingName, settingValue)
     End Sub
 
     Public Event ItemAdded As EventHandler(Of MGFileEventArgs)
@@ -161,15 +167,12 @@ Public Class MGDataStore
     Private Sub OnNameChanged()
         OnPropertyChanged("Name")
     End Sub
-
     Private Sub OnDescriptionChanged()
         OnPropertyChanged("Description")
     End Sub
-
     Private Sub OnFilesChanged()
         OnPropertyChanged("Files")
     End Sub
-
     Private Sub OnPropertyChanged(ByVal propertyName As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propertyName))
     End Sub

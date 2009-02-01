@@ -59,14 +59,20 @@
                     [Description] varchar,
                     [TemplateName] varchar
                 );
+                CREATE TABLE [Plugin](
+                    [PluginID] integer primary key autoincrement, 
+                    [DatastoreID] integer references [DataStore]([DatastoreID]), 
+                    [PluginTypeName] varchar
+                );
+                CREATE UNIQUE INDEX [ixPlugin] ON [Plugin]([DatastoreID], [PluginTypeName]);
                 CREATE TABLE [PluginSetting](
                     [PluginSettingID] integer primary key autoincrement,
                     [DatastoreID] integer references [DataStore]([DatastoreID]), 
-                    [PluginTypeName] varchar,
+                    [PluginID] integer references [DataStore]([DatastoreID]), 
                     [Name] varchar, 
                     [Value] varchar
                 );
-                CREATE UNIQUE INDEX [ixPluginSetting] ON [PluginSetting]([DatastoreID], [PluginTypeName], [Name]);
+                CREATE UNIQUE INDEX [ixPluginSetting] ON [PluginSetting]([DatastoreID], [PluginID], [Name]);
                 CREATE TABLE [File](
                     [FileID] integer primary key autoincrement,
                     [DatastoreID] integer references [DataStore]([DatastoreID])
@@ -93,12 +99,27 @@
 
 #Region "Creating"
     Public Sub WriteNewDataStore(ByVal dataStore As MGDataStore)
-        Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "INSERT INTO [DataStore]([Name], [Description], [TemplateName]) VALUES(?,?,?);SELECT last_insert_rowid() AS [ID]"
-            cmd.AddParam(dataStore.Name)
-            cmd.AddParam(dataStore.Description)
-            cmd.AddParam(dataStore.Template.GetName())
-            dataStore.ID = CType(cmd.ExecuteScalar(), Long)
+        Using tran = Connection.BeginTransaction()
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "INSERT INTO [DataStore]([Name], [Description], [TemplateName]) VALUES(?,?,?);SELECT last_insert_rowid() AS [ID]"
+                cmd.Transaction = tran
+                cmd.AddParam(dataStore.Name)
+                cmd.AddParam(dataStore.Description)
+                cmd.AddParam(dataStore.Template.GetName())
+                dataStore.ID = CType(cmd.ExecuteScalar(), Long)
+            End Using
+            For Each plugin In dataStore.Plugins
+                Using cmd = Connection.CreateCommand()
+                    cmd.CommandText = "INSERT INTO [Plugin]([DatastoreID], [PluginTypeName]) VALUES(?,?);SELECT last_insert_rowid() AS [ID]"
+                    cmd.Transaction = tran
+                    cmd.AddParam(dataStore.ID)
+                    Dim typeName = String.Format("{0}, {1}", plugin.GetType().FullName, plugin.GetType().Assembly.GetName().Name)
+                    cmd.AddParam(typeName)
+                    Dim id = CType(cmd.ExecuteScalar(), Long)
+                    plugin.Startup(dataStore, id)
+                End Using
+            Next
+            tran.Commit()
         End Using
     End Sub
     Public Sub WriteNewFile(ByVal file As MGFile, ByVal dataStore As MGDataStore)
@@ -123,7 +144,7 @@
                     Dim description = rdr.GetString(2)
                     Dim templateName = rdr.GetString(3)
                     Dim template = TemplateFinder.GetTemplateByName(templateName)
-                    Dim ds As New MGDataStore(template, name, Me) With { _
+                    Dim ds As New MGDataStore(template, name, New IMGPluginBase() {}, Me) With { _
                         .ID = id, _
                         .Description = description _
                     }
@@ -131,6 +152,27 @@
                 End While
             End Using
         End Using
+
+        log.Debug("Loading Plugins...")
+        For Each ds In dataStores
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "SELECT [PluginID], [PluginTypeName] FROM [Plugin] WHERE [DataStoreID] = ?"
+                cmd.AddParam(ds.ID)
+                Using rdr = cmd.ExecuteReader()
+                    While rdr.Read()
+                        Dim pluginID = rdr.GetInt64(0)
+                        Dim typeName = rdr.GetString(1)
+                        Dim t = Type.GetType(typeName)
+                        If t Is Nothing Then
+                            Throw New Exception(String.Format("Can't find type ""{0}"".", typeName))
+                        End If
+                        Dim plugin = CType(Activator.CreateInstance(t), IMGPluginBase)
+                        ds.AddPlugin(plugin, pluginID)
+                    End While
+                End Using
+            End Using
+        Next
+
         Return dataStores
     End Function
     Public Function GetTag(ByVal file As MGFile, ByVal tagName As String) As String
@@ -197,20 +239,20 @@
     End Sub
 #End Region
 
-    Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginName As String, ByVal settingName As String) As String
+    Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, ByVal settingName As String) As String
         Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "SELECT [Value] FROM [PluginSetting] WHERE [DatastoreID] = ? AND [PluginTypeName] = ? AND [Name] = ?"
+            cmd.CommandText = "SELECT [Value] FROM [PluginSetting] WHERE [DatastoreID] = ? AND [PluginID] = ? AND [Name] = ?"
             cmd.AddParam(dataStore.ID)
-            cmd.AddParam(pluginName)
+            cmd.AddParam(pluginID)
             cmd.AddParam(settingName)
             Return CType(cmd.ExecuteScalar(), String)
         End Using
     End Function
-    Public Sub WritePluginSetting(ByVal dataStore As MGDataStore, ByVal pluginName As String, ByVal settingName As String, ByVal settingValue As String)
+    Public Sub WritePluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, ByVal settingName As String, ByVal settingValue As String)
         Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "INSERT OR REPLACE INTO [PluginSetting]([DatastoreID], [PluginTypeName], [Name], [Value]) VALUES(?, ?, ?, ?)"
+            cmd.CommandText = "INSERT OR REPLACE INTO [PluginSetting]([DatastoreID], [PluginID], [Name], [Value]) VALUES(?, ?, ?, ?)"
             cmd.AddParam(dataStore.ID)
-            cmd.AddParam(pluginName)
+            cmd.AddParam(pluginID)
             cmd.AddParam(settingName)
             cmd.AddParam(settingValue)
             cmd.ExecuteNonQuery()
