@@ -6,3 +6,4 @@ bin/
 *.vbproj.user
 *.suo
 *.sln.cache
+*.resharper.user
