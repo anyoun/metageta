@@ -47,6 +47,11 @@
         Return Data
     End Function
 
+    Public Sub RemoveDataStore(ByVal dataStore As MGDataStore)
+        m_DataMapper.RemoveDataStore(DataStore)
+        DataStores.Remove(DataStore)
+    End Sub
+
     Public ReadOnly Property DataStores() As ObservableCollection(Of MGDataStore)
         Get
             Return m_DataStores

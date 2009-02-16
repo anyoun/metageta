@@ -239,6 +239,40 @@
     End Sub
 #End Region
 
+#Region "Removing"
+    Public Sub RemoveDataStore(ByVal datastore As MGDataStore)
+        log.DebugFormat("Removing datastore: {0}", datastore.Name)
+        Using tran = Connection.BeginTransaction()
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "DELETE FROM [Tag] WHERE [FileID] in (SELECT [FileID] FROM [File] WHERE [DatastoreID] = ?)"
+                cmd.AddParam(datastore.ID)
+                cmd.ExecuteNonQuery()
+            End Using
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "DELETE FROM [File] WHERE [DatastoreID] = ?"
+                cmd.AddParam(datastore.ID)
+                cmd.ExecuteNonQuery()
+            End Using
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "DELETE FROM [PluginSetting] WHERE [DatastoreID] = ?"
+                cmd.AddParam(datastore.ID)
+                cmd.ExecuteNonQuery()
+            End Using
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "DELETE FROM [Plugin] WHERE [DatastoreID] = ?"
+                cmd.AddParam(datastore.ID)
+                cmd.ExecuteNonQuery()
+            End Using
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "DELETE FROM [DataStore] WHERE [DatastoreID] = ?"
+                cmd.AddParam(datastore.ID)
+                cmd.ExecuteNonQuery()
+            End Using
+            tran.Commit()
+        End Using
+    End Sub
+#End Region
+
     Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, ByVal settingName As String) As String
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Value] FROM [PluginSetting] WHERE [DatastoreID] = ? AND [PluginID] = ? AND [Name] = ?"

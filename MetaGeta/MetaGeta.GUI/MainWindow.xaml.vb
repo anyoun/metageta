@@ -141,7 +141,7 @@ Partial Public Class MainWindow
     End Sub
 
     Private Sub btnRemoveDataStore_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnRemoveDataStore.Click
-        DataStoreManager.DataStores.Remove(SelectedDataStore)
+        DataStoreManager.RemoveDataStore(SelectedDataStore)
     End Sub
 
     Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnImport.Click
