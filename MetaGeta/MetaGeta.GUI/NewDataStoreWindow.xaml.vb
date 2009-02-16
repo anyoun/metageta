@@ -1,7 +1,7 @@
 ﻿Partial Public Class NewDataStoreWindow
     Public ReadOnly Property DataStoreCreationArguments() As DataStoreCreationArguments
         Get
-            Return CType(Me.Resources("CreationArgs"), DataStoreCreationArguments)
+            Return CType(CType(Me.Resources("CreationArgs"), ObjectDataProvider).Data, DataStoreCreationArguments)
         End Get
     End Property
 
