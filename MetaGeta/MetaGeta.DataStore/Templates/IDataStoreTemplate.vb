@@ -9,6 +9,12 @@ End Interface
 Public Class TemplateFinder
     Private Shared s_CachedTemplates As Dictionary(Of String, Type)
 
+    Public ReadOnly Property AvailableTemplates() As IEnumerable(Of IDataStoreTemplate)
+        Get
+            Return New IDataStoreTemplate() {New TVShowDataStoreTemplate()}
+        End Get
+    End Property
+
     Public Shared Function GetTemplateByName(ByVal name As String) As IDataStoreTemplate
         If s_CachedTemplates Is Nothing Then
             'Hard-coded for now, Unity later?

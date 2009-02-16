@@ -127,11 +127,17 @@ Partial Public Class MainWindow
 #Region "Event handlers"
 
     Private Sub btnNew_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnNewDataStore.Click
-        Dim template = New MetaGeta.DataStore.TVShowDataStoreTemplate()
-        Dim ds = DataStoreManager.NewDataStore("TV Shows", template)
-
-        ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "DirectoriesToWatch", "F:\ipod\")
-        ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "Extensions", "mp4")
+        Dim win As New NewDataStoreWindow()
+        PresentationTraceSources.SetTraceLevel(win, PresentationTraceLevel.High)
+        win.Owner = Me
+        Dim dr = win.ShowDialog()
+        If dr.HasValue AndAlso dr.Value Then
+            Dim args = win.DataStoreCreationArguments
+            Dim ds = DataStoreManager.NewDataStore(args.Name, args.Tempate)
+            ds.Description = args.Description
+            ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "DirectoriesToWatch", args.DirectoriesToWatch)
+            ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "Extensions", args.Extensions)
+        End If
     End Sub
 
     Private Sub btnRemoveDataStore_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnRemoveDataStore.Click
