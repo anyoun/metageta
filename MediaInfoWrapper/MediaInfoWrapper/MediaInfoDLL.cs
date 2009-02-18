@@ -111,7 +111,7 @@ namespace MediaInfoLib
         public String Option(String Option, String Value) { return Marshal.PtrToStringUni(MediaInfo_Option(Handle, Option, Value)); }
         public int State_Get() { return (int)MediaInfo_State_Get(Handle); }
         public int Count_Get(StreamKind StreamKind, int StreamNumber) { return (int)MediaInfo_Count_Get(Handle, (IntPtr)StreamKind, (IntPtr)StreamNumber); }
-        private IntPtr Handle;
+        private readonly IntPtr Handle;
 
         //Default values, if you know how to set default values in C#, say me
         public String Get(StreamKind StreamKind, int StreamNumber, String Parameter, InfoKind KindOfInfo) { return Get(StreamKind, StreamNumber, Parameter, KindOfInfo, InfoKind.Name); }

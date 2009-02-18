@@ -6,43 +6,47 @@ using MediaInfoLib;
 
 namespace MediaInfoCLI
 {
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			MediaInfoWrapper mi = new MediaInfoWrapper();
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var mi = new MediaInfoWrapper();
 
-			if (args.Length == 1)
-			{
-				TestFile(mi, args[0]);
-			}
-			else
-			{
-				foreach (string file in System.IO.Directory.GetFiles("."))
-				{
-					TestFile(mi, file);
-				}
-			}
-		}
 
-		private static void TestFile(MediaInfoWrapper mediaInfo, string path)
-		{
-			FileMetadata f = mediaInfo.ReadFile(path);
+            if (args.Length == 1)
+            {
+                if (args[0] == "--list-parameters")
+                    Console.WriteLine(mi.GetParametersCsv());
+                else
+                    TestFile(mi, args[0]);
+            }
+            else
+            {
+                foreach (string file in System.IO.Directory.GetFiles("."))
+                {
+                    TestFile(mi, file);
+                }
+            }
+        }
 
-			foreach (VideoStreamInfo i in f.VideoStreams)
-				Console.WriteLine(i.ToString());
+        private static void TestFile(MediaInfoWrapper mediaInfo, string path)
+        {
+            FileMetadata f = mediaInfo.ReadFile(path);
 
-			foreach (AudioStreamInfo i in f.AudioStreams)
-				Console.WriteLine(i.ToString());
+            foreach (VideoStreamInfo i in f.VideoStreams)
+                Console.WriteLine(i.ToString());
 
-			foreach (TextStreamInfo i in f.TextStreams)
-				Console.WriteLine(i.ToString());
+            foreach (AudioStreamInfo i in f.AudioStreams)
+                Console.WriteLine(i.ToString());
 
-			foreach (ChaptersInfo i in f.Chapters)
-				Console.WriteLine(i.ToString());
+            foreach (TextStreamInfo i in f.TextStreams)
+                Console.WriteLine(i.ToString());
 
-			foreach (ImageInfo i in f.Images)
-				Console.WriteLine(i.ToString());
-		}
-	}
+            foreach (ChaptersInfo i in f.Chapters)
+                Console.WriteLine(i.ToString());
+
+            foreach (ImageInfo i in f.Images)
+                Console.WriteLine(i.ToString());
+        }
+    }
 }
