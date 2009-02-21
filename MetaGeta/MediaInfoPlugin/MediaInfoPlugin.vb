@@ -1,8 +1,11 @@
 ﻿Imports MetaGeta.DataStore
 Imports MediaInfoLib
+Imports System.Text.RegularExpressions
 
 Public Class MediaInfoPlugin
     Implements IMGTaggingPlugin
+
+    Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private m_DataStore As MGDataStore
     Private m_MediaInfo As MediaInfoWrapper
@@ -48,9 +51,14 @@ Public Class MediaInfoPlugin
             If fileInfo.VideoStreams.Count > 0 Then
                 Dim video = fileInfo.VideoStreams.First()
                 file.SetTag("VideoCodec", video.CodecString)
+                file.SetTag("VideoCodecProfile", video.CodecProfile)
                 file.SetTag("Resolution", String.Format("{0}x{1}", video.WidthPx, video.HeightPx))
                 file.SetTag("PlayTime", video.PlayTime.ToString())
             End If
+
+            file.SetTag("iPod5GCompatible", fileInfo.IsCompatible(DeviceType.iPod5G).ToString())
+            file.SetTag("iPodClassicCompatible", fileInfo.IsCompatible(DeviceType.iPodClassic).ToString())
+            file.SetTag("iPhoneCompatible", fileInfo.IsCompatible(DeviceType.iPhone).ToString())
         Next
     End Sub
 

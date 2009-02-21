@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using MediaInfoLib;
@@ -10,43 +11,29 @@ namespace MediaInfoCLI
     {
         static void Main(string[] args)
         {
+            if (args.Length == 1 && args[0] == "--list-parameters")
+                Console.WriteLine(new MediaInfoWrapper().GetParametersCsv());
+            else if(args.Length == 1)
+                TestPath(args[0]);
+            else if(args.Length == 0)
+                TestPath(".");
+        }
+
+        private static void TestPath(string path)
+        {
             var mi = new MediaInfoWrapper();
-
-
-            if (args.Length == 1)
-            {
-                if (args[0] == "--list-parameters")
-                    Console.WriteLine(mi.GetParametersCsv());
-                else
-                    TestFile(mi, args[0]);
-            }
-            else
-            {
-                foreach (string file in System.IO.Directory.GetFiles("."))
-                {
+            if (File.Exists(path))
+                TestFile(mi, path);
+            else if (Directory.Exists(path))
+                foreach (var file in Directory.GetFiles(path))
                     TestFile(mi, file);
-                }
-            }
+            else
+                Console.WriteLine("Can't find path: {0}", path);
         }
 
         private static void TestFile(MediaInfoWrapper mediaInfo, string path)
         {
-            FileMetadata f = mediaInfo.ReadFile(path);
-
-            foreach (VideoStreamInfo i in f.VideoStreams)
-                Console.WriteLine(i.ToString());
-
-            foreach (AudioStreamInfo i in f.AudioStreams)
-                Console.WriteLine(i.ToString());
-
-            foreach (TextStreamInfo i in f.TextStreams)
-                Console.WriteLine(i.ToString());
-
-            foreach (ChaptersInfo i in f.Chapters)
-                Console.WriteLine(i.ToString());
-
-            foreach (ImageInfo i in f.Images)
-                Console.WriteLine(i.ToString());
+            Console.WriteLine(mediaInfo.ReadFile(path));
         }
     }
 }
