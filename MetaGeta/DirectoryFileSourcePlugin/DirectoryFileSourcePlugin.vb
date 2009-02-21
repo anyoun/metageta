@@ -37,7 +37,7 @@
         Dim newFiles As New List(Of Uri)
 
         For Each fi In GetAllFilesInWatchedDirectories()
-            Dim mgFile As MGFile
+            Dim mgFile As MGFile = Nothing
             If fileNameToFileDict.TryGetValue(fi.FullName, mgFile) Then
                 'Already exits
                 log.DebugFormat("File ""{0}"" already exists.")
