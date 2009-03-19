@@ -10,8 +10,13 @@ Public Class MGDataStore
     Private m_Name As String
     Private m_Description As String = ""
 
+    Private ReadOnly m_AllPlugins As New List(Of IMGPluginBase)
     Private ReadOnly m_TaggingPlugins As New List(Of IMGTaggingPlugin)
     Private ReadOnly m_FileSourcePlugins As New List(Of IMGFileSourcePlugin)
+
+    Private ReadOnly m_FileActionPlugins As New List(Of IMGFileActionPlugin)
+    Private ReadOnly m_FileActionDictionary As New Dictionary(Of String, IMGFileActionPlugin)
+
 
     Friend Sub New(ByVal template As IDataStoreTemplate, ByVal name As String, ByVal plugins As IEnumerable(Of IMGPluginBase), ByVal dataMapper As DataMapper)
         m_Template = template
@@ -20,22 +25,26 @@ Public Class MGDataStore
         For Each plugin In plugins
             AddPlugin(plugin)
         Next
+
+        Dim ifa = New ImportFileAction(Me)
+        m_FileActionPlugins.Add(ifa)
+        SetUpAction(ifa)
+
+        Dim rfsa = New RefreshFileSourcesAction(Me)
+        m_FileActionPlugins.Add(rfsa)
+        SetUpAction(rfsa)
+
+        Dim thread As New Thread(AddressOf ProcessActionQueueThread)
+        thread.Start()
     End Sub
 
     Public Sub Close()
-        For Each plugin As IMGTaggingPlugin In m_TaggingPlugins
+        CloseActionQueue()
+
+        For Each plugin In m_AllPlugins
             plugin.Shutdown()
         Next
     End Sub
-
-    Public Function CreateFile(ByVal path As Uri) As MGFile
-        log.DebugFormat("CreateFile() ""{0}""", path.AbsolutePath)
-        Dim f As New MGFile(Me)
-        m_DataMapper.WriteNewFile(f, Me)
-        f.SetTag(MGFile.FileNameKey, path.AbsoluteUri)
-        RaiseEvent ItemAdded(Me, New MGFileEventArgs(f))
-        Return f
-    End Function
 
     Friend Function GetTag(ByVal file As MGFile, ByVal tagName As String, Optional ByVal tran As DbTransaction = Nothing) As String
         Return m_DataMapper.GetTag(file, tagName)
@@ -58,25 +67,38 @@ Public Class MGDataStore
         End Get
     End Property
 
-
 #Region "Plugins"
 
     Friend Sub AddPlugin(ByVal plugin As IMGPluginBase)
         AddPlugin(plugin, -1, callStartup:=False)
     End Sub
-
     Friend Sub AddPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
         AddPlugin(plugin, id, callStartup:=True)
     End Sub
-
     Private Sub AddPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long, ByVal callStartup As Boolean)
         log.InfoFormat("Adding plugin: {0}", plugin.GetUniqueName())
+        m_AllPlugins.Add(plugin)
         If TypeOf plugin Is IMGTaggingPlugin Then
             m_TaggingPlugins.Add(CType(plugin, IMGTaggingPlugin))
         ElseIf TypeOf plugin Is IMGFileSourcePlugin Then
             m_FileSourcePlugins.Add(CType(plugin, IMGFileSourcePlugin))
+        ElseIf TypeOf plugin Is IMGFileActionPlugin Then
+            m_FileActionPlugins.Add(CType(plugin, IMGFileActionPlugin))
+        Else
+            Throw New Exception("Unknown plugin type: " + plugin.GetType().FullName)
         End If
-        If callStartup Then plugin.Startup(Me, id)
+        If callStartup Then
+            plugin.Startup(Me, id)
+            If TypeOf plugin Is IMGFileActionPlugin Then
+                SetUpAction(CType(plugin, IMGFileActionPlugin))
+            End If
+        End If
+    End Sub
+
+    Private Sub SetUpAction(ByVal plugin As IMGFileActionPlugin)
+        For Each s In plugin.GetActions()
+            m_FileActionDictionary.Add(s, plugin)
+        Next
     End Sub
 
     Public ReadOnly Property TaggingPlugins() As IEnumerable(Of IMGTaggingPlugin)
@@ -84,31 +106,57 @@ Public Class MGDataStore
             Return m_TaggingPlugins
         End Get
     End Property
-
     Public ReadOnly Property FileSourcePlugins() As IEnumerable(Of IMGFileSourcePlugin)
         Get
             Return m_FileSourcePlugins
         End Get
     End Property
+    Public ReadOnly Property FileActionPlugins() As IEnumerable(Of IMGFileActionPlugin)
+        Get
+            Return m_FileActionPlugins
+        End Get
+    End Property
 
     Public ReadOnly Property Plugins() As IEnumerable(Of IMGPluginBase)
         Get
-            Return TaggingPlugins.Cast(Of IMGPluginBase)().Union(FileSourcePlugins.Cast(Of IMGPluginBase)())
+            Return TaggingPlugins.Cast(Of IMGPluginBase)().Union(FileSourcePlugins.Cast(Of IMGPluginBase).Union(FileActionPlugins.Cast(Of IMGPluginBase)()))
         End Get
     End Property
 
 #End Region
 
-    Public Sub RefreshFileSources()
-        Dim files = (From fs In Me.FileSourcePlugins From file In fs.GetFilesToAdd() Select CreateFile(file)).ToList()
+#Region "Importing"
 
-        For Each plugin As IMGTaggingPlugin In Me.TaggingPlugins
-            Dim fp As New FileProgress(plugin.GetFriendlyName())
-            plugin.Process(files, fp)
+    Public Sub EnqueueRefreshFileSources()
+        DoAction(Nothing, RefreshFileSourcesAction.c_RefreshFileSourcesAction)
+    End Sub
+
+    Friend Sub RefreshFileSources()
+        For Each path In From fs In Me.FileSourcePlugins _
+                         From file In fs.GetFilesToAdd() _
+                         Select file
+            Dim file = CreateFile(path)
+            DoAction(file, ImportFileAction.c_ImportAction)
         Next
+    End Sub
 
+    Private Function CreateFile(ByVal path As Uri) As MGFile
+        log.DebugFormat("CreateFile() ""{0}""", path.AbsolutePath)
+        Dim f As New MGFile(Me)
+        m_DataMapper.WriteNewFile(f, Me)
+        f.SetTag(MGFile.FileNameKey, path.AbsoluteUri)
+        RaiseEvent ItemAdded(Me, New MGFileEventArgs(f))
+        Return f
+    End Function
+
+    Friend Sub ImportFile(ByVal file As MGFile, ByVal progress As ProgressStatus)
+        For Each plugin As IMGTaggingPlugin In Me.TaggingPlugins
+            plugin.Process(file, progress)
+        Next
         OnFilesChanged()
     End Sub
+
+#End Region
 
     Public Property Name() As String
         Get
@@ -157,10 +205,74 @@ Public Class MGDataStore
         Dim sb As New StringBuilder()
         sb.AppendLine(Aggregate s In Template.GetDimensionNames() Order By s Into JoinToCsv(s))
         For Each f In Me.Files
-            sb.AppendLine(Aggregate t In f.GetTags() Order By t.Name Into JoinToCsv(t.Value))
+            sb.AppendLine(Aggregate t In f.Tags Order By t.Name Into JoinToCsv(t.Value))
         Next
         Return sb.ToString()
     End Function
+
+#Region "Action Queue"
+    Private ReadOnly m_ActionWaitingQueue As New Queue(Of ActionQueueItem)
+    Private ReadOnly m_AllActionItems As New List(Of ActionQueueItem)
+
+    Public ReadOnly Property ActionItems() As IEnumerable(Of ActionQueueItem)
+        Get
+            SyncLock m_ActionWaitingQueue
+                Return m_AllActionItems.ToArray()
+            End SyncLock
+        End Get
+    End Property
+
+    Private Sub EnqueueAction(ByVal action As String, ByVal file As MGFile)
+        SyncLock m_ActionWaitingQueue
+            Dim item As New ActionQueueItem(action, file)
+            m_ActionWaitingQueue.Enqueue(item)
+            Monitor.PulseAll(m_ActionWaitingQueue)
+            m_AllActionItems.Add(item)
+        End SyncLock
+        OnActionItemsChanged()
+    End Sub
+
+    Private Sub CloseActionQueue()
+        SyncLock m_ActionWaitingQueue
+            m_ActionWaitingQueue.Enqueue(Nothing)
+            Monitor.PulseAll(m_ActionWaitingQueue)
+        End SyncLock
+    End Sub
+
+    Private Sub ProcessActionQueueThread()
+        While True
+            Dim nextItem As ActionQueueItem
+            SyncLock m_ActionWaitingQueue
+                While m_ActionWaitingQueue.Count = 0
+                    Monitor.Wait(m_ActionWaitingQueue)
+                End While
+                nextItem = m_ActionWaitingQueue.Dequeue()
+            End SyncLock
+            If nextItem Is Nothing Then Return
+
+            Dim action = m_FileActionDictionary(nextItem.Action)
+            nextItem.Status.Start()
+            Try
+                log.DebugFormat("Starting action ""{0}"" for file ""{1}""...", nextItem.Action, If(nextItem.File IsNot Nothing, nextItem.File.FileName, ""))
+                action.DoAction(nextItem.Action, nextItem.File, nextItem.Status)
+                nextItem.Status.Done(True)
+                nextItem.Status.StatusMessage = String.Empty
+                log.DebugFormat("Action ""{0}"" for file ""{1}"" done.", nextItem.Action, If(nextItem.File IsNot Nothing, nextItem.File.FileName, ""))
+            Catch ex As Exception
+                nextItem.Status.Done(False)
+                nextItem.Status.StatusMessage = ex.ToString()
+                log.ErrorFormat("Action ""{0}"" for file ""{1}"" failed with exception:\n{2}", nextItem.Action, If(nextItem.File IsNot Nothing, nextItem.File.FileName, ""), ex)
+            End Try
+        End While
+    End Sub
+
+#End Region
+
+#Region "Action Plugins"
+    Public Sub DoAction(ByVal file As MGFile, ByVal action As String)
+        EnqueueAction(action, file)
+    End Sub
+#End Region
 
 #Region "Property Changed"
 
@@ -173,6 +285,11 @@ Public Class MGDataStore
     Private Sub OnFilesChanged()
         OnPropertyChanged("Files")
     End Sub
+
+    Private Sub OnActionItemsChanged()
+        OnPropertyChanged("ActionItems")
+    End Sub
+
     Private Sub OnPropertyChanged(ByVal propertyName As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propertyName))
     End Sub

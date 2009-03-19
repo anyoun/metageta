@@ -7,7 +7,7 @@ Imports log4net
 Imports System.Reflection
 
 Public Class TVDBPlugin
-    Implements IMGTaggingPlugin
+    Implements IMGTaggingPlugin, IMGPluginBase
 
     Private Shared ReadOnly log As ILog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
 
@@ -17,13 +17,13 @@ Public Class TVDBPlugin
     Private m_ID As Long
 
 
-    Public Sub Startup(ByVal dataStore As MetaGeta.DataStore.MGDataStore, ByVal id As Long) Implements IMGTaggingPlugin.Startup
+    Public Sub Startup(ByVal dataStore As MetaGeta.DataStore.MGDataStore, ByVal id As Long) Implements IMGPluginBase.Startup
         m_DataStore = dataStore
         m_tvdbHandler = New Tvdb(New XmlCacheProvider("C:\temp\tvdbcache"), "BC8024C516DFDA3B")
         m_tvdbHandler.InitCache()
     End Sub
 
-    Public Sub Shutdown() Implements IMGTaggingPlugin.Shutdown
+    Public Sub Shutdown() Implements IMGPluginBase.Shutdown
         m_tvdbHandler.SaveCache()
     End Sub
 
@@ -46,36 +46,31 @@ Public Class TVDBPlugin
     End Function
 
 
-    Public Sub Process(ByVal files As IEnumerable(Of MGFile), ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
+    Public Sub Process(ByVal file As MGFile, ByVal reporter As ProgressStatus) Implements IMGTaggingPlugin.Process
         'prompt user for series name lookups??
+        Dim seriesID = GetSeriesID(file)
+        If seriesID Is Nothing Then Return
+        Dim series = GetSeries(seriesID.Value)
 
-        For Each file As MGFile In New ProgressHelper(reporter, files)
+        file.SetTag(TVShowDataStoreTemplate.SeriesDescription, series.Overview)
 
-            Dim seriesID = GetSeriesID(file)
-            If seriesID Is Nothing Then Continue For
-            Dim series = GetSeries(seriesID.Value)
+        Dim exactEpisode = GetEpisode(series, file)
 
-            file.SetTag(TVShowDataStoreTemplate.SeriesDescription, series.Overview)
+        If exactEpisode IsNot Nothing Then
 
-            Dim exactEpisode = GetEpisode(series, file)
+            file.SetTag(TVShowDataStoreTemplate.EpisodeTitle, exactEpisode.EpisodeName)
+            file.SetTag(TVShowDataStoreTemplate.EpisodeDescription, exactEpisode.Overview)
+            file.SetTag(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id.ToString())
 
-            If exactEpisode IsNot Nothing Then
+            If False AndAlso exactEpisode.Banner.LoadBanner() Then
+                log.DebugFormat("Found banner: ""{0}"".", exactEpisode.Banner.BannerPath)
 
-                file.SetTag(TVShowDataStoreTemplate.EpisodeTitle, exactEpisode.EpisodeName)
-                file.SetTag(TVShowDataStoreTemplate.EpisodeDescription, exactEpisode.Overview)
-                file.SetTag(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id.ToString())
+                Dim imagefile = System.IO.Path.GetTempFileName()
+                exactEpisode.Banner.Banner.Save(imagefile)
+                file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, imagefile)
 
-                If False AndAlso exactEpisode.Banner.LoadBanner() Then
-                    log.DebugFormat("Found banner: ""{0}"".", exactEpisode.Banner.BannerPath)
-
-                    Dim imagefile = System.IO.Path.GetTempFileName()
-                    exactEpisode.Banner.Banner.Save(imagefile)
-                    file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, imagefile)
-
-                End If
             End If
-        Next
-
+        End If
     End Sub
 
     Private Function GetSeriesID(ByVal file As MGFile) As Integer?

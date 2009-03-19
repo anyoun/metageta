@@ -45,9 +45,11 @@ Public Class MGFile
         End Get
     End Property
 
-    Public Function GetTags() As MGTagCollection
-        Throw New NotImplementedException()
-    End Function
+    Public ReadOnly Property Tags() As MGTagCollection
+        Get
+            Return m_DataStore.GetAllTags(ID)
+        End Get
+    End Property
 
 #Region "Constants"
     Public Shared ReadOnly Property FileNameKey() As String

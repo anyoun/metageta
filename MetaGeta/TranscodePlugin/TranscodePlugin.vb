@@ -1,125 +1,271 @@
 ﻿Imports System.Text
 Imports System.Text.RegularExpressions
-Imports System.Xml
-Imports System.Xml.XPath
 Imports System.IO
+Imports MetaGeta.DataStore
 Imports MetaGeta.Utilities
+Imports System.Xml.Linq
 
 Public Class TranscodePlugin
+    Implements IMGFileActionPlugin, IMGPluginBase
 
-    Private ReadOnly m_Presets As New Dictionary(Of String, Preset)
+    Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
+
+    Private ReadOnly m_Presets As New List(Of Preset)
+    Private m_DataStore As MGDataStore
+    Private m_ID As Long
 
     Public Sub New()
-        Dim d As New XPathDocument(Path.Combine(My.Application.Info.DirectoryPath, "TranscodingPresets.xml"))
-        Dim nav = d.CreateNavigator()
-        For Each node As XPathNavigator In nav.Select("/TranscodingPresets/Preset")
-            Dim p As New Preset
-            p.Name = node.GetAttribute("Name", "")
-            p.Encoder = node.GetAttribute("Encoder", "")
-            p.CommandLine = node.Value
 
-            m_Presets.Add(p.Name, p)
-        Next
     End Sub
 
-    Public Sub Transcode(ByVal source As Uri, ByVal destination As Uri, ByVal presetName As String)
+#Region "IMGPlugin"
+    Public Sub Startup(ByVal dataStore As MetaGeta.DataStore.MGDataStore, ByVal id As Long) Implements MetaGeta.DataStore.IMGPluginBase.Startup
+        m_DataStore = dataStore
+        m_ID = id
+        LoadPresetsFromXml()
+
+        m_DataStore.SetPluginSetting(Me, "", "")
+    End Sub
+
+    Public Sub Shutdown() Implements MetaGeta.DataStore.IMGPluginBase.Shutdown
+
+    End Sub
+
+    Public Function GetFriendlyName() As String Implements MetaGeta.DataStore.IMGPluginBase.GetFriendlyName
+        Return "TranscodePlugin"
+    End Function
+
+    Public Function GetUniqueName() As String Implements MetaGeta.DataStore.IMGPluginBase.GetUniqueName
+        Return "TranscodePlugin"
+    End Function
+
+    Public Function GetVersion() As System.Version Implements MetaGeta.DataStore.IMGPluginBase.GetVersion
+        Return New Version(1, 0, 0, 0)
+    End Function
+
+    Public ReadOnly Property PluginID() As Long Implements MetaGeta.DataStore.IMGPluginBase.PluginID
+        Get
+            Return m_ID
+        End Get
+    End Property
+
+    Public Function GetActions() As IEnumerable(Of String) Implements IMGFileActionPlugin.GetActions
+        Return New String() {ConvertActionName}
+    End Function
+
+    Public Sub DoAction(ByVal action As String, ByVal file As MetaGeta.DataStore.MGFile, ByVal progress As ProgressStatus) Implements MetaGeta.DataStore.IMGFileActionPlugin.DoAction
+
+        Select Case action
+            Case ConvertActionName
+                Transcode(file, progress)
+            Case Else
+                Throw New Exception("Unknown action.")
+        End Select
+    End Sub
+#End Region
+
+    Private Sub LoadPresetsFromXml()
+        m_Presets.AddRange(From p In Presets.Elements Select New Preset With { _
+                           .Name = CType(p.Attribute("Name"), String), _
+                           .Path = CType(p.Attribute("Path"), String), _
+                           .Encoder = CType(p.Attribute("Encoder"), String), _
+                           .CommandLine = p.Value})
+    End Sub
+
+#Region "Transcoding"
+
+    Public Sub Transcode(ByVal file As MetaGeta.DataStore.MGFile, ByVal progress As ProgressStatus)
+        Dim presetName = "iPod-ffmpeg"
+        Dim preset = m_Presets.Find(Function(pre) pre.Name = presetName)
+        log.InfoFormat("Encoding using preset {0}...", presetName)
+
         Dim p As New Process()
-        p.StartInfo = New ProcessStartInfo(Environment.ExpandEnvironmentVariables("%TOOLS%\mplayer\mencoder.exe"))
-        Dim sb As New StringBuilder()
+        p.StartInfo = New ProcessStartInfo(Environment.ExpandEnvironmentVariables(preset.Path))
 
-        sb.AppendFormat(" ""{0}"" ", source.LocalPath)
-
-        If False Then
-            'Stops after 30 seconds
-            sb.Append(" -endpos 30 ")
-        End If
-
-        Dim preset = m_Presets(presetName)
-        sb.Append(Regex.Replace(preset.CommandLine, "\s+", " "))
-
-        sb.AppendFormat(" -o ""{0}"" ", destination.LocalPath)
-
-        Console.WriteLine("Encoding using mencoder preset {0}...", presetName)
-
-        p.StartInfo.Arguments = sb.ToString()
+        p.StartInfo.Arguments = BuildCommandLine(preset.CommandLine, file)
+        log.InfoFormat("{0} {1}", p.StartInfo.FileName, p.StartInfo.Arguments)
         p.StartInfo.CreateNoWindow = True
         p.StartInfo.UseShellExecute = False
 
         p.StartInfo.RedirectStandardError = True
         p.StartInfo.RedirectStandardOutput = True
 
-        AddHandler p.OutputDataReceived, AddressOf OutputHandler
+        Dim totalFrames = If(c_Only30Seconds, 30 * Double.Parse(file.GetTag(TVShowDataStoreTemplate.FrameRate)), Integer.Parse(file.GetTag(TVShowDataStoreTemplate.FrameCount)))
+        Dim statusParser As New EncoderStatusParser(preset.Encoder, CInt(totalFrames), progress)
+        AddHandler p.OutputDataReceived, AddressOf statusParser.OutputHandler
+        AddHandler p.ErrorDataReceived, AddressOf statusParser.OutputHandler
 
-        Console.WriteLine()
-        Console.WriteLine()
-
+        log.Debug("Starting...")
         p.Start()
 
         p.BeginErrorReadLine()
         p.BeginOutputReadLine()
 
         p.WaitForExit()
-
+        log.Debug("Done.")
         If p.ExitCode <> 0 Then
-            Throw New Exception("mencoder failed!")
-        End If
-
-        Console.WriteLine()
-    End Sub
-
-    Private Shared Sub OutputHandler(ByVal sendingProcess As Object, ByVal outLine As DataReceivedEventArgs)
-
-        If outLine.Data Is Nothing Then
-            Return
-        End If
-        Dim p = CType(sendingProcess, Process)
-        Dim s As New MencoderStatusLine(outLine.Data)
-
-        If s.PositionPercent <> -1 Then
-            StringHelpers.DrawProgressBar(s.PositionPercent, String.Format("{0,6:#0.00}fps {1:HH:mm:ss} remaining", s.EncodingSpeedFps, s.EstimatedTimeRemaining))
+            log.ErrorFormat("Encoding failed with error code {0}.", p.ExitCode)
+            'Throw New Exception("encoding failed!")
         End If
     End Sub
 
-    Private Structure MencoderStatusLine
-        Private Shared c_ParseRegex As New Regex("\s*Pos: \s* (\d*.?\d*)s \s* (\d*)f \s* \(\s*(\d+)%\) \s* (\d*.?\d*)fps \s* Trem: \s* (\d*.?\d*)min \s* (\d*)mb \s* A-V:(-?\d*.?\d*) \s* \[(\d*):(\d*)\] \s*", RegexOptions.IgnorePatternWhitespace)
+    Private Shared Function BuildCommandLine(ByVal cmd As String, ByVal file As MGFile) As String
+        cmd = Regex.Replace(cmd, "\s+", " ")
+        cmd = cmd.Replace("%input%", file.FileName)
+        cmd = cmd.Replace("%output%", file.FileName + ".ipod.mp4")
 
-        Public Sub New(ByVal line As String)
-            'Pos:   6.5s    198f (11%) 27.84fps Trem:   0min   5mb  A-V:-0.004 [773:64]
-            Dim m = c_ParseRegex.Match(line)
-            If m.Success Then
-                PositionTime = New TimeSpan(0, 0, Integer.Parse(m.Groups(1).Value))
-                PositionFrames = Long.Parse(m.Groups(2).Value)
-                PositionPercent = Double.Parse(m.Groups(3).Value) / 100
-                EncodingSpeedFps = Double.Parse(m.Groups(4).Value)
-                '5 = time remaining?
-                EstimatedFileSizeMB = Double.Parse(m.Groups(6).Value)
-                '7 = a/v delay?
-                EstimatedVideoBitrate = Double.Parse(m.Groups(8).Value)
-                EstimatedAudioBitrate = Double.Parse(m.Groups(9).Value)
+        If c_Only30Seconds Then
+            cmd = cmd.Replace("%duration-seconds%", "30")
+        End If
+        cmd = cmd.Replace("%start-seconds%", "0")
 
-                If PositionPercent <> 0 AndAlso EncodingSpeedFps <> 0 Then
-                    EstimatedTimeRemaining = New TimeSpan(0, 0, CInt((PositionFrames / PositionPercent - PositionFrames) / EncodingSpeedFps))
-                End If
+        cmd = cmd.Replace("%video-bitrate%", (768 * 1024).ToString())
+        cmd = cmd.Replace("%max-video-bitrate%", (1500 * 1024).ToString())
+        cmd = cmd.Replace("%audio-bitrate%", (64 * 1024).ToString())
+
+        Dim width = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.VideoWidthPx))
+        Dim height = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.VideoHeightPx))
+        If width > 640 OrElse height > 480 Then
+            Dim aspect = Single.Parse(file.GetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio))
+            If aspect > 1.333 Then
+                height = CInt(640.0F / aspect)
             Else
-                PositionPercent = -1
+                width = CInt(480.0F * aspect)
             End If
-        End Sub
+        End If
+        cmd = cmd.Replace("%width%", width.ToString())
+        cmd = cmd.Replace("%height%", height.ToString())
+        Return cmd
+    End Function
 
-        Public ReadOnly PositionTime As TimeSpan
-        Public ReadOnly PositionFrames As Long
-        Public ReadOnly PositionPercent As Double
-        Public ReadOnly EncodingSpeedFps As Double
-        Public ReadOnly EstimatedVideoBitrate As Double
-        Public ReadOnly EstimatedAudioBitrate As Double
-        Public ReadOnly EstimatedFileSizeMB As Double
+#End Region
+#Region "Constants"
+    Private Shared ReadOnly Presets As XElement = _
+    <TranscodingPresets>
+        <Preset Name="iPod-mencoder" Encoder="mencoder" Path="%TOOLS%\mplayer\mencoder.exe">
+             "%input%"
+            -sws 9 -of lavf -lavfopts format=mp4 -vf scale=%width%:%height%,dsize=%width%:%height%,harddup -endpos %duration-seconds%
+            -ovc x264 -x264encopts bitrate=%video-bitrate%:vbv_maxrate=%max-video-bitrate%:vbv_bufsize=2000:nocabac:me=umh:subq=6:frameref=6:trellis=1:level_idc=30:global_header:threads=4
+            -oac faac -faacopts mpeg=4:object=2:br=%audio-bitrate%:raw -channels 2 -srate 48000 -o "%output%"
+        </Preset>
+        <Preset Name="iPod-ffmpeg" Encoder="ffmpeg" Path="%TOOLS%\ffmpeg\ffmpeg.exe">
+           -t %duration-seconds% -ss %start-seconds% -i "%input%" -vcodec libx264 -b %video-bitrate% -s %width%x%height%
+           -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30
+           -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 -ar 48000 "%output%"
+        </Preset>
+    </TranscodingPresets>
 
-        Public ReadOnly EstimatedTimeRemaining As TimeSpan
-    End Structure
-
-    Private Structure Preset
-        Public Name As String
-        Public Encoder As String
-        Public CommandLine As String
-    End Structure
-
+    Public Const ConvertActionName As String = "Convert to iPod format"
+    Public Const c_Only30Seconds As Boolean = True
+#End Region
 End Class
+
+Friend Class EncoderStatusParser
+    Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
+    Private Shared c_MencoderParseRegex As New Regex("\s*Pos: \s* (\d*.?\d*)s \s* (\d*)f \s* \(\s*(\d+)%\) \s* (\d*.?\d*)fps \s* Trem: \s* (\d*.?\d*)min \s* (\d*)mb \s* A-V:(-?\d*.?\d*) \s* \[(\d*):(\d*)\] \s*", RegexOptions.IgnorePatternWhitespace)
+    Private Shared c_FfmpegParseRegex As New Regex("\s*frame= \s* (\d+) \s* fps= \s* (\d+) \s*  q= \s* ([\d.]+) \s* size= \s* (\d+) \s* kB \s* time= \s* ([\d.]+) \s* bitrate= \s* ([\d.]+) \s*kbits/s\s*", RegexOptions.IgnorePatternWhitespace)
+
+    Private m_EncoderName As String
+    Private m_TotalFrames As Integer
+    Private ReadOnly m_Progress As ProgressStatus
+
+    Private m_PositionFrames As Long
+    Private m_StartTime As DateTime
+    Private m_EstimatedBitrate As Double
+    Private m_EstimatedFileSizeMB As Double
+
+    Public Sub New(ByVal encoderName As String, ByVal totalFrames As Integer, ByVal progress As ProgressStatus)
+        m_EncoderName = encoderName
+        m_TotalFrames = totalFrames
+        m_StartTime = DateTime.Now
+        m_Progress = progress
+    End Sub
+
+    Public Sub OutputHandler(ByVal sendingProcess As Object, ByVal outLine As DataReceivedEventArgs)
+        If outLine.Data Is Nothing Then Return
+        Dim p = CType(sendingProcess, Process)
+        log.DebugFormat("{0}: {1}", p.ProcessName, outLine.Data)
+        Parse(outLine.Data)
+
+        m_Progress.ProgressPct = PercentDone
+        m_Progress.StatusMessage = String.Format("{0,6:#0.00}fps {1:###,##0}kbps", EncodingFps, EstimatedBitrate)
+    End Sub
+
+    Private Sub Parse(ByVal line As String)
+        'Mencoder:
+        'Pos:   6.5s    198f (11%) 27.84fps Trem:   0min   5mb  A-V:-0.004 [773:64]
+        'ffmpeg:
+        'frame=  920 fps=101 q=31.0 size=    1011kB time=14.91 bitrate= 555.2kbits/s
+        If m_EncoderName = "mencoder" Then
+            Dim m = c_MencoderParseRegex.Match(line)
+            If m.Success Then
+                'PositionTime = New TimeSpan(0, 0, Integer.Parse(m.Groups(1).Value))
+                m_PositionFrames = Long.Parse(m.Groups(2).Value)
+                'PositionPercent = Double.Parse(m.Groups(3).Value) / 100
+                'EncodingSpeedFps = Double.Parse(m.Groups(4).Value)
+                '5 = time remaining?
+                m_EstimatedFileSizeMB = Double.Parse(m.Groups(6).Value)
+                '7 = a/v delay?
+                m_EstimatedBitrate = Double.Parse(m.Groups(8).Value) + Double.Parse(m.Groups(9).Value)
+            Else
+                'm_PositionFrames = -1
+            End If
+        Else
+            Dim m = c_FfmpegParseRegex.Match(line)
+            If m.Success Then
+                m_PositionFrames = Long.Parse(m.Groups(1).Value)
+                'fps = Long.Parse(m.Groups(2).Value)
+                'quantizer = Long.Parse(m.Groups(3).Value)
+                m_EstimatedFileSizeMB = Double.Parse(m.Groups(4).Value) / 1024.0
+                'time = Long.Parse(m.Groups(5).Value)
+                m_EstimatedBitrate = Double.Parse(m.Groups(6).Value)
+            Else
+                'm_PositionFrames = -1
+            End If
+        End If
+        log.InfoFormat("Status: {0,7:##0.00%} {1,6:#0.00}fps {2:HH:mm:ss} remaining ~{3:###,##0}kbps", PercentDone, EncodingFps, TimeRemaining, EstimatedBitrate)
+    End Sub
+
+    Public ReadOnly Property PositionFrames() As Long
+        Get
+            Return m_PositionFrames
+        End Get
+    End Property
+
+    Public ReadOnly Property PercentDone() As Double
+        Get
+            Return m_PositionFrames / m_TotalFrames
+        End Get
+    End Property
+
+    Public ReadOnly Property EstimatedBitrate() As Double
+        Get
+            Return m_EstimatedBitrate
+        End Get
+    End Property
+
+    Public ReadOnly Property EstimatedFileSizeMB() As Double
+        Get
+            Return m_EstimatedFileSizeMB
+        End Get
+    End Property
+
+    Public ReadOnly Property TimeRemaining() As TimeSpan
+        Get
+            Return If(EncodingFps = 0, TimeSpan.MaxValue, New TimeSpan(0, 0, CInt((m_TotalFrames - m_PositionFrames) / EncodingFps)))
+        End Get
+    End Property
+
+    Public ReadOnly Property EncodingFps() As Double
+        Get
+            Return m_PositionFrames / (DateTime.Now - m_StartTime).TotalSeconds
+        End Get
+    End Property
+End Class
+
+Friend Structure Preset
+    Public Name As String
+    Public Path As String
+    Public Encoder As String
+    Public CommandLine As String
+End Structure

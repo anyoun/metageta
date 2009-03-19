@@ -1,5 +1,5 @@
 ﻿Public Class DirectoryFileSourcePlugin
-    Implements IMGFileSourcePlugin
+    Implements IMGFileSourcePlugin, IMGPluginBase
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
@@ -31,7 +31,7 @@
     Public Function GetFilesToAdd() As ICollection(Of Uri) Implements IMGFileSourcePlugin.GetFilesToAdd
         Dim fileNameToFileDict = New Dictionary(Of String, MGFile)
         For Each t In m_DataStore.GetAllTagOnFiles(MGFile.FileNameKey)
-            fileNameToFileDict(t.First.Value) = t.Second
+            fileNameToFileDict(New Uri(t.First.Value).LocalPath) = t.Second
         Next
 
         Dim newFiles As New List(Of Uri)
@@ -40,7 +40,7 @@
             Dim mgFile As MGFile = Nothing
             If fileNameToFileDict.TryGetValue(fi.FullName, mgFile) Then
                 'Already exits
-                log.DebugFormat("File ""{0}"" already exists.")
+                log.DebugFormat("File ""{0}"" already exists.", fi.FullName)
             Else
                 'New files
                 log.DebugFormat("New files: ""{0}"".", fi.FullName)

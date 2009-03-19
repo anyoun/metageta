@@ -14,10 +14,13 @@
 
     Public Function GetPluginTypeNames() As String() Implements IDataStoreTemplate.GetPluginTypeNames
         Return New String() { _
+                             "MetaGeta.DataStore.FileInfoTaggingPlugin, MetaGeta.DataStore", _
                              "MetaGeta.TVShowPlugin.EducatedGuessImporter, TVShowPlugin", _
-                             "MetaGeta.DirectoryFileSourcePlugin.DirectoryFileSourcePlugin, DirectoryFileSourcePlugin"}
-        '"MetaGeta.TVDBPlugin.TVDBPlugin, TVDBPlugin", _
-        '"MetaGeta.MediaInfoPlugin.MediaInfoPlugin, MediaInfoPlugin", _
+                             "MetaGeta.DirectoryFileSourcePlugin.DirectoryFileSourcePlugin, DirectoryFileSourcePlugin", _
+                             "MetaGeta.MediaInfoPlugin.MediaInfoPlugin, MediaInfoPlugin", _
+                             "MetaGeta.TVDBPlugin.TVDBPlugin, TVDBPlugin", _
+                             "TranscodePlugin.TranscodePlugin, TranscodePlugin" _
+                            }
     End Function
 
     Public Function GetName() As String Implements IDataStoreTemplate.GetName
@@ -45,7 +48,18 @@
 
     Public Const AudioCodec As String = "AudioCodec"
     Public Const VideoCodec As String = "VideoCodec"
+    Public Const VideoCodecProfile As String = "VideoCodecProfile"
+
     Public Const Resolution As String = "Resolution"
     Public Const PlayTime As String = "PlayTime"
+    Public Const FrameCount As String = "FrameCount"
+    Public Const FrameRate As String = "FrameRate"
+    Public Const VideoWidthPx As String = "VideoWidthPx"
+    Public Const VideoHeightPx As String = "VideoHeightPx"
+    Public Const VideoDisplayAspectRatio As String = "VideoDisplayAspectRatio"
+
+    Public Const iPod5GCompatible As String = "iPod5GCompatible"
+    Public Const iPodClassicCompatible As String = "iPodClassicCompatible"
+    Public Const iPhoneCompatible As String = "iPhoneCompatible"
 #End Region
 End Class

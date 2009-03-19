@@ -26,17 +26,11 @@ Partial Public Class ImportProgressDisplay
     End Sub
 
     Private Sub OnIsDone()
-        'btnCancel.Content = "Done"
-        'btnCancel.IsEnabled = True
-        'btnCancel.IsDefault = True
         Me.Close()
     End Sub
     Private Delegate Sub MethodDelegate()
 
     Private Sub btnCancel_Click() Handles btnCancel.Click
         Me.Close()
-
-        Dim foo = From a In New List(Of Integer) Select a + 1
-
     End Sub
 End Class

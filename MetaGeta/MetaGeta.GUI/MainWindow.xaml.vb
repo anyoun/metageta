@@ -12,6 +12,7 @@ Partial Public Class MainWindow
         DataStoreManager.IsInDesignMode = DesignerProperties.GetIsInDesignMode(Me)
         InitializeComponent()
         lbDataStores.SelectedIndex = -1
+        Diagnostics.PresentationTraceSources.SetTraceLevel(lvQueue, PresentationTraceLevel.High)
     End Sub
 
     Private Sub MainWindow_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
@@ -37,6 +38,11 @@ Partial Public Class MainWindow
             Return CType(lbDataStores.SelectedItem, MGDataStore)
         End Get
     End Property
+    Private ReadOnly Property SelectedFile() As MGFile
+        Get
+            Return CType(lvItems.SelectedItem, MGFile)
+        End Get
+    End Property
 
     Public ReadOnly Property SelectedDataStoreColumnsView() As ViewBase
         Get
@@ -58,20 +64,6 @@ Partial Public Class MainWindow
             Return grid
         End Get
     End Property
-
-    Sub RefreshAndImport(ByVal ds As Object)
-        log.Info("Staring Importing...")
-
-        CType(ds, MGDataStore).RefreshFileSources()
-
-        log.Info("Done")
-        MessageBox.Show("Import Complete", "Import")
-    End Sub
-
-    Sub ShowWindow(ByVal fp As Object)
-        Dim window = New ImportProgressDisplay(CType(fp, FileProgress))
-        window.ShowDialog()
-    End Sub
 
 #Region "Writing tags"
 
@@ -135,8 +127,8 @@ Partial Public Class MainWindow
             Dim args = win.DataStoreCreationArguments
             Dim ds = DataStoreManager.NewDataStore(args.Name, args.Tempate)
             ds.Description = args.Description
-            ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "DirectoriesToWatch", args.DirectoriesToWatch)
-            ds.SetPluginSetting(ds.FileSourcePlugins.Single(), "Extensions", args.Extensions)
+            ds.SetPluginSetting(CType(ds.FileSourcePlugins.Single(), IMGPluginBase), "DirectoriesToWatch", args.DirectoriesToWatch)
+            ds.SetPluginSetting(CType(ds.FileSourcePlugins.Single(), IMGPluginBase), "Extensions", args.Extensions)
         End If
     End Sub
 
@@ -145,9 +137,9 @@ Partial Public Class MainWindow
     End Sub
 
     Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnImport.Click
-        Dim t As New System.Threading.Thread(AddressOf RefreshAndImport)
-        t.SetApartmentState(System.Threading.ApartmentState.STA)
-        t.Start(SelectedDataStore)
+        If SelectedDataStore IsNot Nothing Then
+            SelectedDataStore.EnqueueRefreshFileSources()
+        End If
     End Sub
 
 #End Region
@@ -156,6 +148,15 @@ Partial Public Class MainWindow
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
     End Sub
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+
+    Private Sub btnConvertToIpod_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnConvertToIpod.Click
+        SelectedDataStore.DoAction(SelectedFile, TranscodePlugin.TranscodePlugin.ConvertActionName)
+        tabQueue.IsSelected = True
+    End Sub
+
+    Private Sub lvItems_SelectionChanged(ByVal sender As System.Object, ByVal e As System.Windows.Controls.SelectionChangedEventArgs) Handles lvItems.SelectionChanged
+
+    End Sub
 End Class
 
 <ValueConversion(GetType(MGFile), GetType(String), ParameterType:=GetType(String))> _

@@ -9,7 +9,7 @@ Module Main
 
         For Each ds In dsm.DataStores
             Console.WriteLine("Refreshing {0}...", ds.Name)
-            ds.RefreshFileSources()
+            ds.EnqueueRefreshFileSources()
         Next
 
         Console.WriteLine("Done.")

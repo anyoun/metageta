@@ -2,13 +2,13 @@ Imports System.Text
 
 <Serializable()> _
 Public Class EducatedGuessImporter
-    Implements IMGTaggingPlugin
+    Implements IMGTaggingPlugin, IMGPluginBase
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private m_ID As Long
 
-    Public ReadOnly Property ID() As Long Implements IMGTaggingPlugin.PluginID
+    Public ReadOnly Property ID() As Long Implements IMGPluginBase.PluginID
         Get
             Return m_ID
         End Get
@@ -18,11 +18,11 @@ Public Class EducatedGuessImporter
 
     End Sub
 
-    Public Sub Startup(ByVal dataStore As MGDataStore, ByVal id As Long) Implements IMGTaggingPlugin.Startup
+    Public Sub Startup(ByVal dataStore As MGDataStore, ByVal id As Long) Implements IMGPluginBase.Startup
         m_DataStore = dataStore
     End Sub
 
-    Public Sub Shutdown() Implements IMGTaggingPlugin.Shutdown
+    Public Sub Shutdown() Implements IMGPluginBase.Shutdown
 
     End Sub
 
@@ -481,74 +481,72 @@ Public Class EducatedGuessImporter
 
 #End Region
 
-    Public Sub Process(ByVal files As IEnumerable(Of MGFile), ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
-        For Each file As MGFile In New ProgressHelper(reporter, files)
-            Dim s As String
-            Dim gotSeriesTitle As Boolean = False
-            Dim longestBracketedPhrase As Integer
+    Public Sub Process(ByVal file As MGFile, ByVal reporter As ProgressStatus) Implements IMGTaggingPlugin.Process
+        Dim s As String
+        Dim gotSeriesTitle As Boolean = False
+        Dim longestBracketedPhrase As Integer
 
-            Dim tags As New Generic.Dictionary(Of String, String)
+        Dim tags As New Generic.Dictionary(Of String, String)
 
-            Dim fullPath As String = file.FileName
-            Dim fileName As String = System.IO.Path.GetFileNameWithoutExtension(fullPath)
+        Dim fullPath As String = file.FileName
+        Dim fileName As String = System.IO.Path.GetFileNameWithoutExtension(fullPath)
 
-            'new algorithm: break up into 2 types of "phrases":
-            'numbers & words and bracketed junk (encoder, CRC32)
-            'a const array will hold the phrase delimiters
-            'then work from there
-            'recognize "ep", "episode", etc
+        'new algorithm: break up into 2 types of "phrases":
+        'numbers & words and bracketed junk (encoder, CRC32)
+        'a const array will hold the phrase delimiters
+        'then work from there
+        'recognize "ep", "episode", etc
 
-            'turn all underscores, periods, etc into spaces
-            For Each s In c_StringsToConvertToSpaces
-                fileName = fileName.Replace(s, " ")
-            Next
+        'turn all underscores, periods, etc into spaces
+        For Each s In c_StringsToConvertToSpaces
+            fileName = fileName.Replace(s, " ")
+        Next
 
-            Dim brcktPhrases As New Generic.List(Of String)
-            brcktPhrases = getBracketedPhrases(fileName)
+        Dim brcktPhrases As New Generic.List(Of String)
+        brcktPhrases = getBracketedPhrases(fileName)
 
-            'idetify CRC32
-            Dim IsHex As Boolean = True
-            For Each s In brcktPhrases
-                If isCRC32(s) Then
-                    tags(TVShowDataStoreTemplate.CRC32) = s
-                    brcktPhrases.Remove(s)
-                    Exit For
-                End If
-            Next
-
-            'idetify encoder:
-            longestBracketedPhrase = getLongest(brcktPhrases)
-            If Not longestBracketedPhrase = -1 Then
-                brcktPhrases(longestBracketedPhrase) = brcktPhrases(longestBracketedPhrase).Trim(" "c)
-                'info.encoder = brcktPhrases(longestStart)
-                'Debug.WriteLine("Found Encoder: " & brcktPhrases(longestBracketedPhrase))
-                tags(TVShowDataStoreTemplate.Group) = brcktPhrases(longestBracketedPhrase)
+        'idetify CRC32
+        Dim IsHex As Boolean = True
+        For Each s In brcktPhrases
+            If isCRC32(s) Then
+                tags(TVShowDataStoreTemplate.CRC32) = s
+                brcktPhrases.Remove(s)
+                Exit For
             End If
+        Next
 
-            'now, find aliases before breaking apart into phrases
-            For i As Integer = 0 To c_AliasFrom.Count - 1
-                If c_AliasFrom(i) <> "" AndAlso c_AliasFrom(i) <> " " AndAlso fileName.IndexOf(c_AliasFrom(i)) <> -1 Then 'regular aliasing
-                    fileName = fileName.Remove(fileName.IndexOf(c_AliasFrom(i)), c_AliasFrom(i).Length)
-                    tags("SeriesTitle") = c_AliasTo(i)
-                    gotSeriesTitle = True
-                ElseIf fileName.IndexOf(c_AliasTo(i)) <> -1 Then 'help for shows like 24
-                    fileName = fileName.Remove(fileName.IndexOf(c_AliasTo(i)), c_AliasTo(i).Length)
-                    tags("SeriesTitle") = c_AliasTo(i)
-                    gotSeriesTitle = True
-                End If
-            Next
+        'idetify encoder:
+        longestBracketedPhrase = getLongest(brcktPhrases)
+        If Not longestBracketedPhrase = -1 Then
+            brcktPhrases(longestBracketedPhrase) = brcktPhrases(longestBracketedPhrase).Trim(" "c)
+            'info.encoder = brcktPhrases(longestStart)
+            'Debug.WriteLine("Found Encoder: " & brcktPhrases(longestBracketedPhrase))
+            tags(TVShowDataStoreTemplate.Group) = brcktPhrases(longestBracketedPhrase)
+        End If
 
-            'bracketed junk is now all out of the way and replaced with "-"
-            'now to build a similar array of the numbers
+        'now, find aliases before breaking apart into phrases
+        For i As Integer = 0 To c_AliasFrom.Count - 1
+            If c_AliasFrom(i) <> "" AndAlso c_AliasFrom(i) <> " " AndAlso fileName.IndexOf(c_AliasFrom(i)) <> -1 Then 'regular aliasing
+                fileName = fileName.Remove(fileName.IndexOf(c_AliasFrom(i)), c_AliasFrom(i).Length)
+                tags("SeriesTitle") = c_AliasTo(i)
+                gotSeriesTitle = True
+            ElseIf fileName.IndexOf(c_AliasTo(i)) <> -1 Then 'help for shows like 24
+                fileName = fileName.Remove(fileName.IndexOf(c_AliasTo(i)), c_AliasTo(i).Length)
+                tags("SeriesTitle") = c_AliasTo(i)
+                gotSeriesTitle = True
+            End If
+        Next
 
-            Dim phrases As Generic.List(Of Phrase) = getNumberAndWordPhrases(fileName)
-            'now do stuff
-            processPhrases(phrases, tags, gotSeriesTitle)
+        'bracketed junk is now all out of the way and replaced with "-"
+        'now to build a similar array of the numbers
+
+        Dim phrases As Generic.List(Of Phrase) = getNumberAndWordPhrases(fileName)
+        'now do stuff
+        processPhrases(phrases, tags, gotSeriesTitle)
 
 
-            For Each tag In tags
-                file.SetTag(tag.Key, tag.Value)
-            Next
+        For Each tag In tags
+            file.SetTag(tag.Key, tag.Value)
         Next
     End Sub
 

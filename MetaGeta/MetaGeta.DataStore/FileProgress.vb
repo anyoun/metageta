@@ -1,9 +1,9 @@
 ﻿Public Class FileProgress
-    Implements INotifyPropertyChanged, IProgressReportCallback
+    Implements INotifyPropertyChanged, IProgressReportCallback(Of MGFile)
 
     Private ReadOnly m_Lock As New Object()
 
-    Private m_AllFiles As ICollection
+    Private m_AllFiles As IList(Of MGFile)
     Private m_CurrentIndex As Integer
     Private m_CurrentItemPercent As Double
     Private ReadOnly m_ProcedureName As String
@@ -20,7 +20,7 @@
         OnPercentDoneChanged()
     End Sub
 
-    Public ReadOnly Property AllItems() As ICollection
+    Public ReadOnly Property AllItems() As IEnumerable(Of MGFile)
         Get
             SyncLock m_Lock
                 Return m_AllFiles
@@ -81,7 +81,7 @@
     End Property
 
 #Region "IProgressReporter"
-    Public Sub SetCurrentItem(ByVal index As Integer) Implements IProgressReportCallback.SetCurrentItem
+    Public Sub SetCurrentItem(ByVal index As Integer) Implements IProgressReportCallback(Of MGFile).SetCurrentItem
         Dim done = False
         SyncLock m_Lock
             m_CurrentIndex = index
@@ -97,17 +97,17 @@
         End If
     End Sub
 
-    Public Sub SetItemProgress(ByVal percent As Double) Implements IProgressReportCallback.SetItemProgress
+    Public Sub SetItemProgress(ByVal percent As Double) Implements IProgressReportCallback(Of MGFile).SetItemProgress
         SyncLock m_Lock
             m_CurrentItemPercent = percent
         End SyncLock
         OnPercentDoneChanged()
     End Sub
 
-    Public Sub SetItems(ByVal items As System.Collections.ICollection) Implements IProgressReportCallback.SetItems
+    Public Sub SetItems(ByVal items As IEnumerable(Of MGFile)) Implements IProgressReportCallback(Of MGFile).SetItems
         Dim done = False
         SyncLock m_Lock
-            m_AllFiles = items
+            m_AllFiles = items.ToList()
             If m_AllFiles.Count = 0 Then
                 done = True
             End If
@@ -145,9 +145,9 @@ Public Class ProgressHelper
     Implements IEnumerable(Of MGFile)
 
     Private ReadOnly m_Files As List(Of MGFile)
-    Private ReadOnly m_Reporter As IProgressReportCallback
+    Private ReadOnly m_Reporter As IProgressReportCallback(Of MGFile)
 
-    Public Sub New(ByVal reporter As IProgressReportCallback, ByVal files As IEnumerable(Of MGFile))
+    Public Sub New(ByVal reporter As IProgressReportCallback(Of MGFile), ByVal files As IEnumerable(Of MGFile))
         m_Reporter = reporter
         m_Files = New List(Of MGFile)(files)
     End Sub
@@ -165,9 +165,9 @@ Public Class ProgressHelper
 
         Private ReadOnly m_Files As List(Of MGFile)
         Private m_CurrentIndex As Integer
-        Private ReadOnly m_Reporter As IProgressReportCallback
+        Private ReadOnly m_Reporter As IProgressReportCallback(Of MGFile)
 
-        Public Sub New(ByVal reporter As IProgressReportCallback, ByVal files As List(Of MGFile))
+        Public Sub New(ByVal reporter As IProgressReportCallback(Of MGFile), ByVal files As List(Of MGFile))
             m_Reporter = reporter
             m_Files = files
             m_CurrentIndex = -1

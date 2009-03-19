@@ -3,7 +3,7 @@ Imports MediaInfoLib
 Imports System.Text.RegularExpressions
 
 Public Class MediaInfoPlugin
-    Implements IMGTaggingPlugin
+    Implements IMGTaggingPlugin, IMGPluginBase
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
@@ -15,13 +15,13 @@ Public Class MediaInfoPlugin
 
     End Sub
 
-    Public ReadOnly Property ID() As Long Implements IMGTaggingPlugin.PluginID
+    Public ReadOnly Property ID() As Long Implements IMGPluginBase.PluginID
         Get
             Return m_ID
         End Get
     End Property
 
-    Public Sub Startup(ByVal dataStore As MGDataStore, ByVal id As Long) Implements IMGTaggingPlugin.Startup
+    Public Sub Startup(ByVal dataStore As MGDataStore, ByVal id As Long) Implements IMGPluginBase.Startup
         m_DataStore = dataStore
         m_MediaInfo = New MediaInfoWrapper()
     End Sub
@@ -39,30 +39,33 @@ Public Class MediaInfoPlugin
     End Function
 
 
-    Public Sub Process(ByVal files As IEnumerable(Of MGFile), ByVal reporter As IProgressReportCallback) Implements IMGTaggingPlugin.Process
-        For Each file As MGFile In New ProgressHelper(reporter, files)
-            Dim fileInfo = m_MediaInfo.ReadFile(file.FileName)
+    Public Sub Process(ByVal file As MGFile, ByVal reporter As ProgressStatus) Implements IMGTaggingPlugin.Process
+        Dim fileInfo = m_MediaInfo.ReadFile(file.FileName)
 
-            If fileInfo.AudioStreams.Count > 0 Then
-                Dim audio = fileInfo.AudioStreams.First()
-                file.SetTag("AudioCodec", audio.CodecString)
-            End If
+        If fileInfo.AudioStreams.Count > 0 Then
+            Dim audio = fileInfo.AudioStreams.First()
+            file.SetTag(TVShowDataStoreTemplate.AudioCodec, audio.CodecString)
+        End If
 
-            If fileInfo.VideoStreams.Count > 0 Then
-                Dim video = fileInfo.VideoStreams.First()
-                file.SetTag("VideoCodec", video.CodecString)
-                file.SetTag("VideoCodecProfile", video.CodecProfile)
-                file.SetTag("Resolution", String.Format("{0}x{1}", video.WidthPx, video.HeightPx))
-                file.SetTag("PlayTime", video.PlayTime.ToString())
-            End If
+        If fileInfo.VideoStreams.Count > 0 Then
+            Dim video = fileInfo.VideoStreams.First()
+            file.SetTag(TVShowDataStoreTemplate.VideoCodec, video.CodecString)
+            file.SetTag(TVShowDataStoreTemplate.VideoCodecProfile, video.CodecProfile)
+            file.SetTag(TVShowDataStoreTemplate.Resolution, String.Format("{0}x{1}", video.WidthPx, video.HeightPx))
+            file.SetTag(TVShowDataStoreTemplate.VideoWidthPx, video.WidthPx.ToString())
+            file.SetTag(TVShowDataStoreTemplate.VideoHeightPx, video.HeightPx.ToString())
+            file.SetTag(TVShowDataStoreTemplate.PlayTime, video.PlayTime.ToString())
+            file.SetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio, video.DisplayAspectRatio.ToString())
+            file.SetTag(TVShowDataStoreTemplate.FrameCount, video.FrameCount.ToString())
+            file.SetTag(TVShowDataStoreTemplate.FrameRate, video.FrameRate.ToString())
+        End If
 
-            file.SetTag("iPod5GCompatible", fileInfo.IsCompatible(DeviceType.iPod5G).ToString())
-            file.SetTag("iPodClassicCompatible", fileInfo.IsCompatible(DeviceType.iPodClassic).ToString())
-            file.SetTag("iPhoneCompatible", fileInfo.IsCompatible(DeviceType.iPhone).ToString())
-        Next
+        file.SetTag(TVShowDataStoreTemplate.iPod5GCompatible, fileInfo.IsCompatible(DeviceType.iPod5G).ToString())
+        file.SetTag(TVShowDataStoreTemplate.iPodClassicCompatible, fileInfo.IsCompatible(DeviceType.iPodClassic).ToString())
+        file.SetTag(TVShowDataStoreTemplate.iPhoneCompatible, fileInfo.IsCompatible(DeviceType.iPhone).ToString())
     End Sub
 
-    Public Sub Shutdown() Implements IMGTaggingPlugin.Shutdown
+    Public Sub Shutdown() Implements IMGPluginBase.Shutdown
         m_DataStore = Nothing
         m_MediaInfo = Nothing
     End Sub

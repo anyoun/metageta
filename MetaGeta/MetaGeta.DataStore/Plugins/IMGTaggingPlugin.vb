@@ -1,6 +1,3 @@
 ﻿Public Interface IMGTaggingPlugin
-    Inherits IMGPluginBase
-
-    Sub Process(ByVal files As IEnumerable(Of MGFile), ByVal reporter As IProgressReportCallback)
-
+    Sub Process(ByVal file As MGFile, ByVal reporter As ProgressStatus)
 End Interface

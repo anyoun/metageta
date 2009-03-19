@@ -134,6 +134,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Database\DataMapper.vb" />
+    <Compile Include="DataStore\ActionQueueItem.vb" />
+    <Compile Include="DataStore\ImportFileAction.vb" />
+    <Compile Include="DataStore\ProgressStatus.vb" />
+    <Compile Include="DataStore\RefreshFileSourcesAction.vb" />
     <Compile Include="FileProgress.vb" />
     <Compile Include="IProgressReporter.vb" />
     <Compile Include="Model\TagCollection.vb" />
@@ -141,6 +145,7 @@
     <Compile Include="DataStore\DataStoreManager.vb" />
     <Compile Include="Model\File.vb" />
     <Compile Include="Model\FileSet.vb" />
+    <Compile Include="Plugins\FileInfoTaggingPlugin.vb" />
     <Compile Include="Plugins\IMGFileActionPlugin.vb" />
     <Compile Include="Plugins\IMGFileSourcePlugin.vb" />
     <Compile Include="Plugins\IMGPluginBase.vb" />

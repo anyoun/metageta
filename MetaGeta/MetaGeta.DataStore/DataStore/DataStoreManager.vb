@@ -1,10 +1,13 @@
 ﻿Public Class DataStoreManager
     Implements INotifyPropertyChanged
 
+    Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
+
     Private ReadOnly m_DataMapper As DataMapper
     Private ReadOnly m_DataStores As New ObservableCollection(Of MGDataStore)
 
     Public Sub New()
+        log.InfoFormat("DataStoreManager ctor")
         Dim filename As String
         If IsInDesignMode Then
             filename = "c:\temp\metageta.db3"
@@ -48,8 +51,9 @@
     End Function
 
     Public Sub RemoveDataStore(ByVal dataStore As MGDataStore)
-        m_DataMapper.RemoveDataStore(DataStore)
-        DataStores.Remove(DataStore)
+        dataStore.Close()
+        m_DataMapper.RemoveDataStore(dataStore)
+        DataStores.Remove(dataStore)
     End Sub
 
     Public ReadOnly Property DataStores() As ObservableCollection(Of MGDataStore)
