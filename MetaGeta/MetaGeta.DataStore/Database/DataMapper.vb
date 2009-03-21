@@ -116,7 +116,7 @@
                     Dim typeName = String.Format("{0}, {1}", plugin.GetType().FullName, plugin.GetType().Assembly.GetName().Name)
                     cmd.AddParam(typeName)
                     Dim id = CType(cmd.ExecuteScalar(), Long)
-                    plugin.Startup(dataStore, id)
+                    dataStore.StartupPlugin(plugin, id)
                 End Using
             Next
             tran.Commit()

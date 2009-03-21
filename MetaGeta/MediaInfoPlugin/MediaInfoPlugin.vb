@@ -42,6 +42,8 @@ Public Class MediaInfoPlugin
     Public Sub Process(ByVal file As MGFile, ByVal reporter As ProgressStatus) Implements IMGTaggingPlugin.Process
         Dim fileInfo = m_MediaInfo.ReadFile(file.FileName)
 
+        file.SetTag(TVShowDataStoreTemplate.Format, fileInfo.Format)
+
         If fileInfo.AudioStreams.Count > 0 Then
             Dim audio = fileInfo.AudioStreams.First()
             file.SetTag(TVShowDataStoreTemplate.AudioCodec, audio.CodecString)

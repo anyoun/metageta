@@ -65,4 +65,8 @@ Public Module LinqExtensions
         Next
     End Sub
 
+    <Extension()> Public Function SingleToEnumerable(Of T)(ByVal item As T) As IEnumerable(Of T)
+        Return New T() {item}
+    End Function
+
 End Module

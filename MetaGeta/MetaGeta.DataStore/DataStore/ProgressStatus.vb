@@ -48,18 +48,34 @@
         End Get
     End Property
 
+    Public ReadOnly Property IsRunning() As Boolean
+        Get
+            Return m_State = ProgressStatusState.Running
+        End Get
+    End Property
+    Public ReadOnly Property IsDone() As Boolean
+        Get
+            Return m_State = ProgressStatusState.Done OrElse m_State = ProgressStatusState.Done
+        End Get
+    End Property
+
     Public Sub Start()
         m_StartTime = DateTime.Now
         m_State = ProgressStatusState.Running
-        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("State"))
+        OnStateChanged()
     End Sub
 
     Public Sub Done(ByVal succeeded As Boolean)
         m_State = If(succeeded, ProgressStatusState.Done, ProgressStatusState.Failed)
-        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("State"))
         ProgressPct = 1
+        OnStateChanged()
     End Sub
 
+    Private Sub OnStateChanged()
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("State"))
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("IsRunning"))
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("IsDone"))
+    End Sub
 
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class

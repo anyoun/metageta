@@ -5,13 +5,15 @@
     Title="MetaGeta" Height="651" Width="932" x:Name="Window1"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:System="clr-namespace:System;assembly=mscorlib" mc:Ignorable="d">
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
+
         <DataTemplate DataType="{x:Type mgds:MGDataStore}" x:Name="MGDataStoreTemplate">
             <TextBlock Text="{Binding Path=Name}" Grid.Column="0"/>
         </DataTemplate>
-    	<ObjectDataProvider x:Key="DataStoreManagerDS" d:IsDataSource="True" ObjectType="{x:Type mgds:DataStoreManager}"/>
-    	<DataTemplate x:Key="ActionItem-Action">
-    		<TextBlock Text="{Binding Path=Action}"/>
-    	</DataTemplate>
+        <ObjectDataProvider x:Key="DataStoreManagerDS" d:IsDataSource="True" ObjectType="{x:Type mgds:DataStoreManager}"/>
+        <DataTemplate x:Key="ActionItem-Action">
+            <TextBlock Text="{Binding Path=Action}"/>
+        </DataTemplate>
         <DataTemplate x:Key="ActionItem-State">
             <TextBlock Text="{Binding Path=Status.State}"/>
         </DataTemplate>
@@ -19,7 +21,19 @@
             <TextBlock Text="{Binding Path=File.FileName}"/>
         </DataTemplate>
         <DataTemplate x:Key="ActionItem-Progress">
-            <ProgressBar Value="{Binding Path=Status.ProgressPct}" Minimum="0" Maximum="1" Orientation="Horizontal"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="0.8*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="{Binding Path=Status.ProgressPct, StringFormat={}{0,4:##0%}}" TextAlignment="Right"  />
+                <ProgressBar IsEnabled="{Binding Path=Status.IsRunning}" 
+                             Visibility="{Binding Path=Status.IsRunning, Converter={StaticResource VisibilityConverter}}" 
+                             Value="{Binding Path=Status.ProgressPct}" 
+                             Minimum="0" Maximum="1" Orientation="Horizontal"
+                             Grid.Column="1"/>
+            </Grid>
         </DataTemplate>
         <DataTemplate x:Key="ActionItem-TimeLeft">
             <TextBlock Text="{Binding Path=Status.TimeLeft, Mode=OneWay}"/>
@@ -27,10 +41,16 @@
         <DataTemplate x:Key="ActionItem-Message">
             <TextBlock Text="{Binding Path=Status.StatusMessage, Mode=OneWay}"/>
         </DataTemplate>
+        <DataTemplate x:Key="Tag-Name">
+            <TextBlock Text="{Binding Path=Name, Mode=OneWay}" TextWrapping="Wrap" MaxWidth="300"/>
+        </DataTemplate>
+        <DataTemplate x:Key="Tag-Value">
+            <TextBlock Text="{Binding Path=Value, Mode=OneWay}" TextWrapping="Wrap" MaxWidth="300"/>
+        </DataTemplate>
     </Window.Resources>
-	<Window.DataContext>
-		<Binding Mode="OneWay" Source="{StaticResource DataStoreManagerDS}"/>
-	</Window.DataContext>
+    <Window.DataContext>
+        <Binding Mode="OneWay" Source="{StaticResource DataStoreManagerDS}"/>
+    </Window.DataContext>
 
     <DockPanel x:Name="DockPanel1" >
         <Grid DockPanel.Dock="Left" Width="200" x:Name="LeftHandGrid">
@@ -41,24 +61,36 @@
         </Grid>
         <Grid DataContext="{Binding Path=SelectedItem, ElementName=lbDataStores, Mode=Default}" x:Name="RightHandGrid">
             <TabControl x:Name="tcDataStoreDetail" IsSynchronizedWithCurrentItem="True" Margin="8,32,8,8">
-        		<TabItem Header="Items" x:Name="tabItems">
-        			<Grid>
-        				<ListView x:Name="lvItems"
+                <TabItem Header="Items" x:Name="tabItems">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="0.936*"/>
+                            <RowDefinition Height="0.07*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.651*" MinWidth="100"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ListView x:Name="lvItems"
         					ItemsSource="{Binding Path=Files}" View="{Binding Path=SelectedDataStoreColumnsView, ElementName=Window1, Mode=Default}"
-                            Margin="8,8,207.853,8"/>
-        				<Button Height="23" Margin="0,0,8,8" x:Name="btnConvertToIpod" VerticalAlignment="Bottom" Content="Convert to iPod format" Width="195.853" HorizontalAlignment="Right"/>
-        				<ListView IsSynchronizedWithCurrentItem="True" HorizontalAlignment="Right" Margin="0,8,8,35" Width="195.853" 
+                            Margin="8,8,8,8" Grid.RowSpan="2"/>
+                        <Button Margin="8,8,8,8" x:Name="btnConvertToIpod" Content="Convert to iPod" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        <ListView IsSynchronizedWithCurrentItem="True" Margin="8,8,8,8" 
                                   DataContext="{Binding Path=SelectedItem, ElementName=lvItems, Mode=Default}"
-                                  ItemsSource="{Binding Path=Tags}">
-        					<ListView.View>
-        						<GridView>
-                                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}"/>
-                                    <GridViewColumn Header="Value" DisplayMemberBinding="{Binding Path=Value}"/>
+                                  ItemsSource="{Binding Path=Tags}" Grid.Column="2" Grid.ColumnSpan="2">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Name" CellTemplate="{DynamicResourceExtension Tag-Name}"/>
+                                    <GridViewColumn Header="Value" CellTemplate="{DynamicResourceExtension Tag-Value}"/>
                                 </GridView>
-        					</ListView.View>
-        				</ListView>
-        			</Grid>
-        		</TabItem>
+                            </ListView.View>
+                        </ListView>
+                        <Button Margin="8,8,8,8" Name="btnWriteTags" Grid.Column="3" Grid.Row="1">Write Tags</Button>
+                        <GridSplitter Margin="0,8,0,8" Width="5" RenderTransformOrigin="0.5,0.5" Grid.Column="1" HorizontalAlignment="Center" Grid.RowSpan="2"/>
+                    </Grid>
+                </TabItem>
                 <TabItem Header="Queue" x:Name="tabQueue">
                     <ListView IsSynchronizedWithCurrentItem="True" x:Name="lvQueue" Width="Auto" Height="Auto" ItemsSource="{Binding Path=ActionItems}">
                         <ListView.ItemContainerStyle>
@@ -70,7 +102,7 @@
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Action" CellTemplate="{DynamicResourceExtension ActionItem-Action}"/>
-                                <GridViewColumn Header="Status" CellTemplate="{DynamicResourceExtension ActionItem-State}" Width="100"/>
+                                <!--<GridViewColumn Header="Status" CellTemplate="{DynamicResourceExtension ActionItem-State}" Width="100"/>-->
                                 <GridViewColumn Header="File" CellTemplate="{DynamicResourceExtension ActionItem-File}"/>
                                 <GridViewColumn Header="Progress" CellTemplate="{DynamicResourceExtension ActionItem-Progress}" Width="200"/>
                                 <GridViewColumn Header="Time Left" CellTemplate="{DynamicResourceExtension ActionItem-TimeLeft}"/>

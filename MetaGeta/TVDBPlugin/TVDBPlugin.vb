@@ -61,6 +61,7 @@ Public Class TVDBPlugin
             file.SetTag(TVShowDataStoreTemplate.EpisodeTitle, exactEpisode.EpisodeName)
             file.SetTag(TVShowDataStoreTemplate.EpisodeDescription, exactEpisode.Overview)
             file.SetTag(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id.ToString())
+            file.SetTag(TVShowDataStoreTemplate.EpisodeFirstAired, exactEpisode.FirstAired.ToUniversalTime().ToString("u"))
 
             If False AndAlso exactEpisode.Banner.LoadBanner() Then
                 log.DebugFormat("Found banner: ""{0}"".", exactEpisode.Banner.BannerPath)

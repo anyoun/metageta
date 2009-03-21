@@ -19,7 +19,8 @@
                              "MetaGeta.DirectoryFileSourcePlugin.DirectoryFileSourcePlugin, DirectoryFileSourcePlugin", _
                              "MetaGeta.MediaInfoPlugin.MediaInfoPlugin, MediaInfoPlugin", _
                              "MetaGeta.TVDBPlugin.TVDBPlugin, TVDBPlugin", _
-                             "TranscodePlugin.TranscodePlugin, TranscodePlugin" _
+                             "TranscodePlugin.TranscodePlugin, TranscodePlugin", _
+                             "TranscodePlugin.Mp4TagWriterPlugin, TranscodePlugin" _
                             }
     End Function
 
@@ -37,6 +38,7 @@
 
     Public Const SeriesID As String = "SeriesID"
     Public Const EpisodeID As String = "EpisodeID"
+    Public Const EpisodeFirstAired As String = "EpisodeFirstAired"
 
     Public Const EpisodeBanner As String = "EpisodeBanner"
 
@@ -45,6 +47,8 @@
 
     Public Const CRC32 As String = "CRC32"
     Public Const Group As String = "Group"
+
+    Public Const Format As String = "Format"
 
     Public Const AudioCodec As String = "AudioCodec"
     Public Const VideoCodec As String = "VideoCodec"

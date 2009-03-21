@@ -157,6 +157,11 @@ Partial Public Class MainWindow
     Private Sub lvItems_SelectionChanged(ByVal sender As System.Object, ByVal e As System.Windows.Controls.SelectionChangedEventArgs) Handles lvItems.SelectionChanged
 
     End Sub
+
+    Private Sub btnWriteTags_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnWriteTags.Click
+        SelectedDataStore.DoAction(SelectedFile, TranscodePlugin.Mp4TagWriterPlugin.c_WriteTagsAction)
+        tabQueue.IsSelected = True
+    End Sub
 End Class
 
 <ValueConversion(GetType(MGFile), GetType(String), ParameterType:=GetType(String))> _

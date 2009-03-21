@@ -17,6 +17,9 @@ Public Class MGDataStore
     Private ReadOnly m_FileActionPlugins As New List(Of IMGFileActionPlugin)
     Private ReadOnly m_FileActionDictionary As New Dictionary(Of String, IMGFileActionPlugin)
 
+    Private ReadOnly m_ProcessActionThread As Thread
+    Private ReadOnly m_StopProcessingActions As New ManualResetEvent(False)
+
 
     Friend Sub New(ByVal template As IDataStoreTemplate, ByVal name As String, ByVal plugins As IEnumerable(Of IMGPluginBase), ByVal dataMapper As DataMapper)
         m_Template = template
@@ -34,8 +37,8 @@ Public Class MGDataStore
         m_FileActionPlugins.Add(rfsa)
         SetUpAction(rfsa)
 
-        Dim thread As New Thread(AddressOf ProcessActionQueueThread)
-        thread.Start()
+        m_ProcessActionThread = New Thread(AddressOf ProcessActionQueueThread)
+        m_ProcessActionThread.Start()
     End Sub
 
     Public Sub Close()
@@ -69,13 +72,11 @@ Public Class MGDataStore
 
 #Region "Plugins"
 
-    Friend Sub AddPlugin(ByVal plugin As IMGPluginBase)
-        AddPlugin(plugin, -1, callStartup:=False)
-    End Sub
     Friend Sub AddPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
-        AddPlugin(plugin, id, callStartup:=True)
+        AddPlugin(plugin)
+        StartupPlugin(plugin, id)
     End Sub
-    Private Sub AddPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long, ByVal callStartup As Boolean)
+    Friend Sub AddPlugin(ByVal plugin As IMGPluginBase)
         log.InfoFormat("Adding plugin: {0}", plugin.GetUniqueName())
         m_AllPlugins.Add(plugin)
         If TypeOf plugin Is IMGTaggingPlugin Then
@@ -87,11 +88,11 @@ Public Class MGDataStore
         Else
             Throw New Exception("Unknown plugin type: " + plugin.GetType().FullName)
         End If
-        If callStartup Then
-            plugin.Startup(Me, id)
-            If TypeOf plugin Is IMGFileActionPlugin Then
-                SetUpAction(CType(plugin, IMGFileActionPlugin))
-            End If
+    End Sub
+    Friend Sub StartupPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
+        plugin.Startup(Me, id)
+        If TypeOf plugin Is IMGFileActionPlugin Then
+            SetUpAction(CType(plugin, IMGFileActionPlugin))
         End If
     End Sub
 
@@ -119,7 +120,7 @@ Public Class MGDataStore
 
     Public ReadOnly Property Plugins() As IEnumerable(Of IMGPluginBase)
         Get
-            Return TaggingPlugins.Cast(Of IMGPluginBase)().Union(FileSourcePlugins.Cast(Of IMGPluginBase).Union(FileActionPlugins.Cast(Of IMGPluginBase)()))
+            Return m_AllPlugins
         End Get
     End Property
 
@@ -233,14 +234,22 @@ Public Class MGDataStore
     End Sub
 
     Private Sub CloseActionQueue()
+        log.Info("Stopping action queue...")
         SyncLock m_ActionWaitingQueue
             m_ActionWaitingQueue.Enqueue(Nothing)
             Monitor.PulseAll(m_ActionWaitingQueue)
         End SyncLock
+        m_StopProcessingActions.Set()
+        log.Info("Joining...")
+        m_ProcessActionThread.Join()
+        log.Info("Joined")
     End Sub
 
     Private Sub ProcessActionQueueThread()
+        Thread.CurrentThread.Name = "ProcessActionQueue"
         While True
+            If m_StopProcessingActions.WaitOne(0, False) Then Return
+
             Dim nextItem As ActionQueueItem
             SyncLock m_ActionWaitingQueue
                 While m_ActionWaitingQueue.Count = 0
