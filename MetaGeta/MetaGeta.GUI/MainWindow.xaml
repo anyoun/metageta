@@ -14,9 +14,6 @@
         <DataTemplate x:Key="ActionItem-Action">
             <TextBlock Text="{Binding Path=Action}"/>
         </DataTemplate>
-        <DataTemplate x:Key="ActionItem-State">
-            <TextBlock Text="{Binding Path=Status.State}"/>
-        </DataTemplate>
         <DataTemplate x:Key="ActionItem-File">
             <TextBlock Text="{Binding Path=File.FileName}"/>
         </DataTemplate>
@@ -27,7 +24,7 @@
                     <ColumnDefinition Width="0.8*"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="{Binding Path=Status.ProgressPct, StringFormat={}{0,4:##0%}}" TextAlignment="Right"  />
+                <TextBlock Text="{Binding Path=Status.ProgressPct, StringFormat='{}{0,4:##0%}'}" TextAlignment="Right"  />
                 <ProgressBar IsEnabled="{Binding Path=Status.IsRunning}" 
                              Visibility="{Binding Path=Status.IsRunning, Converter={StaticResource VisibilityConverter}}" 
                              Value="{Binding Path=Status.ProgressPct}" 
@@ -54,13 +51,14 @@
 
     <DockPanel x:Name="DockPanel1" >
         <Grid DockPanel.Dock="Left" Width="200" x:Name="LeftHandGrid">
-            <Button x:Name="btnNewDataStore" Margin="6,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="20" Width="20" Content="+"/>
-            <Button x:Name="btnRemoveDataStore" Margin="32,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="20" Width="20" Content="-"/>
-            <ListBox x:Name="lbDataStores" Margin="6,6,6,32" IsSynchronizedWithCurrentItem="True" SelectedIndex="0"
+            <Button x:Name="btnNewDataStore" Margin="6,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="+" FontWeight="Bold" FontSize="14"/>
+            <Button x:Name="btnRemoveDataStore" Margin="34,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="-" FontWeight="Bold" FontSize="14"/>
+            <ListBox x:Name="lbDataStores" Margin="6,6,6,34" IsSynchronizedWithCurrentItem="True" SelectedIndex="0" SelectionMode="Single"
 			 ItemsSource="{Binding Path=DataStores}"/>
+            <Button x:Name="btnGlobalSettings" Margin="0,0,8,6" VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="24" Width="69" Content="Settings..."/>
         </Grid>
         <Grid DataContext="{Binding Path=SelectedItem, ElementName=lbDataStores, Mode=Default}" x:Name="RightHandGrid">
-            <TabControl x:Name="tcDataStoreDetail" IsSynchronizedWithCurrentItem="True" Margin="8,32,8,8">
+            <TabControl x:Name="tcDataStoreDetail" IsSynchronizedWithCurrentItem="True" Margin="8,36,8,8">
                 <TabItem Header="Items" x:Name="tabItems">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -75,8 +73,10 @@
                         </Grid.ColumnDefinitions>
                         <ListView x:Name="lvItems"
         					ItemsSource="{Binding Path=Files}" View="{Binding Path=SelectedDataStoreColumnsView, ElementName=Window1, Mode=Default}"
+                            SelectionMode="Extended"
                             Margin="8,8,8,8" Grid.RowSpan="2"/>
-                        <Button Margin="8,8,8,8" x:Name="btnConvertToIpod" Content="Convert to iPod" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        <Button Margin="8,8,8,8" x:Name="btnConvertToIpod" Content="Convert to iPod" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                IsEnabled="{Binding Path=IsFileSelectionValid, ElementName=Window1}"/>
                         <ListView IsSynchronizedWithCurrentItem="True" Margin="8,8,8,8" 
                                   DataContext="{Binding Path=SelectedItem, ElementName=lvItems, Mode=Default}"
                                   ItemsSource="{Binding Path=Tags}" Grid.Column="2" Grid.ColumnSpan="2">
@@ -87,7 +87,8 @@
                                 </GridView>
                             </ListView.View>
                         </ListView>
-                        <Button Margin="8,8,8,8" Name="btnWriteTags" Grid.Column="3" Grid.Row="1">Write Tags</Button>
+                        <Button Margin="8,8,8,8" Name="btnWriteTags" Grid.Column="3" Grid.Row="1" Content="Write Tags"
+                                IsEnabled="{Binding Path=IsFileSelectionValid, ElementName=Window1}"/>
                         <GridSplitter Margin="0,8,0,8" Width="5" RenderTransformOrigin="0.5,0.5" Grid.Column="1" HorizontalAlignment="Center" Grid.RowSpan="2"/>
                     </Grid>
                 </TabItem>
@@ -112,7 +113,7 @@
                     </ListView>
                 </TabItem>
             </TabControl>
-            <Button x:Name="btnImport" HorizontalAlignment="Left" Width="68" VerticalAlignment="Top" Height="20" Content="Import" Margin="8,8,0,0"/>
+            <Button x:Name="btnImport" IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=Window1}" HorizontalAlignment="Left" Width="68" VerticalAlignment="Top" Height="24" Content="Import" Margin="8,8,0,0"/>
             <TextBlock Margin="80,8,0,0" VerticalAlignment="Top" Height="20" Text="{Binding Path=Name, Mode=Default}" TextWrapping="Wrap" Width="226" HorizontalAlignment="Left" x:Name="tbDataStoreName"/>
         </Grid>
 

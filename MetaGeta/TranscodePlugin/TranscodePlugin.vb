@@ -5,6 +5,10 @@ Imports MetaGeta.DataStore
 Imports MetaGeta.Utilities
 Imports System.Xml.Linq
 
+<Assembly: GlobalSetting("Transcode Plugin.Transcode Preset Name", "iPhone-ffmpeg", GlobalSettingType.ShortText)> 
+<Assembly: GlobalSetting("Transcode Plugin.mencoder Location", "%TOOLS%\mplayer\mencoder.exe", GlobalSettingType.File)> 
+<Assembly: GlobalSetting("Transcode Plugin.ffmpeg Location", "%TOOLS%\ffmpeg\ffmpeg.exe", GlobalSettingType.File)> 
+
 Public Class TranscodePlugin
     Implements IMGFileActionPlugin, IMGPluginBase
 
@@ -67,22 +71,24 @@ Public Class TranscodePlugin
     Private Sub LoadPresetsFromXml()
         m_Presets.AddRange(From p In Presets.Elements Select New Preset With { _
                            .Name = CType(p.Attribute("Name"), String), _
-                           .Path = CType(p.Attribute("Path"), String), _
                            .Encoder = CType(p.Attribute("Encoder"), String), _
+                           .MaxWidth = Integer.Parse(CType(p.Attribute("MaxWidth"), String)), _
+                           .MaxHeight = Integer.Parse(CType(p.Attribute("MaxHeight"), String)), _
                            .CommandLine = p.Value})
     End Sub
 
 #Region "Transcoding"
 
     Public Sub Transcode(ByVal file As MetaGeta.DataStore.MGFile, ByVal progress As ProgressStatus)
-        Dim presetName = "iPod-ffmpeg"
+        Dim presetName = m_DataStore.GetGlobalSetting("Transcode Plugin.Transcode Preset Name")
         Dim preset = m_Presets.Find(Function(pre) pre.Name = presetName)
         log.InfoFormat("Encoding using preset {0}...", presetName)
 
         Dim p As New Process()
-        p.StartInfo = New ProcessStartInfo(Environment.ExpandEnvironmentVariables(preset.Path))
+        p.StartInfo = New ProcessStartInfo(GetEncoderPath(preset.Encoder))
 
-        p.StartInfo.Arguments = BuildCommandLine(preset.CommandLine, file)
+        Dim outputPath = New Uri(file.FileName + ".iphone.mp4")
+        p.StartInfo.Arguments = BuildCommandLine(preset, file, outputPath)
         log.InfoFormat("{0} {1}", p.StartInfo.FileName, p.StartInfo.Arguments)
         p.StartInfo.CreateNoWindow = True
         p.StartInfo.UseShellExecute = False
@@ -90,7 +96,7 @@ Public Class TranscodePlugin
         p.StartInfo.RedirectStandardError = True
         p.StartInfo.RedirectStandardOutput = True
 
-        Dim totalFrames = If(c_Only30Seconds, 30 * Double.Parse(file.GetTag(TVShowDataStoreTemplate.FrameRate)), Integer.Parse(file.GetTag(TVShowDataStoreTemplate.FrameCount)))
+        Dim totalFrames = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.FrameCount))
         Dim statusParser As New EncoderStatusParser(preset.Encoder, CInt(totalFrames), progress)
         AddHandler p.OutputDataReceived, AddressOf statusParser.OutputHandler
         AddHandler p.ErrorDataReceived, AddressOf statusParser.OutputHandler
@@ -105,32 +111,32 @@ Public Class TranscodePlugin
         log.Debug("Done.")
         If p.ExitCode <> 0 Then
             log.ErrorFormat("Encoding failed with error code {0}.", p.ExitCode)
-            'Throw New Exception("encoding failed!")
+        ElseIf Not IO.File.Exists(outputPath.LocalPath) Then
+            log.ErrorFormat("Encoding failed- output file doesn't exist: ""{0}"".", outputPath.LocalPath)
+        Else
+            Dim newFile = m_DataStore.CreateFile(outputPath)
+            m_DataStore.EnqueueImportFile(newFile)
+            m_DataStore.DoAction(newFile, Mp4TagWriterPlugin.c_WriteTagsAction)
         End If
     End Sub
 
-    Private Shared Function BuildCommandLine(ByVal cmd As String, ByVal file As MGFile) As String
-        cmd = Regex.Replace(cmd, "\s+", " ")
+    Private Shared Function BuildCommandLine(ByVal preset As Preset, ByVal file As MGFile, ByVal outputPath As Uri) As String
+        Dim cmd = Regex.Replace(preset.CommandLine, "\s+", " ")
         cmd = cmd.Replace("%input%", file.FileName)
-        cmd = cmd.Replace("%output%", file.FileName + ".ipod.mp4")
-
-        If c_Only30Seconds Then
-            cmd = cmd.Replace("%duration-seconds%", "30")
-        End If
-        cmd = cmd.Replace("%start-seconds%", "0")
+        cmd = cmd.Replace("%output%", outputPath.LocalPath)
 
         cmd = cmd.Replace("%video-bitrate%", (768 * 1024).ToString())
         cmd = cmd.Replace("%max-video-bitrate%", (1500 * 1024).ToString())
-        cmd = cmd.Replace("%audio-bitrate%", (64 * 1024).ToString())
+        cmd = cmd.Replace("%audio-bitrate%", (128 * 1024).ToString())
 
         Dim width = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.VideoWidthPx))
         Dim height = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.VideoHeightPx))
-        If width > 640 OrElse height > 480 Then
+        If width > preset.MaxWidth OrElse height > preset.MaxHeight Then
             Dim aspect = Single.Parse(file.GetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio))
-            If aspect > 1.333 Then
-                height = CInt(640.0F / aspect)
+            If aspect > CDbl(preset.MaxWidth) / preset.MaxHeight Then
+                height = CInt(CDbl(preset.MaxWidth) / aspect)
             Else
-                width = CInt(480.0F * aspect)
+                width = CInt(CDbl(preset.MaxHeight) * aspect)
             End If
         End If
         cmd = cmd.Replace("%width%", width.ToString())
@@ -142,22 +148,35 @@ Public Class TranscodePlugin
 #Region "Constants"
     Private Shared ReadOnly Presets As XElement = _
     <TranscodingPresets>
-        <Preset Name="iPod-mencoder" Encoder="mencoder" Path="%TOOLS%\mplayer\mencoder.exe">
-             "%input%"
+        <Preset Name="iPod-mencoder" Encoder="mencoder" MaxWidth="480" MaxHeight="320">
+            "%input%"
             -sws 9 -of lavf -lavfopts format=mp4 -vf scale=%width%:%height%,dsize=%width%:%height%,harddup -endpos %duration-seconds%
             -ovc x264 -x264encopts bitrate=%video-bitrate%:vbv_maxrate=%max-video-bitrate%:vbv_bufsize=2000:nocabac:me=umh:subq=6:frameref=6:trellis=1:level_idc=30:global_header:threads=4
             -oac faac -faacopts mpeg=4:object=2:br=%audio-bitrate%:raw -channels 2 -srate 48000 -o "%output%"
         </Preset>
-        <Preset Name="iPod-ffmpeg" Encoder="ffmpeg" Path="%TOOLS%\ffmpeg\ffmpeg.exe">
-           -t %duration-seconds% -ss %start-seconds% -i "%input%" -vcodec libx264 -b %video-bitrate% -s %width%x%height%
-           -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30
-           -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 -ar 48000 "%output%"
+        <Preset Name="iPhone-ffmpeg" Encoder="ffmpeg" MaxWidth="480" MaxHeight="320">
+            -i "%input%" -vcodec libx264 -b %video-bitrate% -s %width%x%height%
+            -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30 -threads 4
+            -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 "%output%"
+        </Preset>
+        <Preset Name="iPhone-ffmpeg-30s" Encoder="ffmpeg" MaxWidth="480" MaxHeight="320">
+            -t 30 -ss 0 
+            -i "%input%" -vcodec libx264 -b %video-bitrate% -s %width%x%height%
+            -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30 -threads 4
+            -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 "%output%"
         </Preset>
     </TranscodingPresets>
 
     Public Const ConvertActionName As String = "Convert to iPod format"
-    Public Const c_Only30Seconds As Boolean = True
 #End Region
+
+    Private Function GetEncoderPath(ByVal encoder As String) As String
+        If encoder = "mencoder" Then
+            Return Environment.ExpandEnvironmentVariables(m_DataStore.GetGlobalSetting("Transcode Plugin.mencoder Location"))
+        Else
+            Return Environment.ExpandEnvironmentVariables(m_DataStore.GetGlobalSetting("Transcode Plugin.ffmpeg Location"))
+        End If
+    End Function
 End Class
 
 Friend Class EncoderStatusParser
@@ -265,7 +284,8 @@ End Class
 
 Friend Structure Preset
     Public Name As String
-    Public Path As String
     Public Encoder As String
     Public CommandLine As String
+    Public MaxWidth As Integer
+    Public MaxHeight As Integer
 End Structure

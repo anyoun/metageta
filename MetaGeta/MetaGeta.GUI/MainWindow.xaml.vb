@@ -18,7 +18,6 @@ Partial Public Class MainWindow
     Private Sub MainWindow_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
         OnMyPropertyChanged("SelectedDataStoreColumnsView")
     End Sub
-
     Private Sub MainWindow_Closing(ByVal sender As Object, ByVal e As EventArgs) Handles Window1.Closing
         DataStoreManager.Shutdown()
     End Sub
@@ -26,24 +25,11 @@ Partial Public Class MainWindow
     Private Sub RightHandGrid_DataContextChanged(ByVal sender As System.Object, ByVal e As System.Windows.DependencyPropertyChangedEventArgs) Handles RightHandGrid.DataContextChanged
         OnMyPropertyChanged("SelectedDataStoreColumnsView")
     End Sub
-
     Private ReadOnly Property DataStoreManager() As DataStoreManager
         Get
             Return CType(Me.DataContext, DataStoreManager)
         End Get
     End Property
-
-    Private ReadOnly Property SelectedDataStore() As MGDataStore
-        Get
-            Return CType(lbDataStores.SelectedItem, MGDataStore)
-        End Get
-    End Property
-    Private ReadOnly Property SelectedFile() As MGFile
-        Get
-            Return CType(lvItems.SelectedItem, MGFile)
-        End Get
-    End Property
-
     Public ReadOnly Property SelectedDataStoreColumnsView() As ViewBase
         Get
             Dim grid As New GridView()
@@ -64,6 +50,40 @@ Partial Public Class MainWindow
             Return grid
         End Get
     End Property
+
+#Region "Selection"
+
+    Private Sub lbDataStores_SelectionChanged(ByVal sender As Object, ByVal e As SelectionChangedEventArgs) Handles lbDataStores.SelectionChanged
+        OnMyPropertyChanged("IsDataStoreSelectionValid")
+    End Sub
+
+    Private ReadOnly Property SelectedDataStore() As MGDataStore
+        Get
+            Return CType(lbDataStores.SelectedItem, MGDataStore)
+        End Get
+    End Property
+    Public ReadOnly Property IsDataStoreSelectionValid() As Boolean
+        Get
+            Return lbDataStores.SelectedItem IsNot Nothing
+        End Get
+    End Property
+
+    Private Sub lvItems_SelectionChanged(ByVal sender As Object, ByVal e As SelectionChangedEventArgs) Handles lvItems.SelectionChanged
+        OnMyPropertyChanged("IsFileSelectionValid")
+    End Sub
+
+    Private ReadOnly Property SelectedFiles() As IEnumerable(Of MGFile)
+        Get
+            Return lvItems.SelectedItems.Cast(Of MGFile)()
+        End Get
+    End Property
+    Public ReadOnly Property IsFileSelectionValid() As Boolean
+        Get
+            Return lvItems.SelectedItems.Count > 0
+        End Get
+    End Property
+
+#End Region
 
 #Region "Writing tags"
 
@@ -116,7 +136,7 @@ Partial Public Class MainWindow
 
 #End Region
 
-#Region "Event handlers"
+#Region "Button event handlers"
 
     Private Sub btnNew_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnNewDataStore.Click
         Dim win As New NewDataStoreWindow()
@@ -142,26 +162,39 @@ Partial Public Class MainWindow
         End If
     End Sub
 
+    Private Sub btnWriteTags_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnWriteTags.Click
+        For Each f In SelectedFiles
+            SelectedDataStore.DoAction(f, TranscodePlugin.Mp4TagWriterPlugin.c_WriteTagsAction)
+        Next
+        tabQueue.IsSelected = True
+    End Sub
+
+    Private Sub btnGlobalSettings_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnGlobalSettings.Click
+        Dim settings = DataStoreManager.GetGlobalSettings()
+        Dim win As New GlobalSettingsEditor(settings)
+        win.Owner = Me
+        Dim result = win.ShowDialog()
+        If result.HasValue AndAlso result.Value Then
+            'Set settings...
+            For Each setting In win.SettingsList
+                DataStoreManager.SetGlobalSetting(setting.Name, setting.ValueOrNull)
+            Next
+        End If
+    End Sub
+
+    Private Sub btnConvertToIpod_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnConvertToIpod.Click
+        For Each f In SelectedFiles
+            SelectedDataStore.DoAction(f, TranscodePlugin.TranscodePlugin.ConvertActionName)
+        Next
+        tabQueue.IsSelected = True
+    End Sub
+
 #End Region
 
     Private Sub OnMyPropertyChanged(ByVal name As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
     End Sub
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
-
-    Private Sub btnConvertToIpod_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnConvertToIpod.Click
-        SelectedDataStore.DoAction(SelectedFile, TranscodePlugin.TranscodePlugin.ConvertActionName)
-        tabQueue.IsSelected = True
-    End Sub
-
-    Private Sub lvItems_SelectionChanged(ByVal sender As System.Object, ByVal e As System.Windows.Controls.SelectionChangedEventArgs) Handles lvItems.SelectionChanged
-
-    End Sub
-
-    Private Sub btnWriteTags_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnWriteTags.Click
-        SelectedDataStore.DoAction(SelectedFile, TranscodePlugin.Mp4TagWriterPlugin.c_WriteTagsAction)
-        tabQueue.IsSelected = True
-    End Sub
 End Class
 
 <ValueConversion(GetType(MGFile), GetType(String), ParameterType:=GetType(String))> _

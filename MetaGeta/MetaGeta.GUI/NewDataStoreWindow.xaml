@@ -20,14 +20,14 @@
 
                 <Grid>
                     <Ellipse HorizontalAlignment="Center" Margin="3,3,0,0" VerticalAlignment="Top" Width="16" Height="16" Fill="#FFFF0000"
-                         ToolTip="{Binding ElementName=errorAdorner, Path=AdornedElement.(Validation.Errors)[0].ErrorContent}">
+                           ToolTip="{Binding ElementName=errorAdorner, Path=AdornedElement.(Validation.Errors).CurrentItem.ErrorContent}">
                         <Ellipse.Stroke>
                             <SolidColorBrush/>
                         </Ellipse.Stroke>
                     </Ellipse>
                     <TextBlock HorizontalAlignment="Center" Margin="3,0,0,0" VerticalAlignment="Top" 
                            Text="!" FontSize="16" Foreground="AliceBlue" FontWeight="Bold"
-                           ToolTip="{Binding ElementName=errorAdorner, Path=AdornedElement.(Validation.Errors)[0].ErrorContent}"/>
+                           ToolTip="{Binding ElementName=errorAdorner, Path=AdornedElement.(Validation.Errors).CurrentItem.ErrorContent}"/>
                 </Grid>
             </DockPanel>
         </ControlTemplate>
@@ -68,5 +68,5 @@
         <TextBlock x:Name="blkDirectories"  HorizontalAlignment="Right" Margin="0,0,9.065,76.12" VerticalAlignment="Bottom" Text="Directories:" TextWrapping="Wrap" d:LayoutOverrides="Height"/>
 
         <TextBlock x:Name="blkExtensions" Margin="0,0,9.065,45.16" Text="Extensions:" TextWrapping="Wrap" VerticalAlignment="Bottom" d:LayoutOverrides="HorizontalAlignment, Width" HorizontalAlignment="Right"/>
-     </Grid>
+    </Grid>
 </Window>

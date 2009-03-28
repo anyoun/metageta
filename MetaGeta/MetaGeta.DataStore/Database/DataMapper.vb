@@ -90,8 +90,30 @@
                 cmd.CommandText = createTablesSql
                 cmd.ExecuteNonQuery()
             End Using
+            version = 1
             log.Info("OK")
-        ElseIf version > 1 Then
+        End If
+        If version = 1 Then
+            log.Info("Version 1, so upgrading...")
+            Dim createTablesSql = <string>
+                CREATE TABLE [GlobalSetting](
+                    [GlobalSettingID] integer primary key autoincrement,
+                    [Name] varchar, 
+                    [Value] varchar,
+                    [DefaultValue] varchar,
+                    [Type] varchar
+                );
+                CREATE UNIQUE INDEX [ixGlobalSetting] ON [GlobalSetting]([Name]);
+                PRAGMA user_version = 2;
+            </string>.Value
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = createTablesSql
+                cmd.ExecuteNonQuery()
+            End Using
+            version = 2
+            log.Info("OK")
+        End If
+        If version > 2 Then
             log.FatalFormat("Unknown user_version: ""{0}"".", version)
             Throw New Exception("Unknown database version.")
         End If
@@ -273,6 +295,8 @@
     End Sub
 #End Region
 
+#Region "Settings"
+
     Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, ByVal settingName As String) As String
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Value] FROM [PluginSetting] WHERE [DatastoreID] = ? AND [PluginID] = ? AND [Name] = ?"
@@ -292,5 +316,74 @@
             cmd.ExecuteNonQuery()
         End Using
     End Sub
+
+    Public Function GetGlobalSetting(ByVal settingName As String) As String
+        Using cmd = Connection.CreateCommand()
+            cmd.CommandText = "SELECT coalesce([Value], [DefaultValue]) FROM [GlobalSetting] WHERE [Name] = ?"
+            cmd.AddParam(settingName)
+            Return CType(cmd.ExecuteScalar(), String)
+        End Using
+    End Function
+    Public Sub WriteGlobalSetting(ByVal settingName As String, ByVal settingValue As String)
+        Using cmd = Connection.CreateCommand()
+            cmd.CommandText = "UPDATE [GlobalSetting] SET [Value] = ? WHERE [Name] = ?"
+            cmd.AddParam(settingValue)
+            cmd.AddParam(settingName)
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+    Public Sub CreateGlobalSetting(ByVal setting As GlobalSettingAttribute)
+        Using tran = Connection.BeginTransaction()
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "INSERT OR IGNORE INTO [GlobalSetting]([Name], [Value], [DefaultValue], [Type]) VALUES(?, NULL, ?, ?)"
+                cmd.AddParam(setting.Name)
+                cmd.AddParam(setting.DefaultValue)
+                cmd.AddParam(setting.Type.ToString())
+                cmd.ExecuteNonQuery()
+            End Using
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "UPDATE [GlobalSetting] SET [DefaultValue] = ?, [Type] = ? WHERE [Name] = ?"
+                cmd.AddParam(setting.DefaultValue)
+                cmd.AddParam(setting.Type.ToString())
+                cmd.AddParam(setting.Name)
+                cmd.ExecuteNonQuery()
+            End Using
+            tran.Commit()
+        End Using
+    End Sub
+    Public Function ReadGlobalSettings() As IList(Of GlobalSetting)
+        Dim settings As New List(Of GlobalSetting)
+        Using cmd = Connection.CreateCommand()
+            cmd.CommandText = "SELECT [Name], [Value], [DefaultValue], [Type] FROM [GlobalSetting]"
+            Using rdr = cmd.ExecuteReader()
+                While rdr.Read()
+                    Dim name = rdr.GetString(0)
+                    Dim value = ReadNullable(Of String)(rdr, 1)
+                    Dim defaultValue = rdr.GetString(2)
+                    Dim type = CType([Enum].Parse(GetType(GlobalSettingType), rdr.GetString(3)), GlobalSettingType)
+                    settings.Add(New GlobalSetting(name, value, defaultValue, type))
+                End While
+            End Using
+        End Using
+        Return settings
+    End Function
+#End Region
+
+    Private Shared Function ReadNullableValueType(Of T As Structure)(ByVal rdr As DbDataReader, ByVal index As Integer) As T?
+        Dim val = rdr.GetValue(index)
+        If val Is DBNull.Value Then
+            Return Nothing
+        Else
+            Return CType(val, T?)
+        End If
+    End Function
+    Private Shared Function ReadNullable(Of T As Class)(ByVal rdr As DbDataReader, ByVal index As Integer) As T
+        Dim val = rdr.GetValue(index)
+        If val Is DBNull.Value Then
+            Return Nothing
+        Else
+            Return CType(val, T)
+        End If
+    End Function
 
 End Class

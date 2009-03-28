@@ -137,11 +137,11 @@ Public Class MGDataStore
                          From file In fs.GetFilesToAdd() _
                          Select file
             Dim file = CreateFile(path)
-            DoAction(file, ImportFileAction.c_ImportAction)
+            EnqueueImportFile(file)
         Next
     End Sub
 
-    Private Function CreateFile(ByVal path As Uri) As MGFile
+    Public Function CreateFile(ByVal path As Uri) As MGFile
         log.DebugFormat("CreateFile() ""{0}""", path.AbsolutePath)
         Dim f As New MGFile(Me)
         m_DataMapper.WriteNewFile(f, Me)
@@ -150,6 +150,10 @@ Public Class MGDataStore
         Return f
     End Function
 
+    Public Sub EnqueueImportFile(ByVal file As MGFile)
+        DoAction(file, ImportFileAction.c_ImportAction)
+    End Sub
+
     Friend Sub ImportFile(ByVal file As MGFile, ByVal progress As ProgressStatus)
         For Each plugin As IMGTaggingPlugin In Me.TaggingPlugins
             plugin.Process(file, progress)
@@ -157,6 +161,15 @@ Public Class MGDataStore
         OnFilesChanged()
     End Sub
 
+#End Region
+
+#Region "Global Settings"
+    Public Function GetGlobalSetting(ByVal settingName As String) As String
+        Return m_DataMapper.GetGlobalSetting(settingName)
+    End Function
+    Public Sub SetGlobalSetting(ByVal settingName As String, ByVal settingValue As String)
+        m_DataMapper.WriteGlobalSetting(settingName, settingValue)
+    End Sub
 #End Region
 
     Public Property Name() As String
@@ -188,6 +201,7 @@ Public Class MGDataStore
             m_ID = value
         End Set
     End Property
+    
 
     Public Function GetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String) As String
         Return m_DataMapper.GetPluginSetting(Me, plugin.PluginID, settingName)

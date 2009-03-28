@@ -1,4 +1,6 @@
-﻿Public Class DataStoreManager
+﻿Imports System.Reflection
+
+Public Class DataStoreManager
     Implements INotifyPropertyChanged
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
@@ -18,12 +20,7 @@
 
         m_DataMapper.Initialize()
         m_DataStores.AddRange(m_DataMapper.GetDataStores())
-        OnDataStoresChanged()
-    End Sub
-
-    Public Sub Startup()
-        m_DataMapper.Initialize()
-        m_DataStores.AddRange(m_DataMapper.GetDataStores())
+        LoadGlobalSettings()
         OnDataStoresChanged()
     End Sub
 
@@ -44,10 +41,10 @@
             plugins.Add(CType(Activator.CreateInstance(t), IMGPluginBase))
         Next
         Dim data As New MGDataStore(template, name, plugins, m_DataMapper)
-        m_DataMapper.WriteNewDataStore(Data)
-        m_DataStores.Add(Data)
+        m_DataMapper.WriteNewDataStore(data)
+        m_DataStores.Add(data)
         OnDataStoresChanged()
-        Return Data
+        Return data
     End Function
 
     Public Sub RemoveDataStore(ByVal dataStore As MGDataStore)
@@ -83,4 +80,30 @@
     End Property
 #End Region
 
+    Private Sub LoadGlobalSettings()
+        For Each attrib In FindAllGlobalSettingsAttributes()
+            m_DataMapper.CreateGlobalSetting(attrib)
+        Next
+    End Sub
+
+    Public Shared Function FindAllGlobalSettingsAttributes() As IList(Of GlobalSettingAttribute)
+        Dim list As New List(Of GlobalSettingAttribute)
+        For Each asm In AppDomain.CurrentDomain.GetAssemblies()
+            For Each attrib As GlobalSettingAttribute In asm.GetCustomAttributes(GetType(GlobalSettingAttribute), False)
+                list.Add(attrib)
+            Next
+        Next
+        Return list
+    End Function
+
+    Public Function GetGlobalSettings() As IList(Of GlobalSetting)
+        Return m_DataMapper.ReadGlobalSettings()
+    End Function
+
+    Public Function GetGlobalSetting(ByVal settingName As String) As String
+        Return m_DataMapper.GetGlobalSetting(settingName)
+    End Function
+    Public Sub SetGlobalSetting(ByVal settingName As String, ByVal settingValue As String)
+        m_DataMapper.WriteGlobalSetting(settingName, settingValue)
+    End Sub
 End Class
