@@ -87,6 +87,12 @@ Public Class DataStoreManager
     End Sub
 
     Public Shared Function FindAllGlobalSettingsAttributes() As IList(Of GlobalSettingAttribute)
+        Assembly.Load("TVShowPlugin")
+        Assembly.Load("DirectoryFileSourcePlugin")
+        Assembly.Load("MediaInfoPlugin")
+        Assembly.Load("TVDBPlugin")
+        Assembly.Load("TranscodePlugin")
+
         Dim list As New List(Of GlobalSettingAttribute)
         For Each asm In AppDomain.CurrentDomain.GetAssemblies()
             For Each attrib As GlobalSettingAttribute In asm.GetCustomAttributes(GetType(GlobalSettingAttribute), False)
