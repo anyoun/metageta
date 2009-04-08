@@ -82,6 +82,11 @@ Public Class Mp4TagWriterPlugin
     End Sub
 
     Private Sub WriteAtomicParsleyTag(ByVal path As String, ByVal apTagName As String, ByVal value As String)
+        If value Is Nothing Then
+            log.WarnFormat("Can't write tag ""{0}"" for file ""{1}"" since the value is null.", apTagName, path)
+            Return
+        End If
+
         Dim p As New Process()
         p.StartInfo = New ProcessStartInfo(Environment.ExpandEnvironmentVariables("%TOOLS%\AtomicParsley\AtomicParsley.exe"))
         Dim sb As New StringBuilder()
