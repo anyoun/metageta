@@ -430,7 +430,7 @@ Public Class EducatedGuessImporter
         Return False
     End Function
     Private Function isItLetter(ByVal thechar As Char) As Boolean
-        If Char.IsLetter(thechar) Or thechar = "'" Then
+        If Char.IsLetter(thechar) Or thechar = "'"c Then
             Return True
         End If
         Return False
@@ -552,9 +552,9 @@ Public Class EducatedGuessImporter
 
 #Region "Constants"
     Private Shared ReadOnly c_StringsToConvertToSpaces As String() = {".", "_", "%20"}
-    Private Shared ReadOnly c_IgnoredStrings As String() = {"divx", "x264", "h264", "264", "1280x720", "720p", "1080p"}
-    Private Shared ReadOnly c_AliasFrom As String() = {"The Venture Brothers"}
-    Private Shared ReadOnly c_AliasTo As String() = {"The Venture Bros."}
+    Private Shared ReadOnly c_IgnoredStrings As String() = {"divx", "x264", "X264", "h264", "H264", "264", "hdtv", "HDTV", "1280x720", "720p", "1080p"}
+    Private Shared ReadOnly c_AliasFrom As String() = {"The Venture Brothers", "Battlestar Galactica"}
+    Private Shared ReadOnly c_AliasTo As String() = {"The Venture Bros.", "Battlestar Galactica (2003)"}
 
     'Public intMaxLDForMatch As Integer = 3
 #End Region
