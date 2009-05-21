@@ -135,9 +135,9 @@ Public Class TranscodePlugin
             Dim aspect = Single.Parse(file.GetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio))
             If aspect > CDbl(preset.MaxWidth) / preset.MaxHeight Then
                 height = CInt(CDbl(preset.MaxWidth) / aspect)
-                width = (preset.MaxWidth
+                width = preset.MaxWidth
             Else
-                height = (preset.MaxHeight
+                height = preset.MaxHeight
                 width = CInt(CDbl(preset.MaxHeight) * aspect)
             End If
         End If
