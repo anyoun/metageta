@@ -87,12 +87,13 @@ Public Class TVDBPlugin
 
         If Not m_SeriesNameDictionary.TryGetValue(seriesName, seriesID) Then
             Dim searchResult = m_tvdbHandler.SearchSeries(seriesName)
-            Dim exactMatch = searchResult.Find(Function(sr) sr.SeriesName.Equals(seriesName, StringComparison.CurrentCultureIgnoreCase))
-            If Not exactMatch Is Nothing Then
-                log.DebugFormat("Found series: ""{0}"" -> ""{1}"".", seriesName, exactMatch.SeriesName)
-                seriesID = exactMatch.Id
-            Else
+            If searchResult.Count = 0 Then
                 log.DebugFormat("Couldn't find series: ""{0}"".", seriesName)
+                seriesID = Nothing
+            ElseIf searchResult.Count = 1 Then
+                log.DebugFormat("Found series: ""{0}"" -> ""{1}"".", seriesName, searchResult.Single().SeriesName)
+                seriesID = searchResult.Single().Id
+            Else
                 seriesID = Nothing
             End If
             m_SeriesNameDictionary.Add(seriesName, seriesID)
