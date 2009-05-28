@@ -1,4 +1,6 @@
-﻿Public Class DataMapper
+﻿Imports System.Data.SQLite
+
+Public Class DataMapper
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private Shared ReadOnly s_ConnectionSlot As LocalDataStoreSlot
@@ -10,7 +12,7 @@
         Get
             Dim conn = CType(Thread.GetData(s_ConnectionSlot), DbConnection)
             If conn Is Nothing Then
-                conn = DbProviderFactories.GetFactory("System.Data.SQLite").CreateConnection()
+                conn = New SQLiteConnection()
                 conn.ConnectionString = String.Format("Data Source={0}", m_FileName)
                 log.InfoFormat("New connection: ""{0}"", opening...", conn.ConnectionString)
                 conn.Open()

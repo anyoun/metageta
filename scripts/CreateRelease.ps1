@@ -32,8 +32,8 @@ create-directory "output"
 $x86Dir = recreate-directory "output\MetaGeta.$timestamp.x86"
 $x64Dir = recreate-directory "output\MetaGeta.$timestamp.x64"
 
-msbuild MetaGeta\MetaGeta.sln /v:q /t:Rebuild "/p:Configuration=Release;Platform=x86;OutDir=$x86Dir"
-msbuild MetaGeta\MetaGeta.sln /v:q /t:Rebuild "/p:Configuration=Release;Platform=x64;OutDir=$x64Dir"
+msbuild MetaGeta\MetaGeta.sln /v:q /t:Rebuild "/p:Configuration=Release;Platform=x86;OutDir=$x86Dir;OutputPath=$x86Dir"
+msbuild MetaGeta\MetaGeta.sln /v:q /t:Rebuild "/p:Configuration=Release;Platform=x64;OutDir=$x64Dir;OutputPath=$x64Dir"
 
 pushd $x86Dir
 	$extrafiles | rm

@@ -1,4 +1,4 @@
-﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -145,9 +145,6 @@
     <Compile Include="Application.xaml.vb">
       <DependentUpon>Application.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ImportProgressDisplay.xaml.vb">
-      <DependentUpon>ImportProgressDisplay.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainWindow.xaml.vb">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -189,10 +186,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
-    <Page Include="ImportProgressDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -240,7 +233,9 @@
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
-    <Copy Condition="'$(Platform)'=='x86'" SourceFiles="..\..\MediaInfo\x86\MediaInfo.dll;..\..\sqlite\x86\System.Data.SQLite.DLL" DestinationFolder="$(OutputPath)" />
-    <Copy Condition="'$(Platform)'=='x64'" SourceFiles="..\..\MediaInfo\x64\MediaInfo.dll;..\..\sqlite\x64\System.Data.SQLite.DLL" DestinationFolder="$(OutputPath)" />
+    <Copy Condition="'$(Platform)'=='x86'" SourceFiles="..\..\MediaInfo\x86\MediaInfo.dll" DestinationFolder="$(OutputPath)" />
+    <Copy Condition="'$(Platform)'=='x86'" SourceFiles="..\..\sqlite\x86\sqlite3.dll" DestinationFolder="$(OutputPath)" />
+    <Copy Condition="'$(Platform)'=='x64'" SourceFiles="..\..\MediaInfo\x64\MediaInfo.dll" DestinationFolder="$(OutputPath)" />
+    <Copy Condition="'$(Platform)'=='x64'" SourceFiles="..\..\sqlite\x64\sqlite3.dll" DestinationFolder="$(OutputPath)" />
   </Target>
 </Project>
