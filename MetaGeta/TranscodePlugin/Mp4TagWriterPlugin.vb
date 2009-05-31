@@ -70,14 +70,14 @@ Public Class Mp4TagWriterPlugin
         WriteAtomicParsleyTag(file.FileName, "genre", "TV Shows")
         progress.ProgressPct += 0.1
 
-        'WriteAtomicParsleyTag(file.Path, "title", file.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value)
-        WriteAtomicParsleyTag(file.FileName, "title", String.Format( _
-          "{0} - s{1}e{2} - {3}", _
-          file.GetTag(TVShowDataStoreTemplate.SeriesTitle), _
-          file.GetTag(TVShowDataStoreTemplate.SeasonNumber), _
-          file.GetTag(TVShowDataStoreTemplate.EpisodeNumber), _
-          file.GetTag(TVShowDataStoreTemplate.EpisodeTitle) _
-            ))
+        WriteAtomicParsleyTag(file.FileName, "title", file.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value)
+        'WriteAtomicParsleyTag(file.FileName, "title", String.Format( _
+        '  "{0} - s{1}e{2} - {3}", _
+        '  file.GetTag(TVShowDataStoreTemplate.SeriesTitle), _
+        '  file.GetTag(TVShowDataStoreTemplate.SeasonNumber), _
+        '  file.GetTag(TVShowDataStoreTemplate.EpisodeNumber), _
+        '  file.GetTag(TVShowDataStoreTemplate.EpisodeTitle) _
+        '    ))
         progress.ProgressPct += 0.1
     End Sub
 
