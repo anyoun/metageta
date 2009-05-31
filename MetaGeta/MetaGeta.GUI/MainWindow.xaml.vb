@@ -85,57 +85,6 @@ Partial Public Class MainWindow
 
 #End Region
 
-#Region "Writing tags"
-
-    Public Sub WriteAllTags(ByVal ds As MGDataStore)
-        For Each file As MGFile In ds.Files
-            WriteTags(file)
-        Next
-    End Sub
-
-    Sub WriteTags(ByVal f As MGFile)
-        WriteAtomicParsleyTag(f.FileName, "TVShowName", f.GetTag(TVShowDataStoreTemplate.SeriesTitle))
-        WriteAtomicParsleyTag(f.FileName, "Album", f.GetTag(TVShowDataStoreTemplate.SeriesTitle))
-        WriteAtomicParsleyTag(f.FileName, "TVSeasonNum", f.GetTag(TVShowDataStoreTemplate.SeasonNumber))
-        WriteAtomicParsleyTag(f.FileName, "TVEpisode", f.GetTag(TVShowDataStoreTemplate.EpisodeID))
-        WriteAtomicParsleyTag(f.FileName, "TVEpisodeNum", f.GetTag(TVShowDataStoreTemplate.EpisodeNumber))
-        WriteAtomicParsleyTag(f.FileName, "description", f.GetTag(TVShowDataStoreTemplate.EpisodeDescription))
-        If f.GetTag(TVShowDataStoreTemplate.EpisodeBanner) IsNot Nothing Then
-            WriteAtomicParsleyTag(f.FileName, "artwork", f.GetTag(TVShowDataStoreTemplate.EpisodeBanner))
-        End If
-        WriteAtomicParsleyTag(f.FileName, "stik", "TV Show")
-        WriteAtomicParsleyTag(f.FileName, "genre", "TV Shows")
-
-        'WriteAtomicParsleyTag(f.Path, "title", f.Tags.Item(TVShowDataStoreTemplate.EpisodeTitle).Value)
-        WriteAtomicParsleyTag(f.FileName, "title", String.Format( _
-          "{0} - s{1}e{2} - {3}", _
-          f.GetTag(TVShowDataStoreTemplate.SeriesTitle), _
-          f.GetTag(TVShowDataStoreTemplate.SeasonNumber), _
-          f.GetTag(TVShowDataStoreTemplate.EpisodeNumber), _
-          f.GetTag(TVShowDataStoreTemplate.EpisodeTitle) _
-            ))
-    End Sub
-
-    Private Sub WriteAtomicParsleyTag(ByVal path As String, ByVal apTagName As String, ByVal value As String)
-        Dim p As New Process()
-        p.StartInfo = New ProcessStartInfo(Environment.ExpandEnvironmentVariables("%TOOLS%\AtomicParsley\AtomicParsley.exe"))
-        Dim sb As New StringBuilder()
-
-        sb.AppendFormat(" ""{0}"" ", path)
-        sb.AppendFormat(" --{0} ""{1}"" ", apTagName, value.Replace("""", """"""))
-        sb.Append(" --overWrite ")
-        p.StartInfo.Arguments = sb.ToString()
-
-        p.Start()
-        p.WaitForExit()
-    End Sub
-
-    Private Function CapLength(ByVal s As String) As String
-        Return s.Substring(0, Math.Min(255, s.Length))
-    End Function
-
-#End Region
-
 #Region "Button event handlers"
 
     Private Sub btnNew_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnNewDataStore.Click
