@@ -1,7 +1,31 @@
-﻿Partial Public Class NewDataStoreWindow
+﻿Imports System.ComponentModel
+
+Partial Public Class NewDataStoreWindow
+    Implements INotifyPropertyChanged
+
+    Private ReadOnly m_Arguments As DataStoreCreationArguments
+
+    Public Sub New()
+        Me.New(New DataStoreCreationArguments())
+    End Sub
+
+    Public Sub New(ByVal arguments As DataStoreCreationArguments)
+        m_Arguments = arguments
+        'RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("DataStoreCreationArguments"))
+
+        ' This call is required by the Windows Form Designer.
+        InitializeComponent()
+    End Sub
+
     Public ReadOnly Property DataStoreCreationArguments() As DataStoreCreationArguments
         Get
-            Return CType(CType(Me.Resources("CreationArgs"), ObjectDataProvider).Data, DataStoreCreationArguments)
+            Return m_Arguments
+        End Get
+    End Property
+
+    Public ReadOnly Property TemplateFinder() As TemplateFinder
+        Get
+            Return New TemplateFinder()
         End Get
     End Property
 
@@ -27,4 +51,5 @@
         End If
     End Sub
 
+    Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class

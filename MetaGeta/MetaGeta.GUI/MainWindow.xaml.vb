@@ -95,14 +95,22 @@ Partial Public Class MainWindow
         If dr.HasValue AndAlso dr.Value Then
             Dim args = win.DataStoreCreationArguments
             Dim ds = DataStoreManager.NewDataStore(args.Name, args.Tempate)
-            ds.Description = args.Description
-            ds.SetPluginSetting(CType(ds.FileSourcePlugins.Single(), IMGPluginBase), "DirectoriesToWatch", args.DirectoriesToWatch)
-            ds.SetPluginSetting(CType(ds.FileSourcePlugins.Single(), IMGPluginBase), "Extensions", args.Extensions)
+            ds.SetCreationArguemnts(args)
         End If
     End Sub
 
     Private Sub btnRemoveDataStore_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnRemoveDataStore.Click
         DataStoreManager.RemoveDataStore(SelectedDataStore)
+    End Sub
+
+    Private Sub btnEditDataStore_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnEditDataStore.Click
+        Dim win As New NewDataStoreWindow(SelectedDataStore.GetCreationArguments())
+        PresentationTraceSources.SetTraceLevel(win, PresentationTraceLevel.High)
+        win.Owner = Me
+        Dim dr = win.ShowDialog()
+        If dr.HasValue AndAlso dr.Value Then
+            SelectedDataStore.SetCreationArguemnts(win.DataStoreCreationArguments)
+        End If
     End Sub
 
     Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnImport.Click

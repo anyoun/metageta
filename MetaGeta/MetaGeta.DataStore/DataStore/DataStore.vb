@@ -177,7 +177,11 @@ Public Class MGDataStore
             Return m_Name
         End Get
         Set(ByVal value As String)
-            m_Name = value
+            If value <> m_Name Then
+                m_Name = value
+                m_DataMapper.WriteDataStore(Me)
+                OnNameChanged()
+            End If
         End Set
     End Property
     Public Property Description() As String
@@ -185,7 +189,11 @@ Public Class MGDataStore
             Return m_Description
         End Get
         Set(ByVal value As String)
-            m_Description = value
+            If value <> m_Description Then
+                m_Description = value
+                m_DataMapper.WriteDataStore(Me)
+                OnDescriptionChanged()
+            End If
         End Set
     End Property
     Public ReadOnly Property Template() As IDataStoreTemplate
@@ -198,10 +206,12 @@ Public Class MGDataStore
             Return m_ID
         End Get
         Set(ByVal value As Long)
-            m_ID = value
+            If value <> m_ID Then
+                m_ID = value
+            End If
         End Set
     End Property
-    
+
 
     Public Function GetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String) As String
         Return m_DataMapper.GetPluginSetting(Me, plugin.PluginID, settingName)
@@ -318,6 +328,26 @@ Public Class MGDataStore
     End Sub
 
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+#End Region
+
+#Region "DataStoreCreationArguments"
+
+    Public Function GetCreationArguments() As DataStoreCreationArguments
+        Return New DataStoreCreationArguments() With {.Name = Name, _
+                                                      .Description = Description, _
+                                                      .Tempate = Template, _
+                                                      .DirectoriesToWatch = GetPluginSetting(CType(FileSourcePlugins.Single(), IMGPluginBase), "DirectoriesToWatch"), _
+                                                      .Extensions = GetPluginSetting(CType(FileSourcePlugins.Single(), IMGPluginBase), "Extensions") _
+                                                      }
+    End Function
+
+    Public Sub SetCreationArguemnts(ByVal args As DataStoreCreationArguments)
+        Name = args.Name
+        Description = args.Description
+        SetPluginSetting(CType(FileSourcePlugins.Single(), IMGPluginBase), "DirectoriesToWatch", args.DirectoriesToWatch)
+        SetPluginSetting(CType(FileSourcePlugins.Single(), IMGPluginBase), "Extensions", args.Extensions)
+    End Sub
+
 #End Region
 
 End Class

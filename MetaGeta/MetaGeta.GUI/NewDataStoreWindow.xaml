@@ -9,8 +9,8 @@
     xmlns:MetaGeta_DataStore="clr-namespace:MetaGeta.DataStore;assembly=MetaGeta.DataStore"
     ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" MinHeight="217" MinWidth="390" x:Name="window">
     <Window.Resources>
-        <ObjectDataProvider x:Key="CreationArgs" d:IsDataSource="True" ObjectType="{x:Type MetaGeta_DataStore:DataStoreCreationArguments}"/>
-        <ObjectDataProvider x:Key="TemplateFinderDS" d:IsDataSource="True" ObjectType="{x:Type MetaGeta_DataStore:TemplateFinder}"/>
+        <!--<ObjectDataProvider x:Key="CreationArgs" d:IsDataSource="True" ObjectType="{x:Type MetaGeta_DataStore:DataStoreCreationArguments}"/>-->
+        <!--<ObjectDataProvider x:Key="TemplateFinderDS" d:IsDataSource="True" ObjectType="{x:Type MetaGeta_DataStore:TemplateFinder}"/>-->
 
         <ControlTemplate x:Key="validationTemplate">
             <DockPanel>
@@ -41,26 +41,29 @@
         </Grid.ColumnDefinitions>
 
         <TextBox x:Name="tbName" Margin="6.935,8,26,0" VerticalAlignment="Top" Grid.Column="1" TextWrapping="Wrap" 
-                 Text="{Binding Path=Name, Source={StaticResource CreationArgs}, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
+                 Text="{Binding Path=DataStoreCreationArguments.Name, ElementName=window, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
                  Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
         <TextBox x:Name="tbDescription" Margin="6.935,33.96,26,125.04" Grid.Column="1" TextWrapping="Wrap" 
-                 Text="{Binding Path=Description, Source={StaticResource CreationArgs}, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" 
+                 Text="{Binding Path=DataStoreCreationArguments.Description, ElementName=window, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" 
                  Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
         <TextBox x:Name="tbDirectories" Margin="6.935,0,60,73.12" VerticalAlignment="Bottom" TextWrapping="Wrap" Grid.Column="1" d:LayoutOverrides="Height"
-                 Text="{Binding Path=DirectoriesToWatch, Mode=Default, Source={StaticResource CreationArgs}, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
+                 Text="{Binding Path=DataStoreCreationArguments.DirectoriesToWatch, Mode=Default, ElementName=window, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
                  Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
         <TextBox x:Name="tbExtensions" Margin="6.935,0,26,41.16" TextWrapping="Wrap" VerticalAlignment="Bottom" Grid.Column="1"
-                 Text="{Binding Path=Extensions, Mode=Default, Source={StaticResource CreationArgs}, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
+                 Text="{Binding Path=DataStoreCreationArguments.Extensions, Mode=Default, ElementName=window, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
                  Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
 
         <TextBlock x:Name="blkName" d:LayoutOverrides="Width" HorizontalAlignment="Right" Margin="0,11,5.351,0" VerticalAlignment="Top" Text="Name:" TextWrapping="Wrap" />
         <TextBlock x:Name="blkDescription" HorizontalAlignment="Right" Margin="0,36.96,5.351,0" VerticalAlignment="Top" Text="Description:" TextWrapping="Wrap"/>
         <TextBlock x:Name="blkTemplate" Margin="0,0,9.065,102.08" VerticalAlignment="Bottom" Text="Template:" TextWrapping="Wrap" d:LayoutOverrides="HorizontalAlignment, Height" HorizontalAlignment="Right" Width="Auto" />
 
-        <ComboBox x:Name="cmbTemplate" IsSynchronizedWithCurrentItem="True" ItemsSource="{Binding Path=AvailableTemplates, Mode=Default, Source={StaticResource TemplateFinderDS}}" Margin="6.935,0,13,99.08" VerticalAlignment="Bottom" Grid.Column="1" d:LayoutOverrides="Height" SelectedItem="{Binding Path=Tempate, Mode=Default, Source={StaticResource CreationArgs}}"/>
+        <ComboBox x:Name="cmbTemplate" IsSynchronizedWithCurrentItem="True" 
+                  ItemsSource="{Binding Path=TemplateFinder.AvailableTemplates, Mode=Default, ElementName=window}" 
+                  Margin="6.935,0,13,99.08" VerticalAlignment="Bottom" Grid.Column="1" d:LayoutOverrides="Height" 
+                  SelectedItem="{Binding Path=DataStoreCreationArguments.Tempate, Mode=Default, ElementName=window}"/>
 
         <Button x:Name="btnOK" d:LayoutOverrides="Width, Height" Padding="10,3,10,3" HorizontalAlignment="Right" Margin="0,0,76.053,8" VerticalAlignment="Bottom" Content="OK" Grid.Column="1" IsDefault="True" Height="25.96" Width="40.007" 
-                IsEnabled="{Binding Path=IsValid, Source={StaticResource CreationArgs}}" />
+                IsEnabled="{Binding Path=DataStoreCreationArguments.IsValid, ElementName=window}" />
 
         <Button x:Name="btnCancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="Cancel" Padding="10,3,10,3" Margin="0,0,8,8" Grid.Column="1" IsCancel="True" />
 

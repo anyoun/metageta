@@ -261,6 +261,19 @@ Public Class DataMapper
             cmd.ExecuteNonQuery()
         End Using
     End Sub
+    Public Sub WriteDataStore(ByVal dataStore As MGDataStore)
+        Using tran = Connection.BeginTransaction()
+            Using cmd = Connection.CreateCommand()
+                cmd.CommandText = "UPDATE [DataStore] SET [Name] = ?, [Description] = ? WHERE [DatastoreID] = ?"
+                cmd.Transaction = tran
+                cmd.AddParam(dataStore.Name)
+                cmd.AddParam(dataStore.Description)
+                cmd.AddParam(dataStore.ID)
+                cmd.ExecuteNonQuery()
+            End Using
+            tran.Commit()
+        End Using
+    End Sub
 #End Region
 
 #Region "Removing"

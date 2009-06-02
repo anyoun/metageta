@@ -51,10 +51,16 @@
 
     <DockPanel x:Name="DockPanel1" >
         <Grid DockPanel.Dock="Left" Width="200" x:Name="LeftHandGrid">
-            <Button x:Name="btnNewDataStore" Margin="6,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="+" FontWeight="Bold" FontSize="14"/>
-            <Button x:Name="btnRemoveDataStore" Margin="34,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="-" FontWeight="Bold" FontSize="14"/>
             <ListBox x:Name="lbDataStores" Margin="6,6,6,34" IsSynchronizedWithCurrentItem="True" SelectedIndex="0" SelectionMode="Single"
 			 ItemsSource="{Binding Path=DataStores}"/>
+
+            <Button x:Name="btnNewDataStore" Margin="6,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="+" FontWeight="Bold" FontSize="14"/>
+            <Button x:Name="btnRemoveDataStore" Margin="34,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="-" FontWeight="Bold" FontSize="14"
+                    IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=Window1}"/>
+            
+            <Button x:Name="btnEditDataStore" Margin="62,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="..." FontWeight="Bold" FontSize="14"
+                    IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=Window1}" />
+
             <Button x:Name="btnGlobalSettings" Margin="0,0,8,6" VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="24" Width="69" Content="Settings..."/>
         </Grid>
         <Grid DataContext="{Binding Path=SelectedItem, ElementName=lbDataStores, Mode=Default}" x:Name="RightHandGrid">
