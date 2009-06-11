@@ -8,58 +8,61 @@ Partial Public Class MainWindow
     Implements INotifyPropertyChanged
     Private Shared ReadOnly log As ILog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
 
+    Private m_NavigationTabs As IEnumerable(Of NavigationTab)
+    Private ReadOnly m_DataStoreManager As DataStoreManager
+
     Public Sub New()
         DataStoreManager.IsInDesignMode = DesignerProperties.GetIsInDesignMode(Me)
+        m_DataStoreManager = New DataStoreManager()
+        m_NavigationTabs = CreateNavigation()
         InitializeComponent()
-        lbDataStores.SelectedIndex = -1
-        Diagnostics.PresentationTraceSources.SetTraceLevel(lvQueue, PresentationTraceLevel.High)
+        'lbDataStores.SelectedIndex = -1
+        Diagnostics.PresentationTraceSources.SetTraceLevel(Me, PresentationTraceLevel.High)
     End Sub
 
-    Private Sub MainWindow_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles Window1.Loaded
-        OnMyPropertyChanged("SelectedDataStoreColumnsView")
+    Private Sub MainWindow_Loaded(ByVal sender As Object, ByVal e As RoutedEventArgs) Handles MainWindow.Loaded
+
     End Sub
-    Private Sub MainWindow_Closing(ByVal sender As Object, ByVal e As EventArgs) Handles Window1.Closing
+    Private Sub MainWindow_Closing(ByVal sender As Object, ByVal e As EventArgs) Handles MainWindow.Closing
         DataStoreManager.Shutdown()
     End Sub
 
-    Private Sub RightHandGrid_DataContextChanged(ByVal sender As System.Object, ByVal e As System.Windows.DependencyPropertyChangedEventArgs) Handles RightHandGrid.DataContextChanged
-        OnMyPropertyChanged("SelectedDataStoreColumnsView")
-    End Sub
-    Private ReadOnly Property DataStoreManager() As DataStoreManager
+    Public ReadOnly Property CurrentView() As UserControl
         Get
-            Return CType(Me.DataContext, DataStoreManager)
+            Return SelectedNavigationTab.View
         End Get
     End Property
-    Public ReadOnly Property SelectedDataStoreColumnsView() As ViewBase
-        Get
-            Dim grid As New GridView()
-            If Not SelectedDataStore Is Nothing Then
-                grid.Columns.Clear()
 
-                For Each t In SelectedDataStore.Template.GetColumnNames()
-                    Dim col = New GridViewColumn
-                    Dim b As New Binding()
-                    b.Converter = New MGFileConverter()
-                    b.ConverterParameter = t
-                    b.Mode = BindingMode.OneWay
-                    col.DisplayMemberBinding = b
-                    col.Header = t
-                    grid.Columns.Add(col)
-                Next
-            End If
-            Return grid
+    Public ReadOnly Property DataStoreManager() As DataStoreManager
+        Get
+            Return m_DataStoreManager
         End Get
     End Property
+
+    Public ReadOnly Property NavigationTabs() As IEnumerable(Of NavigationTab)
+        Get
+            Return m_NavigationTabs
+        End Get
+    End Property
+
 
 #Region "Selection"
 
+    'Private Sub lbDataStores_SelectionChanged(ByVal sender As Object, ByVal e As RoutedPropertyChangedEventArgs(Of Object)) Handles lbDataStores.SelectedItemChanged
     Private Sub lbDataStores_SelectionChanged(ByVal sender As Object, ByVal e As SelectionChangedEventArgs) Handles lbDataStores.SelectionChanged
         OnMyPropertyChanged("IsDataStoreSelectionValid")
+        OnMyPropertyChanged("SelectedDataStore")
+        OnMyPropertyChanged("CurrentView")
     End Sub
 
     Private ReadOnly Property SelectedDataStore() As MGDataStore
         Get
-            Return CType(lbDataStores.SelectedItem, MGDataStore)
+            Return Nothing
+        End Get
+    End Property
+    Private ReadOnly Property SelectedNavigationTab() As NavigationTab
+        Get
+            Return CType(lbDataStores.SelectedItem, NavigationTab)
         End Get
     End Property
     Public ReadOnly Property IsDataStoreSelectionValid() As Boolean
@@ -68,20 +71,6 @@ Partial Public Class MainWindow
         End Get
     End Property
 
-    Private Sub lvItems_SelectionChanged(ByVal sender As Object, ByVal e As SelectionChangedEventArgs) Handles lvItems.SelectionChanged
-        OnMyPropertyChanged("IsFileSelectionValid")
-    End Sub
-
-    Private ReadOnly Property SelectedFiles() As IEnumerable(Of MGFile)
-        Get
-            Return lvItems.SelectedItems.Cast(Of MGFile)()
-        End Get
-    End Property
-    Public ReadOnly Property IsFileSelectionValid() As Boolean
-        Get
-            Return lvItems.SelectedItems.Count > 0
-        End Get
-    End Property
 
 #End Region
 
@@ -113,19 +102,6 @@ Partial Public Class MainWindow
         End If
     End Sub
 
-    Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnImport.Click
-        If SelectedDataStore IsNot Nothing Then
-            SelectedDataStore.EnqueueRefreshFileSources()
-        End If
-    End Sub
-
-    Private Sub btnWriteTags_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnWriteTags.Click
-        For Each f In SelectedFiles
-            SelectedDataStore.DoAction(f, TranscodePlugin.Mp4TagWriterPlugin.c_WriteTagsAction)
-        Next
-        tabQueue.IsSelected = True
-    End Sub
-
     Private Sub btnGlobalSettings_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnGlobalSettings.Click
         Dim settings = DataStoreManager.GetGlobalSettings()
         Dim win As New GlobalSettingsEditor(settings)
@@ -139,31 +115,28 @@ Partial Public Class MainWindow
         End If
     End Sub
 
-    Private Sub btnConvertToIpod_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnConvertToIpod.Click
-        For Each f In SelectedFiles
-            SelectedDataStore.DoAction(f, TranscodePlugin.TranscodePlugin.ConvertActionName)
-        Next
-        tabQueue.IsSelected = True
-    End Sub
-
 #End Region
+
+    Private Function CreateNavigation() As IEnumerable(Of NavigationTab)
+        Dim runImage = New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/run.png"))
+        Dim dbImage = New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/db.png"))
+        Dim configureImage = New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/configure.png"))
+        Dim viewImage = New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/view_detailed.png"))
+
+        Dim tabs = New List(Of NavigationTab)
+
+        tabs.Add(New NavigationTab(New EmptyView(), configureImage, "Settings") With {.Group = "MetaGeta"})
+
+        For Each ds In DataStoreManager.DataStores
+            tabs.Add(New NavigationTab(New EmptyView(), runImage, "Configuration") With {.Group = ds.Name})
+            tabs.Add(New NavigationTab(New DataStoreView(ds), viewImage, "View") With {.Group = ds.Name})
+        Next
+
+        Return tabs
+    End Function
 
     Private Sub OnMyPropertyChanged(ByVal name As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
     End Sub
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
-End Class
-
-<ValueConversion(GetType(MGFile), GetType(String), ParameterType:=GetType(String))> _
-Public Class MGFileConverter
-    Implements IValueConverter
-
-    Public Function Convert(ByVal value As Object, ByVal targetType As System.Type, ByVal parameter As Object, ByVal culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
-        Dim file As MGFile = CType(value, MGFile)
-        Return file.GetTag(CType(parameter, String))
-    End Function
-
-    Public Function ConvertBack(ByVal value As Object, ByVal targetType As System.Type, ByVal parameter As Object, ByVal culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.ConvertBack
-        Throw New NotImplementedException()
-    End Function
 End Class

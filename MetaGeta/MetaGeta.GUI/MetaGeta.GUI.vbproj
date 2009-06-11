@@ -1,4 +1,4 @@
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -87,6 +87,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -109,11 +110,11 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Page Include="GlobalSettingsEditor.xaml">
+    <Page Include="Windows\GlobalSettingsEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="GlobalSettingsEditor.xaml.vb">
+    <Compile Include="Windows\GlobalSettingsEditor.xaml.vb">
       <DependentUpon>GlobalSettingsEditor.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -145,6 +146,9 @@
     <Compile Include="Application.xaml.vb">
       <DependentUpon>Application.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DataStoreView.xaml.vb">
+      <DependentUpon>DataStoreView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.xaml.vb">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -165,7 +169,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="NewDataStoreWindow.xaml.vb">
+    <Compile Include="Navigation\NavigationTab.vb" />
+    <Compile Include="Views\EmptyView.xaml.vb">
+      <DependentUpon>EmptyView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\NewDataStoreWindow.xaml.vb">
       <DependentUpon>NewDataStoreWindow.xaml</DependentUpon>
     </Compile>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -186,11 +194,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Page Include="Views\DataStoreView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="NewDataStoreWindow.xaml">
+    <Page Include="Views\EmptyView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\NewDataStoreWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -228,6 +244,21 @@
       <Project>{C7A11128-E589-4016-8735-3FF3A50E12ED}</Project>
       <Name>TVShowPlugin</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\run.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\configure.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\db.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\fifteenpieces.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\view_detailed.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Target Name="BeforeBuild">

@@ -1,5 +1,6 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports System.Text
+Imports System.Reflection
 
 Public Module LinqExtensions
 
@@ -67,6 +68,14 @@ Public Module LinqExtensions
 
     <Extension()> Public Function SingleToEnumerable(Of T)(ByVal item As T) As IEnumerable(Of T)
         Return New T() {item}
+    End Function
+
+    <Extension()> Public Function IsDefined(Of T As Attribute)(ByVal info As MemberInfo, Optional ByVal inherit As Boolean = False) As Boolean
+        Return info.IsDefined(GetType(T), inherit)
+    End Function
+
+    <Extension()> Public Function GetCustomAttribute(Of T As Attribute)(ByVal info As MemberInfo, Optional ByVal inherit As Boolean = False) As T
+        Return info.GetCustomAttributes(GetType(T), inherit).Cast(Of T)().Single()
     End Function
 
 End Module

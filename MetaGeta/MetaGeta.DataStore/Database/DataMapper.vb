@@ -180,7 +180,7 @@ Public Class DataMapper
         log.Debug("Loading Plugins...")
         For Each ds In dataStores
             Using cmd = Connection.CreateCommand()
-                cmd.CommandText = "SELECT [PluginID], [PluginTypeName] FROM [Plugin] WHERE [DataStoreID] = ?"
+                cmd.CommandText = "SELECT [PluginID], [PluginTypeName] FROM [Plugin] WHERE [DataStoreID] = ? ORDER BY [PluginID] ASC"
                 cmd.AddParam(ds.ID)
                 Using rdr = cmd.ExecuteReader()
                     While rdr.Read()
@@ -347,25 +347,25 @@ Public Class DataMapper
             cmd.ExecuteNonQuery()
         End Using
     End Sub
-    Public Sub CreateGlobalSetting(ByVal setting As GlobalSettingAttribute)
-        Using tran = Connection.BeginTransaction()
-            Using cmd = Connection.CreateCommand()
-                cmd.CommandText = "INSERT OR IGNORE INTO [GlobalSetting]([Name], [Value], [DefaultValue], [Type]) VALUES(?, NULL, ?, ?)"
-                cmd.AddParam(setting.Name)
-                cmd.AddParam(setting.DefaultValue)
-                cmd.AddParam(setting.Type.ToString())
-                cmd.ExecuteNonQuery()
-            End Using
-            Using cmd = Connection.CreateCommand()
-                cmd.CommandText = "UPDATE [GlobalSetting] SET [DefaultValue] = ?, [Type] = ? WHERE [Name] = ?"
-                cmd.AddParam(setting.DefaultValue)
-                cmd.AddParam(setting.Type.ToString())
-                cmd.AddParam(setting.Name)
-                cmd.ExecuteNonQuery()
-            End Using
-            tran.Commit()
-        End Using
-    End Sub
+    'Public Sub CreateGlobalSetting(ByVal setting As GlobalSettingAttribute)
+    '    Using tran = Connection.BeginTransaction()
+    '        Using cmd = Connection.CreateCommand()
+    '            cmd.CommandText = "INSERT OR IGNORE INTO [GlobalSetting]([Name], [Value], [DefaultValue], [Type]) VALUES(?, NULL, ?, ?)"
+    '            cmd.AddParam(setting.Name)
+    '            cmd.AddParam(setting.DefaultValue)
+    '            cmd.AddParam(setting.Type.ToString())
+    '            cmd.ExecuteNonQuery()
+    '        End Using
+    '        Using cmd = Connection.CreateCommand()
+    '            cmd.CommandText = "UPDATE [GlobalSetting] SET [DefaultValue] = ?, [Type] = ? WHERE [Name] = ?"
+    '            cmd.AddParam(setting.DefaultValue)
+    '            cmd.AddParam(setting.Type.ToString())
+    '            cmd.AddParam(setting.Name)
+    '            cmd.ExecuteNonQuery()
+    '        End Using
+    '        tran.Commit()
+    '    End Using
+    'End Sub
     Public Function ReadGlobalSettings() As IList(Of GlobalSetting)
         Dim settings As New List(Of GlobalSetting)
         Using cmd = Connection.CreateCommand()

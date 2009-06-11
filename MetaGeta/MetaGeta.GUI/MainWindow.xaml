@@ -1,127 +1,76 @@
 ﻿<Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mgds="clr-namespace:MetaGeta.DataStore;assembly=MetaGeta.DataStore" x:Class="MainWindow"
-    Title="MetaGeta" Height="651" Width="932" x:Name="Window1"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:System="clr-namespace:System;assembly=mscorlib" mc:Ignorable="d">
+    xmlns:mgds="clr-namespace:MetaGeta.DataStore;assembly=MetaGeta.DataStore"
+    x:Class="MainWindow" x:Name="MainWindow" Title="MetaGeta"
+    Height="651" Width="932" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:System="clr-namespace:System;assembly=mscorlib" xmlns:GUI="clr-namespace:MetaGeta.GUI" mc:Ignorable="d">
+
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
+        <DataTemplate DataType="{x:Type mgds:MGDataStore}">
+            <TextBlock Text="{Binding Path=Name}"/>
+        </DataTemplate>
 
-        <DataTemplate DataType="{x:Type mgds:MGDataStore}" x:Name="MGDataStoreTemplate">
-            <TextBlock Text="{Binding Path=Name}" Grid.Column="0"/>
-        </DataTemplate>
-        <ObjectDataProvider x:Key="DataStoreManagerDS" d:IsDataSource="True" ObjectType="{x:Type mgds:DataStoreManager}"/>
-        <DataTemplate x:Key="ActionItem-Action">
-            <TextBlock Text="{Binding Path=Action}"/>
-        </DataTemplate>
-        <DataTemplate x:Key="ActionItem-File">
-            <TextBlock Text="{Binding Path=File.FileName}"/>
-        </DataTemplate>
-        <DataTemplate x:Key="ActionItem-Progress">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="0.8*"/>
-                </Grid.ColumnDefinitions>
+        <Style TargetType="TreeViewItem">
+            <Setter Property="IsExpanded" Value="True" />
+        </Style>
 
-                <TextBlock Text="{Binding Path=Status.ProgressPct, StringFormat='{}{0,4:##0%}'}" TextAlignment="Right"  />
-                <ProgressBar IsEnabled="{Binding Path=Status.IsRunning}" 
-                             Visibility="{Binding Path=Status.IsRunning, Converter={StaticResource VisibilityConverter}}" 
-                             Value="{Binding Path=Status.ProgressPct}" 
-                             Minimum="0" Maximum="1" Orientation="Horizontal"
-                             Grid.Column="1"/>
-            </Grid>
+        <HierarchicalDataTemplate DataType="{x:Type GUI:NavigationTab}"
+                                  ItemsSource="{Binding SubTabs}">
+            <StackPanel Orientation="Horizontal" Margin="7,0,0,0">
+                <Image Source="{Binding Path=Icon}" Width="16" Height="16" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                <TextBlock Text="{Binding Path=Caption}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </StackPanel>
+
+        </HierarchicalDataTemplate>
+
+        <DataTemplate DataType="{x:Type GUI:SeparatorNavigationTab}">
+            <Line SnapsToDevicePixels="True" Stretch="Fill" X1="0" X2="1" Stroke="Black" Width="100" />
         </DataTemplate>
-        <DataTemplate x:Key="ActionItem-TimeLeft">
-            <TextBlock Text="{Binding Path=Status.TimeLeft, Mode=OneWay}"/>
+
+        <CollectionViewSource x:Key="NavigationTabsGrouped" Source="{Binding Path=NavigationTabs, ElementName=MainWindow}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="Group"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+
+        <DataTemplate x:Key="HeaderTemplate">
+            <StackPanel Margin="2" Orientation="Horizontal">
+                <Image Source="pack://application:,,,/MetaGeta.GUI;component/Resources/db.png" Width="16" Height="16" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold" Margin="5,0" VerticalAlignment="Center" />
+                <Rectangle Height="1" Fill="Blue" VerticalAlignment="Center" />
+            </StackPanel>
         </DataTemplate>
-        <DataTemplate x:Key="ActionItem-Message">
-            <TextBlock Text="{Binding Path=Status.StatusMessage, Mode=OneWay}"/>
-        </DataTemplate>
-        <DataTemplate x:Key="Tag-Name">
-            <TextBlock Text="{Binding Path=Name, Mode=OneWay}" TextWrapping="Wrap" MaxWidth="300"/>
-        </DataTemplate>
-        <DataTemplate x:Key="Tag-Value">
-            <TextBlock Text="{Binding Path=Value, Mode=OneWay}" TextWrapping="Wrap" MaxWidth="300"/>
-        </DataTemplate>
+
     </Window.Resources>
-    <Window.DataContext>
-        <Binding Mode="OneWay" Source="{StaticResource DataStoreManagerDS}"/>
-    </Window.DataContext>
 
     <DockPanel x:Name="DockPanel1" >
-        <Grid DockPanel.Dock="Left" Width="200" x:Name="LeftHandGrid">
-            <ListBox x:Name="lbDataStores" Margin="6,6,6,34" IsSynchronizedWithCurrentItem="True" SelectedIndex="0" SelectionMode="Single"
-			 ItemsSource="{Binding Path=DataStores}"/>
+        <Grid x:Name="LeftHandGrid" DockPanel.Dock="Left" Width="200">
+            <ListBox x:Name="lbDataStores" Margin="6,6,6,34" 
+			    ItemsSource="{Binding Source={StaticResource NavigationTabsGrouped}}">
+                <ListBox.GroupStyle>
+                    <GroupStyle HeaderTemplate="{StaticResource HeaderTemplate}"/>
+                </ListBox.GroupStyle>
+                <ListBox.Resources>
+                    <LinearGradientBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" StartPoint="0,0" EndPoint="0,1" >
+                        <GradientStop Color="#CDDFEB" Offset="0"/>
+                        <GradientStop Color="#90BADA" Offset=".49"/>
+                        <GradientStop Color="#80AACA" Offset=".5"/>
+                        <GradientStop Color="#80AACA" Offset="1"/>                        
+                    </LinearGradientBrush>
+                </ListBox.Resources>
+            </ListBox>
 
             <Button x:Name="btnNewDataStore" Margin="6,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="+" FontWeight="Bold" FontSize="14"/>
             <Button x:Name="btnRemoveDataStore" Margin="34,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="-" FontWeight="Bold" FontSize="14"
-                    IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=Window1}"/>
-            
+                IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=MainWindow}"/>
+
             <Button x:Name="btnEditDataStore" Margin="62,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="..." FontWeight="Bold" FontSize="14"
-                    IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=Window1}" />
+                IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=MainWindow}" />
 
             <Button x:Name="btnGlobalSettings" Margin="0,0,8,6" VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="24" Width="69" Content="Settings..."/>
         </Grid>
-        <Grid DataContext="{Binding Path=SelectedItem, ElementName=lbDataStores, Mode=Default}" x:Name="RightHandGrid">
-            <TabControl x:Name="tcDataStoreDetail" IsSynchronizedWithCurrentItem="True" Margin="8,36,8,8">
-                <TabItem Header="Items" x:Name="tabItems">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="0.936*"/>
-                            <RowDefinition Height="0.07*"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="0.651*" MinWidth="100"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <ListView x:Name="lvItems"
-        					ItemsSource="{Binding Path=Files}" View="{Binding Path=SelectedDataStoreColumnsView, ElementName=Window1, Mode=Default}"
-                            SelectionMode="Extended"
-                            Margin="8,8,8,8" Grid.RowSpan="2"/>
-                        <Button Margin="8,8,8,8" x:Name="btnConvertToIpod" Content="Convert to iPod" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                IsEnabled="{Binding Path=IsFileSelectionValid, ElementName=Window1}"/>
-                        <ListView IsSynchronizedWithCurrentItem="True" Margin="8,8,8,8" 
-                                  DataContext="{Binding Path=SelectedItem, ElementName=lvItems, Mode=Default}"
-                                  ItemsSource="{Binding Path=Tags}" Grid.Column="2" Grid.ColumnSpan="2">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header="Name" CellTemplate="{DynamicResourceExtension Tag-Name}"/>
-                                    <GridViewColumn Header="Value" CellTemplate="{DynamicResourceExtension Tag-Value}"/>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-                        <Button Margin="8,8,8,8" Name="btnWriteTags" Grid.Column="3" Grid.Row="1" Content="Write Tags"
-                                IsEnabled="{Binding Path=IsFileSelectionValid, ElementName=Window1}"/>
-                        <GridSplitter Margin="0,8,0,8" Width="5" RenderTransformOrigin="0.5,0.5" Grid.Column="1" HorizontalAlignment="Center" Grid.RowSpan="2"/>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Queue" x:Name="tabQueue">
-                    <ListView IsSynchronizedWithCurrentItem="True" x:Name="lvQueue" Width="Auto" Height="Auto" ItemsSource="{Binding Path=ActionItems}">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="Action" CellTemplate="{DynamicResourceExtension ActionItem-Action}"/>
-                                <!--<GridViewColumn Header="Status" CellTemplate="{DynamicResourceExtension ActionItem-State}" Width="100"/>-->
-                                <GridViewColumn Header="File" CellTemplate="{DynamicResourceExtension ActionItem-File}"/>
-                                <GridViewColumn Header="Progress" CellTemplate="{DynamicResourceExtension ActionItem-Progress}" Width="200"/>
-                                <GridViewColumn Header="Time Left" CellTemplate="{DynamicResourceExtension ActionItem-TimeLeft}"/>
-                                <GridViewColumn Header="Message" CellTemplate="{DynamicResourceExtension ActionItem-Message}" Width="200"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </TabItem>
-            </TabControl>
-            <Button x:Name="btnImport" IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=Window1}" HorizontalAlignment="Left" Width="68" VerticalAlignment="Top" Height="24" Content="Import" Margin="8,8,0,0"/>
-            <TextBlock Margin="80,8,0,0" VerticalAlignment="Top" Height="20" Text="{Binding Path=Name, Mode=Default}" TextWrapping="Wrap" Width="226" HorizontalAlignment="Left" x:Name="tbDataStoreName"/>
-        </Grid>
 
+        <ContentControl x:Name="CurrentViewContentControl" Content="{Binding Path=CurrentView, ElementName=MainWindow, Mode=Default}"/>
     </DockPanel>
 </Window>

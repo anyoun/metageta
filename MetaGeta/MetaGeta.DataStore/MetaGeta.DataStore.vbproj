@@ -172,6 +172,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Model\Tag.vb" />
+    <Compile Include="Settings\SettingInfo.vb" />
+    <Compile Include="Settings\SettingsAttribute.vb" />
+    <Compile Include="Settings\SettingsHelper.vb" />
     <Compile Include="Templates\IDataStoreTemplate.vb" />
     <Compile Include="Templates\TVShowDataStoreTemplate.vb" />
   </ItemGroup>

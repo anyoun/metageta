@@ -5,9 +5,9 @@ Imports MetaGeta.DataStore
 Imports MetaGeta.Utilities
 Imports System.Xml.Linq
 
-<Assembly: GlobalSetting("Transcode Plugin.Transcode Preset Name", "iPhone-ffmpeg", GlobalSettingType.ShortText)> 
-<Assembly: GlobalSetting("Transcode Plugin.mencoder Location", "%TOOLS%\mplayer\mencoder.exe", GlobalSettingType.File)> 
-<Assembly: GlobalSetting("Transcode Plugin.ffmpeg Location", "%TOOLS%\ffmpeg\ffmpeg.exe", GlobalSettingType.File)> 
+'<Assembly: GlobalSetting("Transcode Plugin.Transcode Preset Name", "iPhone-ffmpeg", GlobalSettingType.ShortText)> 
+'<Assembly: GlobalSetting("Transcode Plugin.mencoder Location", "%TOOLS%\mplayer\mencoder.exe", GlobalSettingType.File)> 
+'<Assembly: GlobalSetting("Transcode Plugin.ffmpeg Location", "%TOOLS%\ffmpeg\ffmpeg.exe", GlobalSettingType.File)> 
 
 Public Class TranscodePlugin
     Implements IMGFileActionPlugin, IMGPluginBase
@@ -17,6 +17,10 @@ Public Class TranscodePlugin
     Private ReadOnly m_Presets As New List(Of Preset)
     Private m_DataStore As MGDataStore
     Private m_ID As Long
+
+    Private m_TranscodePresetName As String
+    Private m_MencoderLocation As String
+    Private m_FfmpegLocation As String
 
     Public Sub New()
 
@@ -179,6 +183,39 @@ Public Class TranscodePlugin
             Return Environment.ExpandEnvironmentVariables(m_DataStore.GetGlobalSetting("Transcode Plugin.ffmpeg Location"))
         End If
     End Function
+
+#Region "Settings"
+    <Settings("Transcode Preset Name", "iPhone-ffmpeg", SettingType.ShortText, "Preset")> _
+    Public Property TranscodePresetName() As String
+        Get
+            Return m_TranscodePresetName
+        End Get
+        Set(ByVal value As String)
+            m_TranscodePresetName = value
+        End Set
+    End Property
+
+    <Settings("mencoder Location", "%TOOLS%\mplayer\mencoder.exe", SettingType.File, "Programs")> _
+    Public Property MencoderLocation() As String
+        Get
+            Return m_MencoderLocation
+        End Get
+        Set(ByVal value As String)
+            m_MencoderLocation = value
+        End Set
+    End Property
+
+    <Settings("FFmpeg Location", "%TOOLS%\ffmpeg\ffmpeg.exe", SettingType.File, "Programs")> _
+    Public Property FfmpegLocation() As String
+        Get
+            Return m_FfmpegLocation
+        End Get
+        Set(ByVal value As String)
+            m_FfmpegLocation = value
+        End Set
+    End Property
+#End Region
+
 End Class
 
 Friend Class EncoderStatusParser
