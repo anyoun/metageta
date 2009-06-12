@@ -5,6 +5,7 @@ Imports TvdbConnector.Data
 Imports MetaGeta.TVShowPlugin
 Imports log4net
 Imports System.Reflection
+Imports MetaGeta.Utilities
 
 Public Class TVDBPlugin
     Implements IMGTaggingPlugin, IMGPluginBase
@@ -94,7 +95,16 @@ Public Class TVDBPlugin
                 log.DebugFormat("Found series: ""{0}"" -> ""{1}"".", seriesName, searchResult.Single().SeriesName)
                 seriesID = searchResult.Single().Id
             Else
-                seriesID = Nothing
+                log.DebugFormat("Multiple results for ""{0}"": {1}", seriesName, searchResult.Select(Function(s) s.SeriesName).JoinToString(", "))
+                Dim exactMatch = searchResult.FirstOrDefault(Function(s) String.Equals(s.SeriesName, seriesName, StringComparison.CurrentCultureIgnoreCase))
+                If (Not exactMatch Is Nothing) Then
+                    seriesID = exactMatch.Id
+                    TVDBPlugin.log.Debug("Found an exact match.")
+                Else
+                    seriesID = Nothing
+                    TVDBPlugin.log.Debug("No exact match.")
+                End If
+
             End If
             m_SeriesNameDictionary.Add(seriesName, seriesID)
         End If
