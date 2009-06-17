@@ -2,6 +2,7 @@
 
 Public Class DataStoreManager
     Implements INotifyPropertyChanged
+    Implements IDataStoreOwner
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
@@ -19,7 +20,7 @@ Public Class DataStoreManager
         m_DataMapper = New DataMapper(filename)
 
         m_DataMapper.Initialize()
-        m_DataStores.AddRange(m_DataMapper.GetDataStores())
+        m_DataStores.AddRange(m_DataMapper.GetDataStores(Me))
         'LoadGlobalSettings()
         OnDataStoresChanged()
     End Sub
@@ -40,14 +41,14 @@ Public Class DataStoreManager
             End If
             plugins.Add(CType(Activator.CreateInstance(t), IMGPluginBase))
         Next
-        Dim data As New MGDataStore(template, name, plugins, m_DataMapper)
+        Dim data As New MGDataStore(Me, template, name, plugins, m_DataMapper)
         m_DataMapper.WriteNewDataStore(data)
         m_DataStores.Add(data)
         OnDataStoresChanged()
         Return data
     End Function
 
-    Public Sub RemoveDataStore(ByVal dataStore As MGDataStore)
+    Public Sub DeleteDataStore(ByVal dataStore As MGDataStore) Implements IDataStoreOwner.DeleteDataStore
         dataStore.Close()
         m_DataMapper.RemoveDataStore(dataStore)
         DataStores.Remove(dataStore)

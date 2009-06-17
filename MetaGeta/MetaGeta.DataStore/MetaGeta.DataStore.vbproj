@@ -139,6 +139,7 @@
   <ItemGroup>
     <Compile Include="Database\DataMapper.vb" />
     <Compile Include="DataStore\ActionQueueItem.vb" />
+    <Compile Include="DataStore\IDataStoreOwner.vb" />
     <Compile Include="DataStore\ImportFileAction.vb" />
     <Compile Include="DataStore\ProgressStatus.vb" />
     <Compile Include="DataStore\RefreshFileSourcesAction.vb" />

@@ -4,6 +4,7 @@ Public Class MGDataStore
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
+    Private ReadOnly m_Owner As IDataStoreOwner
     Private ReadOnly m_Template As IDataStoreTemplate
     Private ReadOnly m_DataMapper As DataMapper
     Private m_ID As Long = -1
@@ -21,7 +22,8 @@ Public Class MGDataStore
     Private ReadOnly m_StopProcessingActions As New ManualResetEvent(False)
 
 
-    Friend Sub New(ByVal template As IDataStoreTemplate, ByVal name As String, ByVal plugins As IEnumerable(Of IMGPluginBase), ByVal dataMapper As DataMapper)
+    Friend Sub New(ByVal owner As IDataStoreOwner, ByVal template As IDataStoreTemplate, ByVal name As String, ByVal plugins As IEnumerable(Of IMGPluginBase), ByVal dataMapper As DataMapper)
+        m_Owner = owner
         m_Template = template
         m_Name = name
         m_DataMapper = dataMapper
@@ -47,6 +49,10 @@ Public Class MGDataStore
         For Each plugin In m_AllPlugins
             plugin.Shutdown()
         Next
+    End Sub
+
+    Public Sub Delete()
+        m_Owner.DeleteDataStore(Me)
     End Sub
 
     Friend Function GetTag(ByVal file As MGFile, ByVal tagName As String, Optional ByVal tran As DbTransaction = Nothing) As String

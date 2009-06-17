@@ -156,7 +156,7 @@ Public Class DataMapper
 #End Region
 
 #Region "Reading"
-    Public Function GetDataStores() As IEnumerable(Of MGDataStore)
+    Public Function GetDataStores(ByVal owner As IDataStoreOwner) As IEnumerable(Of MGDataStore)
         log.Debug("Loading DataStores...")
         Dim dataStores As New List(Of MGDataStore)
         Using cmd = Connection.CreateCommand()
@@ -168,7 +168,7 @@ Public Class DataMapper
                     Dim description = rdr.GetString(2)
                     Dim templateName = rdr.GetString(3)
                     Dim template = TemplateFinder.GetTemplateByName(templateName)
-                    Dim ds As New MGDataStore(template, name, New IMGPluginBase() {}, Me) With { _
+                    Dim ds As New MGDataStore(owner, template, name, New IMGPluginBase() {}, Me) With { _
                         .ID = id, _
                         .Description = description _
                     }

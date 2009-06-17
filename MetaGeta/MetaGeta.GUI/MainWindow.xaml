@@ -4,7 +4,7 @@
     xmlns:mgds="clr-namespace:MetaGeta.DataStore;assembly=MetaGeta.DataStore"
     x:Class="MainWindow" x:Name="MainWindow" Title="MetaGeta"
     Height="651" Width="932" 
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:System="clr-namespace:System;assembly=mscorlib" xmlns:GUI="clr-namespace:MetaGeta.GUI" mc:Ignorable="d">
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:System="clr-namespace:System;assembly=mscorlib" xmlns:GUI="clr-namespace:MetaGeta.GUI" xmlns:Utilities="clr-namespace:MetaGeta.Utilities;assembly=MetaGeta.Utilities" mc:Ignorable="d">
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type mgds:MGDataStore}">
@@ -28,11 +28,11 @@
             <Line SnapsToDevicePixels="True" Stretch="Fill" X1="0" X2="1" Stroke="Black" Width="100" />
         </DataTemplate>
 
-        <CollectionViewSource x:Key="NavigationTabsGrouped" Source="{Binding Path=NavigationTabs, ElementName=MainWindow}">
+        <Utilities:AutoRefreshCollectionViewSource x:Key="NavigationTabsGrouped" Source="{Binding Path=NavigationManager.NavigationTabs, ElementName=MainWindow}">
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="Group"/>
             </CollectionViewSource.GroupDescriptions>
-        </CollectionViewSource>
+        </Utilities:AutoRefreshCollectionViewSource>
 
         <DataTemplate x:Key="HeaderTemplate">
             <StackPanel Margin="2" Orientation="Horizontal">
@@ -62,11 +62,6 @@
             </ListBox>
 
             <Button x:Name="btnNewDataStore" Margin="6,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="+" FontWeight="Bold" FontSize="14"/>
-            <Button x:Name="btnRemoveDataStore" Margin="34,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="-" FontWeight="Bold" FontSize="14"
-                IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=MainWindow}"/>
-
-            <Button x:Name="btnEditDataStore" Margin="62,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="..." FontWeight="Bold" FontSize="14"
-                IsEnabled="{Binding Path=IsDataStoreSelectionValid, ElementName=MainWindow}" />
 
             <Button x:Name="btnGlobalSettings" Margin="0,0,8,6" VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="24" Width="69" Content="Settings..."/>
         </Grid>

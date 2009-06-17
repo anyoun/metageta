@@ -146,6 +146,7 @@
     <Compile Include="Application.xaml.vb">
       <DependentUpon>Application.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NavigationTabManager.vb" />
     <Compile Include="Views\DataStoreView.xaml.vb">
       <DependentUpon>DataStoreView.xaml</DependentUpon>
     </Compile>
@@ -172,6 +173,9 @@
     <Compile Include="Navigation\NavigationTab.vb" />
     <Compile Include="Views\EmptyView.xaml.vb">
       <DependentUpon>EmptyView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\DataStoreConfiguration.xaml.vb">
+      <DependentUpon>DataStoreConfiguration.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\NewDataStoreWindow.xaml.vb">
       <DependentUpon>NewDataStoreWindow.xaml</DependentUpon>
@@ -203,6 +207,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\EmptyView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\DataStoreConfiguration.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

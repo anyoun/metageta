@@ -1,5 +1,11 @@
-﻿Public Class NavigationTab
-    'Private ReadOnly m_SubTabs As New List(Of NavigationTab)
+﻿Imports System.Reflection
+Imports System.ComponentModel
+
+Public Class NavigationTab
+    Inherits DependancyObjectNotifyPropertyChanged
+
+    Public Shared ReadOnly GroupProperty As DependencyProperty = DependencyProperty.Register("Group", GetType(String), MethodBase.GetCurrentMethod().DeclaringType)
+
     Private ReadOnly m_View As UserControl
     Private ReadOnly m_Icon As ImageSource
     Private ReadOnly m_Caption As String
@@ -21,17 +27,12 @@
             Return m_Caption
         End Get
     End Property
-    'Public ReadOnly Property SubTabs() As List(Of NavigationTab)
-    '    Get
-    '        Return m_SubTabs
-    '    End Get
-    'End Property
     Public Property Group() As String
         Get
-            Return m_Group
+            Return CStr(GetValue(GroupProperty))
         End Get
         Set(ByVal value As String)
-            m_Group = value
+            SetValue(GroupProperty, value)
         End Set
     End Property
 
@@ -40,6 +41,7 @@
             Return m_View
         End Get
     End Property
+
 End Class
 
 Public Class SeparatorNavigationTab

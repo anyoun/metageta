@@ -8,13 +8,13 @@ Partial Public Class MainWindow
     Implements INotifyPropertyChanged
     Private Shared ReadOnly log As ILog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
 
-    Private m_NavigationTabs As IEnumerable(Of NavigationTab)
-    Private ReadOnly m_DataStoreManager As DataStoreManager
+    Private m_Navigation As NavigationTabManager
+    Private WithEvents m_DataStoreManager As DataStoreManager
 
     Public Sub New()
         DataStoreManager.IsInDesignMode = DesignerProperties.GetIsInDesignMode(Me)
         m_DataStoreManager = New DataStoreManager()
-        m_NavigationTabs = CreateNavigation()
+        m_Navigation = New NavigationTabManager(m_DataStoreManager)
         InitializeComponent()
         'lbDataStores.SelectedIndex = -1
         Diagnostics.PresentationTraceSources.SetTraceLevel(Me, PresentationTraceLevel.High)
@@ -39,9 +39,9 @@ Partial Public Class MainWindow
         End Get
     End Property
 
-    Public ReadOnly Property NavigationTabs() As IEnumerable(Of NavigationTab)
+    Public ReadOnly Property NavigationManager() As NavigationTabManager
         Get
-            Return m_NavigationTabs
+            Return m_Navigation
         End Get
     End Property
 
@@ -88,20 +88,6 @@ Partial Public Class MainWindow
         End If
     End Sub
 
-    Private Sub btnRemoveDataStore_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnRemoveDataStore.Click
-        DataStoreManager.RemoveDataStore(SelectedDataStore)
-    End Sub
-
-    Private Sub btnEditDataStore_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnEditDataStore.Click
-        Dim win As New NewDataStoreWindow(SelectedDataStore.GetCreationArguments())
-        PresentationTraceSources.SetTraceLevel(win, PresentationTraceLevel.High)
-        win.Owner = Me
-        Dim dr = win.ShowDialog()
-        If dr.HasValue AndAlso dr.Value Then
-            SelectedDataStore.SetCreationArguemnts(win.DataStoreCreationArguments)
-        End If
-    End Sub
-
     Private Sub btnGlobalSettings_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnGlobalSettings.Click
         Dim settings = DataStoreManager.GetGlobalSettings()
         Dim win As New GlobalSettingsEditor(settings)
@@ -116,24 +102,6 @@ Partial Public Class MainWindow
     End Sub
 
 #End Region
-
-    Private Function CreateNavigation() As IEnumerable(Of NavigationTab)
-        Dim runImage = New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/run.png"))
-        Dim dbImage = New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/db.png"))
-        Dim configureImage = New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/configure.png"))
-        Dim viewImage = New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/view_detailed.png"))
-
-        Dim tabs = New List(Of NavigationTab)
-
-        tabs.Add(New NavigationTab(New EmptyView(), configureImage, "Settings") With {.Group = "MetaGeta"})
-
-        For Each ds In DataStoreManager.DataStores
-            tabs.Add(New NavigationTab(New EmptyView(), runImage, "Configuration") With {.Group = ds.Name})
-            tabs.Add(New NavigationTab(New DataStoreView(ds), viewImage, "View") With {.Group = ds.Name})
-        Next
-
-        Return tabs
-    End Function
 
     Private Sub OnMyPropertyChanged(ByVal name As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
