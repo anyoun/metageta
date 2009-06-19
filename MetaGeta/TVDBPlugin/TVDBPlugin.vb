@@ -34,18 +34,21 @@ Public Class TVDBPlugin
         End Get
     End Property
 
-    Public Function GetFriendlyName() As String Implements DataStore.IMGPluginBase.GetFriendlyName
-        Return "The TVDB Plugin"
-    End Function
-
-    Public Function GetUniqueName() As String Implements DataStore.IMGPluginBase.GetUniqueName
-        Return "TVDBPlugin"
-    End Function
-
-    Public Function GetVersion() As Version Implements DataStore.IMGPluginBase.GetVersion
-        Return New Version(1, 0, 0, 0)
-    End Function
-
+    Public ReadOnly Property FriendlyName() As String Implements DataStore.IMGPluginBase.FriendlyName
+        Get
+            Return "The TVDB Plugin"
+        End Get
+    End Property
+    Public ReadOnly Property UniqueName() As String Implements DataStore.IMGPluginBase.UniqueName
+        Get
+            Return "TVDBPlugin"
+        End Get
+    End Property
+    Public ReadOnly Property Version() As Version Implements DataStore.IMGPluginBase.Version
+        Get
+            Return New Version(1, 0, 0, 0)
+        End Get
+    End Property
 
     Public Sub Process(ByVal file As MGFile, ByVal reporter As ProgressStatus) Implements IMGTaggingPlugin.Process
         'prompt user for series name lookups??
@@ -140,4 +143,6 @@ Public Class TVDBPlugin
         End If
         Return ep
     End Function
+
+    Public Event SettingChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements DataStore.IMGPluginBase.SettingChanged
 End Class

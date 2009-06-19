@@ -152,7 +152,6 @@
     <Compile Include="Model\File.vb" />
     <Compile Include="Model\FileSet.vb" />
     <Compile Include="Plugins\FileInfoTaggingPlugin.vb" />
-    <Compile Include="GlobalSettings\GlobalSettingAttribute.vb" />
     <Compile Include="Plugins\IMGFileActionPlugin.vb" />
     <Compile Include="Plugins\IMGFileSourcePlugin.vb" />
     <Compile Include="Plugins\IMGPluginBase.vb" />

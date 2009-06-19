@@ -13,15 +13,21 @@
 
     End Sub
 
-    Public Function GetFriendlyName() As String Implements IMGPluginBase.GetFriendlyName
-        Return "FileInfoTaggingPlugin"
-    End Function
-    Public Function GetUniqueName() As String Implements IMGPluginBase.GetUniqueName
-        Return "FileInfoTaggingPlugin"
-    End Function
-    Public Function GetVersion() As System.Version Implements IMGPluginBase.GetVersion
-        Return New Version(1, 0, 0, 0)
-    End Function
+    Public ReadOnly Property FriendlyName() As String Implements DataStore.IMGPluginBase.FriendlyName
+        Get
+            Return "FileInfoTaggingPlugin"
+        End Get
+    End Property
+    Public ReadOnly Property UniqueName() As String Implements DataStore.IMGPluginBase.UniqueName
+        Get
+            Return "FileInfoTaggingPlugin"
+        End Get
+    End Property
+    Public ReadOnly Property Version() As Version Implements DataStore.IMGPluginBase.Version
+        Get
+            Return New Version(1, 0, 0, 0)
+        End Get
+    End Property
     Public ReadOnly Property PluginID() As Long Implements IMGPluginBase.PluginID
         Get
             Return m_ID
@@ -34,4 +40,6 @@
         file.SetTag("Extension", fileInfo.Extension)
         file.SetTag("FileSizeBytes", fileInfo.Length.ToString())
     End Sub
+
+    Public Event SettingChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements IMGPluginBase.SettingChanged
 End Class

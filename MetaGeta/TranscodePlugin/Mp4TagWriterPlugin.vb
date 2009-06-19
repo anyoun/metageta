@@ -11,15 +11,21 @@ Public Class Mp4TagWriterPlugin
     Private m_Id As Long
 
 #Region "IMGPluginBase"
-    Public Function GetFriendlyName() As String Implements MetaGeta.DataStore.IMGPluginBase.GetFriendlyName
-        Return "MPEG-4 Tag Writer Plugin"
-    End Function
-    Public Function GetUniqueName() As String Implements MetaGeta.DataStore.IMGPluginBase.GetUniqueName
-        Return "Mp4TagWriterPlugin"
-    End Function
-    Public Function GetVersion() As System.Version Implements MetaGeta.DataStore.IMGPluginBase.GetVersion
-        Return New Version(1, 0, 0, 0)
-    End Function
+    Public ReadOnly Property FriendlyName() As String Implements IMGPluginBase.FriendlyName
+        Get
+            Return "MPEG-4 Tag Writer Plugin"
+        End Get
+    End Property
+    Public ReadOnly Property UniqueName() As String Implements IMGPluginBase.UniqueName
+        Get
+            Return "Mp4TagWriterPlugin"
+        End Get
+    End Property
+    Public ReadOnly Property Version() As Version Implements IMGPluginBase.Version
+        Get
+            Return New Version(1, 0, 0, 0)
+        End Get
+    End Property
     Public ReadOnly Property PluginID() As Long Implements MetaGeta.DataStore.IMGPluginBase.PluginID
         Get
             Return m_Id
@@ -121,4 +127,6 @@ Public Class Mp4TagWriterPlugin
     Private Sub OutputHandler(ByVal sender As Object, ByVal e As DataReceivedEventArgs)
         log.Debug(e.Data)
     End Sub
+
+    Public Event SettingChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements MetaGeta.DataStore.IMGPluginBase.SettingChanged
 End Class

@@ -1,13 +1,10 @@
 ﻿Imports System.Text
 Imports System.Text.RegularExpressions
 Imports System.IO
+Imports System.ComponentModel
 Imports MetaGeta.DataStore
 Imports MetaGeta.Utilities
 Imports System.Xml.Linq
-
-'<Assembly: GlobalSetting("Transcode Plugin.Transcode Preset Name", "iPhone-ffmpeg", GlobalSettingType.ShortText)> 
-'<Assembly: GlobalSetting("Transcode Plugin.mencoder Location", "%TOOLS%\mplayer\mencoder.exe", GlobalSettingType.File)> 
-'<Assembly: GlobalSetting("Transcode Plugin.ffmpeg Location", "%TOOLS%\ffmpeg\ffmpeg.exe", GlobalSettingType.File)> 
 
 Public Class TranscodePlugin
     Implements IMGFileActionPlugin, IMGPluginBase
@@ -39,23 +36,28 @@ Public Class TranscodePlugin
 
     End Sub
 
-    Public Function GetFriendlyName() As String Implements MetaGeta.DataStore.IMGPluginBase.GetFriendlyName
-        Return "TranscodePlugin"
-    End Function
-
-    Public Function GetUniqueName() As String Implements MetaGeta.DataStore.IMGPluginBase.GetUniqueName
-        Return "TranscodePlugin"
-    End Function
-
-    Public Function GetVersion() As System.Version Implements MetaGeta.DataStore.IMGPluginBase.GetVersion
-        Return New Version(1, 0, 0, 0)
-    End Function
+    Public ReadOnly Property FriendlyName() As String Implements IMGPluginBase.FriendlyName
+        Get
+            Return "TranscodePlugin"
+        End Get
+    End Property
+    Public ReadOnly Property UniqueName() As String Implements IMGPluginBase.UniqueName
+        Get
+            Return "TranscodePlugin"
+        End Get
+    End Property
+    Public ReadOnly Property Version() As Version Implements IMGPluginBase.Version
+        Get
+            Return New Version(1, 0, 0, 0)
+        End Get
+    End Property
 
     Public ReadOnly Property PluginID() As Long Implements MetaGeta.DataStore.IMGPluginBase.PluginID
         Get
             Return m_ID
         End Get
     End Property
+
 
     Public Function GetActions() As IEnumerable(Of String) Implements IMGFileActionPlugin.GetActions
         Return New String() {ConvertActionName}
@@ -84,9 +86,8 @@ Public Class TranscodePlugin
 #Region "Transcoding"
 
     Public Sub Transcode(ByVal file As MetaGeta.DataStore.MGFile, ByVal progress As ProgressStatus)
-        Dim presetName = m_DataStore.GetGlobalSetting("Transcode Plugin.Transcode Preset Name")
-        Dim preset = m_Presets.Find(Function(pre) pre.Name = presetName)
-        log.InfoFormat("Encoding using preset {0}...", presetName)
+        Dim preset = m_Presets.Find(Function(pre) pre.Name = TranscodePresetName)
+        log.InfoFormat("Encoding using preset {0}...", TranscodePresetName)
 
         Dim p As New Process()
         p.StartInfo = New ProcessStartInfo(GetEncoderPath(preset.Encoder))
@@ -135,20 +136,54 @@ Public Class TranscodePlugin
 
         Dim width = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.VideoWidthPx))
         Dim height = Integer.Parse(file.GetTag(TVShowDataStoreTemplate.VideoHeightPx))
-        If width > preset.MaxWidth OrElse height > preset.MaxHeight Then
-            Dim aspect = Single.Parse(file.GetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio))
-            If aspect > CDbl(preset.MaxWidth) / preset.MaxHeight Then
-                height = CInt(CDbl(preset.MaxWidth) / aspect)
-                width = preset.MaxWidth
-            Else
-                height = preset.MaxHeight
-                width = CInt(CDbl(preset.MaxHeight) * aspect)
-            End If
-        End If
-        cmd = cmd.Replace("%width%", width.ToString())
-        cmd = cmd.Replace("%height%", height.ToString())
+        Dim aspect = Double.Parse(file.GetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio))
+
+        Dim s = CalculateDimensions(New Size(width, height), preset, aspect)
+
+        cmd = cmd.Replace("%width%", s.Width.ToString())
+        cmd = cmd.Replace("%height%", s.Height.ToString())
         Return cmd
     End Function
+
+    Private Shared Function CalculateDimensions(ByRef s As Size, ByVal preset As Preset, ByVal aspectRatio As Double) As Size
+        If aspectRatio < 1.34 And aspectRatio >= 1.33 Then
+            aspectRatio = 4.0 / 3.0 '....
+        ElseIf aspectRatio < 1.78 And aspectRatio >= 1.77 Then
+            aspectRatio = 16.0 / 9.0 '....
+        ElseIf aspectRatio <= 2.4 And aspectRatio >= 2.35 Then
+            aspectRatio = 2.35 '....
+        End If
+
+        If s.Width > preset.MaxWidth OrElse s.Height > preset.MaxHeight Then
+            If aspectRatio > CDbl(preset.MaxWidth) / preset.MaxHeight Then
+                s.Height = CInt(CDbl(preset.MaxWidth) / aspectRatio)
+                s.Width = preset.MaxWidth
+            Else
+                s.Height = preset.MaxHeight
+                s.Width = CInt(CDbl(preset.MaxHeight) * aspectRatio)
+            End If
+        End If
+
+        If s.Width Mod 2 = 1 Then
+            s.Width += 1
+        End If
+
+        If s.Height Mod 2 = 1 Then
+            s.Height += 1
+        End If
+
+        Return s
+    End Function
+
+    Private Structure Size
+        Public Width As Integer
+        Public Height As Integer
+
+        Public Sub New(ByVal width As Integer, ByVal height As Integer)
+            Me.Width = width
+            Me.Height = height
+        End Sub
+    End Structure
 
 #End Region
 #Region "Constants"
@@ -178,9 +213,9 @@ Public Class TranscodePlugin
 
     Private Function GetEncoderPath(ByVal encoder As String) As String
         If encoder = "mencoder" Then
-            Return Environment.ExpandEnvironmentVariables(m_DataStore.GetGlobalSetting("Transcode Plugin.mencoder Location"))
+            Return Environment.ExpandEnvironmentVariables(MencoderLocation)
         Else
-            Return Environment.ExpandEnvironmentVariables(m_DataStore.GetGlobalSetting("Transcode Plugin.ffmpeg Location"))
+            Return Environment.ExpandEnvironmentVariables(FfmpegLocation)
         End If
     End Function
 
@@ -191,7 +226,10 @@ Public Class TranscodePlugin
             Return m_TranscodePresetName
         End Get
         Set(ByVal value As String)
-            m_TranscodePresetName = value
+            If value <> m_TranscodePresetName Then
+                m_TranscodePresetName = value
+                RaiseEvent SettingChanged(Me, New PropertyChangedEventArgs("TranscodePresetName"))
+            End If
         End Set
     End Property
 
@@ -201,7 +239,10 @@ Public Class TranscodePlugin
             Return m_MencoderLocation
         End Get
         Set(ByVal value As String)
-            m_MencoderLocation = value
+            If value <> m_MencoderLocation Then
+                m_MencoderLocation = value
+                RaiseEvent SettingChanged(Me, New PropertyChangedEventArgs("MencoderLocation"))
+            End If
         End Set
     End Property
 
@@ -211,11 +252,15 @@ Public Class TranscodePlugin
             Return m_FfmpegLocation
         End Get
         Set(ByVal value As String)
-            m_FfmpegLocation = value
+            If value <> m_FfmpegLocation Then
+                m_FfmpegLocation = value
+                RaiseEvent SettingChanged(Me, New PropertyChangedEventArgs("FfmpegLocation"))
+            End If
         End Set
     End Property
 #End Region
 
+    Public Event SettingChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements MetaGeta.DataStore.IMGPluginBase.SettingChanged
 End Class
 
 Friend Class EncoderStatusParser
@@ -241,8 +286,7 @@ Friend Class EncoderStatusParser
 
     Public Sub OutputHandler(ByVal sendingProcess As Object, ByVal outLine As DataReceivedEventArgs)
         If outLine.Data Is Nothing Then Return
-        Dim p = CType(sendingProcess, Process)
-        log.DebugFormat("{0}: {1}", p.ProcessName, outLine.Data)
+        log.Debug(outLine.Data)
         Parse(outLine.Data)
 
         m_Progress.ProgressPct = PercentDone
@@ -281,7 +325,7 @@ Friend Class EncoderStatusParser
                 'm_PositionFrames = -1
             End If
         End If
-        log.InfoFormat("Status: {0,7:##0.00%} {1,6:#0.00}fps {2:HH:mm:ss} remaining ~{3:###,##0}kbps", PercentDone, EncodingFps, TimeRemaining, EstimatedBitrate)
+        'log.InfoFormat("Status: {0,7:##0.00%} {1,6:#0.00}fps {2:HH:mm:ss} remaining ~{3:###,##0}kbps", PercentDone, EncodingFps, TimeRemaining, EstimatedBitrate)
     End Sub
 
     Public ReadOnly Property PositionFrames() As Long

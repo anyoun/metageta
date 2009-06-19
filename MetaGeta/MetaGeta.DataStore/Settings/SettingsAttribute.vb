@@ -2,21 +2,21 @@
 Public Class SettingsAttribute
     Inherits Attribute
 
-    Private ReadOnly m_Name As String
+    Private ReadOnly m_FriendlyName As String
     Private ReadOnly m_Category As String
     Private ReadOnly m_DefaultValue As String
     Private ReadOnly m_Type As SettingType
 
-    Public Sub New(ByVal name As String, ByVal defaultValue As String, ByVal type As SettingType, ByVal category As String)
-        m_Name = name
+    Public Sub New(ByVal friendlyName As String, ByVal defaultValue As String, ByVal type As SettingType, ByVal category As String)
+        m_FriendlyName = friendlyName
         m_DefaultValue = defaultValue
         m_Type = type
         m_Category = category
     End Sub
 
-    Public ReadOnly Property Name() As String
+    Public ReadOnly Property FriendlyName() As String
         Get
-            Return m_Name
+            Return m_FriendlyName
         End Get
     End Property
 

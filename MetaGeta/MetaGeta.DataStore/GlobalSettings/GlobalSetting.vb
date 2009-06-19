@@ -106,3 +106,11 @@
         End Get
     End Property
 End Class
+
+Public Enum GlobalSettingType
+    ShortText
+    LongText
+    Number
+    Directory
+    File
+End Enum

@@ -110,10 +110,17 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Page Include="Views\SettingsEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Windows\GlobalSettingsEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="Views\SettingsEditor.xaml.vb">
+      <DependentUpon>SettingsEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\GlobalSettingsEditor.xaml.vb">
       <DependentUpon>GlobalSettingsEditor.xaml</DependentUpon>
     </Compile>
@@ -167,14 +174,14 @@
     </Compile>
     <Compile Include="My Project\Settings.Designer.vb">
       <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Navigation\NavigationTab.vb" />
     <Compile Include="Views\EmptyView.xaml.vb">
       <DependentUpon>EmptyView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Windows\DataStoreConfiguration.xaml.vb">
+    <Compile Include="Views\DataStoreConfiguration.xaml.vb">
       <DependentUpon>DataStoreConfiguration.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\NewDataStoreWindow.xaml.vb">
@@ -210,7 +217,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Windows\DataStoreConfiguration.xaml">
+    <Page Include="Views\DataStoreConfiguration.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

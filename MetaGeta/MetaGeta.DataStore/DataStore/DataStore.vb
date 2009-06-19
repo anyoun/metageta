@@ -78,12 +78,16 @@ Public Class MGDataStore
 
 #Region "Plugins"
 
-    Friend Sub AddPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
+    Friend Sub AddExistingPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
         AddPlugin(plugin)
-        StartupPlugin(plugin, id)
+        StartupPlugin(plugin, id, False)
+    End Sub
+    Friend Sub AddNewPlugin(ByVal plugin As IMGPluginBase)
+        AddPlugin(plugin)
+        'Datamapper will call StartupPlugin() after IDs have been assigned
     End Sub
     Friend Sub AddPlugin(ByVal plugin As IMGPluginBase)
-        log.InfoFormat("Adding plugin: {0}", plugin.GetUniqueName())
+        log.InfoFormat("Adding plugin: {0}", plugin.UniqueName)
         m_AllPlugins.Add(plugin)
         If TypeOf plugin Is IMGTaggingPlugin Then
             m_TaggingPlugins.Add(CType(plugin, IMGTaggingPlugin))
@@ -95,8 +99,20 @@ Public Class MGDataStore
             Throw New Exception("Unknown plugin type: " + plugin.GetType().FullName)
         End If
     End Sub
-    Friend Sub StartupPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
+    Friend Sub StartupPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long, ByVal firstRun As Boolean)
         plugin.Startup(Me, id)
+
+        Dim settings = SettingInfoCollection.GetSettings(plugin)
+        For Each setting In settings
+            If firstRun Then
+                setting.Value = setting.Metadata.DefaultValue
+                SetPluginSetting(plugin, setting.SettingName, setting.GetDefaultValueAsString())
+            Else
+                setting.SetValueAsString(GetPluginSetting(plugin, setting.SettingName))
+            End If
+        Next
+        AddHandler plugin.SettingChanged, AddressOf Plugin_SettingChanged
+
         If TypeOf plugin Is IMGFileActionPlugin Then
             SetUpAction(CType(plugin, IMGFileActionPlugin))
         End If
@@ -169,12 +185,18 @@ Public Class MGDataStore
 
 #End Region
 
-#Region "Global Settings"
-    Public Function GetGlobalSetting(ByVal settingName As String) As String
-        Return m_DataMapper.GetGlobalSetting(settingName)
+#Region "Settings"
+    Public Sub Plugin_SettingChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs)
+        Dim plugin = CType(sender, IMGPluginBase)
+        Dim value = SettingInfoCollection.GetSettings(plugin).GetSetting(e.PropertyName).GetValueAsString()
+        SetPluginSetting(plugin, e.PropertyName, value)
+    End Sub
+
+    Public Function GetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String) As String
+        Return m_DataMapper.GetPluginSetting(Me, plugin.PluginID, settingName)
     End Function
-    Public Sub SetGlobalSetting(ByVal settingName As String, ByVal settingValue As String)
-        m_DataMapper.WriteGlobalSetting(settingName, settingValue)
+    Public Sub SetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String, ByVal settingValue As String)
+        m_DataMapper.WritePluginSetting(Me, plugin.PluginID, settingName, settingValue)
     End Sub
 #End Region
 
@@ -217,14 +239,6 @@ Public Class MGDataStore
             End If
         End Set
     End Property
-
-
-    Public Function GetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String) As String
-        Return m_DataMapper.GetPluginSetting(Me, plugin.PluginID, settingName)
-    End Function
-    Public Sub SetPluginSetting(ByVal plugin As IMGPluginBase, ByVal settingName As String, ByVal settingValue As String)
-        m_DataMapper.WritePluginSetting(Me, plugin.PluginID, settingName, settingValue)
-    End Sub
 
     Public Event ItemAdded As EventHandler(Of MGFileEventArgs)
 

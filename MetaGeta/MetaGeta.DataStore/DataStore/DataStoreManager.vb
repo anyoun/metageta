@@ -21,7 +21,6 @@ Public Class DataStoreManager
 
         m_DataMapper.Initialize()
         m_DataStores.AddRange(m_DataMapper.GetDataStores(Me))
-        'LoadGlobalSettings()
         OnDataStoresChanged()
     End Sub
 
@@ -80,37 +79,4 @@ Public Class DataStoreManager
         End Set
     End Property
 #End Region
-
-    'Private Sub LoadGlobalSettings()
-    '    For Each attrib In FindAllGlobalSettingsAttributes()
-    '        m_DataMapper.CreateGlobalSetting(attrib)
-    '    Next
-    'End Sub
-
-    'Public Shared Function FindAllGlobalSettingsAttributes() As IList(Of GlobalSettingAttribute)
-    '    Assembly.Load("TVShowPlugin")
-    '    Assembly.Load("DirectoryFileSourcePlugin")
-    '    Assembly.Load("MediaInfoPlugin")
-    '    Assembly.Load("TVDBPlugin")
-    '    Assembly.Load("TranscodePlugin")
-
-    '    Dim list As New List(Of GlobalSettingAttribute)
-    '    For Each asm In AppDomain.CurrentDomain.GetAssemblies()
-    '        For Each attrib As GlobalSettingAttribute In asm.GetCustomAttributes(GetType(GlobalSettingAttribute), False)
-    '            list.Add(attrib)
-    '        Next
-    '    Next
-    '    Return list
-    'End Function
-
-    Public Function GetGlobalSettings() As IList(Of GlobalSetting)
-        Return New List(Of GlobalSetting)
-    End Function
-
-    Public Function GetGlobalSetting(ByVal settingName As String) As String
-        Return m_DataMapper.GetGlobalSetting(settingName)
-    End Function
-    Public Sub SetGlobalSetting(ByVal settingName As String, ByVal settingValue As String)
-        m_DataMapper.WriteGlobalSetting(settingName, settingValue)
-    End Sub
 End Class

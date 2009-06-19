@@ -88,19 +88,6 @@ Partial Public Class MainWindow
         End If
     End Sub
 
-    Private Sub btnGlobalSettings_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnGlobalSettings.Click
-        Dim settings = DataStoreManager.GetGlobalSettings()
-        Dim win As New GlobalSettingsEditor(settings)
-        win.Owner = Me
-        Dim result = win.ShowDialog()
-        If result.HasValue AndAlso result.Value Then
-            'Set settings...
-            For Each setting In win.SettingsList
-                DataStoreManager.SetGlobalSetting(setting.Name, setting.ValueOrNull)
-            Next
-        End If
-    End Sub
-
 #End Region
 
     Private Sub OnMyPropertyChanged(ByVal name As String)

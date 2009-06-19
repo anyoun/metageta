@@ -1,0 +1,38 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="DataStoreConfiguration"
+    x:Name="userControl" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" 
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+	 mc:Ignorable="d" xmlns:MetaGeta_GUI="clr-namespace:MetaGeta.GUI">
+	<UserControl.Resources>
+		<DataTemplate x:Key="PluginsTemplate">
+			<TextBlock Text="{Binding Path=FriendlyName, Mode=OneWay}"/>
+		</DataTemplate>
+	</UserControl.Resources>
+    <Grid>
+    	<Grid.ColumnDefinitions>
+    		<ColumnDefinition Width="109.848"/>
+    		<ColumnDefinition Width="*"/>
+    	</Grid.ColumnDefinitions>
+    	<TextBox Margin="8,8,8,0" VerticalAlignment="Top" Height="47" Text="{Binding Path=DataStore.Name, ElementName=userControl, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1"/>
+    	<TextBlock Margin="8,8,8,0" VerticalAlignment="Top" Height="47" Text="Name:" TextWrapping="Wrap" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+    	<TextBox Margin="8,59,8,0" VerticalAlignment="Top" Height="47" Text="{Binding Path=DataStore.Description, ElementName=userControl, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1"/>
+    	<TextBlock HorizontalAlignment="Stretch" Margin="8,59,8,0" VerticalAlignment="Top" Height="47" Text="Description:" TextAlignment="Right" TextWrapping="Wrap"/>
+    	<Button Margin="8,110,0,0" Content="Delete DataStore" Grid.Column="1" x:Name="btnDeleteDataStore" HorizontalAlignment="Left" VerticalAlignment="Top" Width="204.152" Height="38"/>
+    	<GroupBox HorizontalAlignment="Stretch" Margin="8,152,12,8" Grid.Column="1" Header="Plugins">
+    		<Grid Width="Auto" Height="Auto">
+    			<Grid.ColumnDefinitions>
+    				 <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+    			</Grid.ColumnDefinitions>
+    			<ListBox IsSynchronizedWithCurrentItem="True" Margin="8,8,8,8" x:Name="lstPlugins" 
+					ItemsSource="{Binding Path=DataStore.Plugins, ElementName=userControl, Mode=Default}" ItemTemplate="{DynamicResource PluginsTemplate}"/>
+    			<MetaGeta_GUI:SettingsEditor Margin="8,8,8,8" Grid.Column="2" x:Name="sePluginSettings" 
+					Settings="{Binding Path=SelectedPluginSettings, ElementName=userControl, Mode=Default}"/>
+    			<GridSplitter Margin="0,8,0,8" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="1" Width="5"/>
+    		</Grid>
+    	</GroupBox>
+    </Grid>
+</UserControl>

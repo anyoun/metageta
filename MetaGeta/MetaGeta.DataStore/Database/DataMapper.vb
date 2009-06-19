@@ -140,7 +140,7 @@ Public Class DataMapper
                     Dim typeName = String.Format("{0}, {1}", plugin.GetType().FullName, plugin.GetType().Assembly.GetName().Name)
                     cmd.AddParam(typeName)
                     Dim id = CType(cmd.ExecuteScalar(), Long)
-                    dataStore.StartupPlugin(plugin, id)
+                    dataStore.StartupPlugin(plugin, id, True)
                 End Using
             Next
             tran.Commit()
@@ -191,7 +191,7 @@ Public Class DataMapper
                             Throw New Exception(String.Format("Can't find type ""{0}"".", typeName))
                         End If
                         Dim plugin = CType(Activator.CreateInstance(t), IMGPluginBase)
-                        ds.AddPlugin(plugin, pluginID)
+                        ds.AddExistingPlugin(plugin, pluginID)
                     End While
                 End Using
             End Using

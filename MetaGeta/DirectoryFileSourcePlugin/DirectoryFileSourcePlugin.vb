@@ -1,6 +1,7 @@
 ﻿Public Class DirectoryFileSourcePlugin
     Implements IMGFileSourcePlugin, IMGPluginBase
 
+
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private m_DataStore As MGDataStore
@@ -11,15 +12,22 @@
             Return m_ID
         End Get
     End Property
-    Public Function GetFriendlyName() As String Implements DataStore.IMGPluginBase.GetFriendlyName
-        Return "Directory File Source Plugin"
-    End Function
-    Public Function GetUniqueName() As String Implements DataStore.IMGPluginBase.GetUniqueName
-        Return "DirectoryFileSourcePlugin"
-    End Function
-    Public Function GetVersion() As System.Version Implements DataStore.IMGPluginBase.GetVersion
-        Return New Version(1, 0, 0, 0)
-    End Function
+
+    Public ReadOnly Property FriendlyName() As String Implements DataStore.IMGPluginBase.FriendlyName
+        Get
+            Return "Directory File Source Plugin"
+        End Get
+    End Property
+    Public ReadOnly Property UniqueName() As String Implements DataStore.IMGPluginBase.UniqueName
+        Get
+            Return "DirectoryFileSourcePlugin"
+        End Get
+    End Property
+    Public ReadOnly Property Version() As Version Implements DataStore.IMGPluginBase.Version
+        Get
+            Return New Version(1, 0, 0, 0)
+        End Get
+    End Property
 
     Public Sub Startup(ByVal dataStore As MGDataStore, ByVal id As Long) Implements IMGPluginBase.Startup
         m_DataStore = dataStore
@@ -68,4 +76,5 @@
     End Function
 
 
+    Public Event SettingChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements DataStore.IMGPluginBase.SettingChanged
 End Class
