@@ -12,7 +12,7 @@
 	</UserControl.Resources>
     <Grid>
     	<Grid.ColumnDefinitions>
-    		<ColumnDefinition Width="109.848"/>
+    		<ColumnDefinition Width="79"/>
     		<ColumnDefinition Width="*"/>
     	</Grid.ColumnDefinitions>
     	<TextBox Margin="8,8,8,0" VerticalAlignment="Top" Height="47" Text="{Binding Path=DataStore.Name, ElementName=userControl, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1"/>
@@ -20,7 +20,7 @@
     	<TextBox Margin="8,59,8,0" VerticalAlignment="Top" Height="47" Text="{Binding Path=DataStore.Description, ElementName=userControl, Mode=TwoWay}" TextWrapping="Wrap" Grid.Column="1"/>
     	<TextBlock HorizontalAlignment="Stretch" Margin="8,59,8,0" VerticalAlignment="Top" Height="47" Text="Description:" TextAlignment="Right" TextWrapping="Wrap"/>
     	<Button Margin="8,110,0,0" Content="Delete DataStore" Grid.Column="1" x:Name="btnDeleteDataStore" HorizontalAlignment="Left" VerticalAlignment="Top" Width="204.152" Height="38"/>
-    	<GroupBox HorizontalAlignment="Stretch" Margin="8,152,12,8" Grid.Column="1" Header="Plugins">
+    	<GroupBox HorizontalAlignment="Stretch" Margin="8,152,12,8" Header="Plugins" Grid.ColumnSpan="2">
     		<Grid Width="Auto" Height="Auto">
     			<Grid.ColumnDefinitions>
     				 <ColumnDefinition/>

@@ -1,5 +1,4 @@
 ﻿Imports System.Reflection
-Imports System.Runtime.CompilerServices
 
 Public Class SettingInfo
     Implements INotifyPropertyChanged
@@ -54,6 +53,9 @@ Public Class SettingInfo
             Case SettingType.Directory, SettingType.ShortText, SettingType.File, SettingType.LongText
                 Return CType(val, String)
 
+            Case SettingType.ExtensionList, SettingType.DirectoryList, SettingType.FileList
+                Return CType(val, ReadOnlyCollection(Of String)).JoinToString(";")
+
             Case SettingType.Int
                 Return CType(val, Integer).ToString("D")
 
@@ -69,6 +71,9 @@ Public Class SettingInfo
         Select Case Metadata.Type
             Case SettingType.Directory, SettingType.ShortText, SettingType.File, SettingType.LongText
                 Value = s
+
+            Case SettingType.ExtensionList, SettingType.DirectoryList, SettingType.FileList
+                Value = New ReadOnlyCollection(Of String)(s.Split(";"c))
 
             Case SettingType.Int
                 Value = Integer.Parse(s)

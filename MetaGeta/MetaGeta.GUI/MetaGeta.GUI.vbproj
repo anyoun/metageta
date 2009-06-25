@@ -153,6 +153,14 @@
     <Compile Include="Application.xaml.vb">
       <DependentUpon>Application.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Editors\DirectoryListEditor.vb" />
+    <Compile Include="Editors\ItemListEditor.xaml.vb">
+      <DependentUpon>ItemListEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\StringInputPrompt.xaml.vb">
+      <DependentUpon>StringInputPrompt.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\StringListEditor.vb" />
     <Compile Include="NavigationTabManager.vb" />
     <Compile Include="Views\DataStoreView.xaml.vb">
       <DependentUpon>DataStoreView.xaml</DependentUpon>
@@ -205,6 +213,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Page Include="Editors\ItemListEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Editors\StringInputPrompt.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\DataStoreView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

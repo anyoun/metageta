@@ -1,11 +1,16 @@
-﻿Public Class DirectoryFileSourcePlugin
-    Implements IMGFileSourcePlugin, IMGPluginBase
+﻿Imports System.ComponentModel
+Imports System.Collections.ObjectModel
 
+Public Class DirectoryFileSourcePlugin
+    Implements IMGFileSourcePlugin, IMGPluginBase
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private m_DataStore As MGDataStore
     Private m_ID As Long
+
+    Private m_DirectoriesToWatch As ReadOnlyCollection(Of String)
+    Private m_Extensions As ReadOnlyCollection(Of String)
 
     Public ReadOnly Property ID() As Long Implements IMGPluginBase.PluginID
         Get
@@ -75,6 +80,31 @@
         Return files
     End Function
 
+    <Settings("Directories To Watch", New String() {}, SettingType.DirectoryList, "Locations")> _
+    Public Property DirectoriesToWatch() As ReadOnlyCollection(Of String)
+        Get
+            Return m_DirectoriesToWatch
+        End Get
+        Set(ByVal value As ReadOnlyCollection(Of String))
+            If value IsNot m_DirectoriesToWatch Then
+                m_DirectoriesToWatch = value
+                RaiseEvent SettingChanged(Me, New PropertyChangedEventArgs("DirectoriesToWatch"))
+            End If
+        End Set
+    End Property
 
-    Public Event SettingChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements DataStore.IMGPluginBase.SettingChanged
+    <Settings("Extensions To Watch", New String() {}, SettingType.ExtensionList, "Locations")> _
+    Public Property Extensions() As ReadOnlyCollection(Of String)
+        Get
+            Return m_Extensions
+        End Get
+        Set(ByVal value As ReadOnlyCollection(Of String))
+            If value IsNot m_Extensions Then
+                m_Extensions = value
+                RaiseEvent SettingChanged(Me, New PropertyChangedEventArgs("Extensions"))
+            End If
+        End Set
+    End Property
+
+    Public Event SettingChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs) Implements DataStore.IMGPluginBase.SettingChanged
 End Class

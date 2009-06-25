@@ -30,3 +30,72 @@ Partial Public Class SettingsEditor
         End Set
     End Property
 End Class
+
+Public Class EditorTemplateSelector
+    Inherits DataTemplateSelector
+
+    Private m_StringTemplate, m_ExtensionListTemplate, m_DirectoryListTemplate, m_FileListTemplate As DataTemplate
+
+    Public Property StringTemplate() As DataTemplate
+        Get
+            Return m_StringTemplate
+        End Get
+        Set(ByVal value As DataTemplate)
+            m_StringTemplate = value
+        End Set
+    End Property
+
+    Public Property ExtensionListTemplate() As DataTemplate
+        Get
+            Return m_ExtensionListTemplate
+        End Get
+        Set(ByVal value As DataTemplate)
+            m_ExtensionListTemplate = value
+        End Set
+    End Property
+
+    Public Property DirectoryListTemplate() As DataTemplate
+        Get
+            Return m_DirectoryListTemplate
+        End Get
+        Set(ByVal value As DataTemplate)
+            m_DirectoryListTemplate = value
+        End Set
+    End Property
+
+    Public Property FileListTemplate() As DataTemplate
+        Get
+            Return m_FileListTemplate
+        End Get
+        Set(ByVal value As DataTemplate)
+            m_FileListTemplate = value
+        End Set
+    End Property
+
+    Public Overrides Function SelectTemplate(ByVal item As Object, ByVal container As System.Windows.DependencyObject) As System.Windows.DataTemplate
+        Dim info = CType(item, SettingInfo)
+
+        Select Case info.Metadata.Type
+            Case SettingType.Directory, SettingType.ShortText, SettingType.File, SettingType.LongText
+                Return StringTemplate
+
+            Case SettingType.ExtensionList
+                Return ExtensionListTemplate
+
+            Case SettingType.DirectoryList
+                Return DirectoryListTemplate
+
+            Case SettingType.FileList
+                Return FileListTemplate
+
+            Case SettingType.Int
+                Return StringTemplate
+
+            Case SettingType.Float
+                Return StringTemplate
+
+            Case Else
+                Throw New Exception(String.Format("Unknown setting type: {0}.", info.Metadata.Type))
+        End Select
+    End Function
+End Class

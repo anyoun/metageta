@@ -4,10 +4,10 @@ Public Class SettingsAttribute
 
     Private ReadOnly m_FriendlyName As String
     Private ReadOnly m_Category As String
-    Private ReadOnly m_DefaultValue As String
+    Private ReadOnly m_DefaultValue As Object
     Private ReadOnly m_Type As SettingType
 
-    Public Sub New(ByVal friendlyName As String, ByVal defaultValue As String, ByVal type As SettingType, ByVal category As String)
+    Public Sub New(ByVal friendlyName As String, ByVal defaultValue As Object, ByVal type As SettingType, ByVal category As String)
         m_FriendlyName = friendlyName
         m_DefaultValue = defaultValue
         m_Type = type
@@ -20,7 +20,7 @@ Public Class SettingsAttribute
         End Get
     End Property
 
-    Public ReadOnly Property DefaultValue() As String
+    Public ReadOnly Property DefaultValue() As Object
         Get
             Return m_DefaultValue
         End Get
@@ -45,5 +45,8 @@ Public Enum SettingType
     Int
     Float
     Directory
+    DirectoryList
     File
+    FileList
+    ExtensionList
 End Enum

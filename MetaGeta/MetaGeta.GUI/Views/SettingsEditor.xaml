@@ -3,12 +3,14 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:GUI="clr-namespace:MetaGeta.GUI"
+	xmlns:Editors="clr-namespace:MetaGeta.GUI.Editors"
 	mc:Ignorable="d"
 	x:Class="SettingsEditor"
 	x:Name="UserControl"
 	d:DesignWidth="640" d:DesignHeight="480">
 
-	 <UserControl.Resources>
+    <UserControl.Resources>
         <ControlTemplate x:Key="validationTemplate">
             <DockPanel>
                 <Border BorderBrush="Red" BorderThickness="1">
@@ -37,6 +39,30 @@
             </Style.Triggers>
         </Style>
 
+        <DataTemplate x:Key="StringEditor">
+            <TextBox Style="{StaticResource BoldOnDefault}"
+                     Text="{Binding Path=Value, Mode=TwoWay, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"/>
+        </DataTemplate>
+        
+        <DataTemplate x:Key="DirectoryListEditor">
+            <Editors:DirectoryListEditor
+                Items="{Binding Path=Value, Mode=TwoWay, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
+                Height="150"
+                />
+        </DataTemplate>
+        <DataTemplate x:Key="ExtensionListEditor">
+            <Editors:StringListEditor
+                Items="{Binding Path=Value, Mode=TwoWay, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
+                Height="150"
+                DialogCaption="New Extension" DialogPrompt="Enter a new extension:"
+                />
+        </DataTemplate>
+
+        <GUI:EditorTemplateSelector x:Key="EditorTemplateSelector" 
+                                    ExtensionListTemplate="{StaticResource ExtensionListEditor}"
+                                    DirectoryListTemplate="{StaticResource DirectoryListEditor}"
+                                    StringTemplate="{StaticResource StringEditor}"/>
+
         <DataTemplate x:Key="GlobalSetting">
             <Grid HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
@@ -45,20 +71,22 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Margin="5" Grid.Column="0" Text="{Binding Path=Metadata.FriendlyName, Mode=OneWay}"/>
-                <TextBox Margin="5,5,5,5" Grid.Column="1"
-                    Style="{StaticResource BoldOnDefault}"
-                    Text="{Binding Path=Value, Mode=TwoWay, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
+                <ContentControl Margin="5,5,5,5" Grid.Column="1"
+                    Content="{Binding Mode=OneWay}"
+                    ContentTemplateSelector="{StaticResource EditorTemplateSelector}"
                     Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
 
     <Grid x:Name="LayoutRoot">
-    	<Border BorderBrush="#FF000000" BorderThickness="1,1,1,1" SnapsToDevicePixels="True">
-    		<ItemsControl
-    			ItemsSource="{Binding Path=Settings, ElementName=UserControl, Mode=Default}"
-    			ItemTemplate="{StaticResource GlobalSetting}"
-    			HorizontalContentAlignment="Stretch"/>
-    	</Border>
+        <Border BorderBrush="{x:Static SystemColors.ControlDarkBrush}" BorderThickness="1,1,1,1" SnapsToDevicePixels="True">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl
+    			    ItemsSource="{Binding Path=Settings, ElementName=UserControl, Mode=Default}"
+    			    ItemTemplate="{StaticResource GlobalSetting}"
+    			    HorizontalContentAlignment="Stretch"/>
+            </ScrollViewer>
+        </Border>
     </Grid>
 </UserControl>
