@@ -168,8 +168,10 @@ Public Class DataMapper
                     Dim description = rdr.GetString(2)
                     Dim templateName = rdr.GetString(3)
                     Dim template = TemplateFinder.GetTemplateByName(templateName)
-                    Dim ds As New MGDataStore(owner, template, name, New IMGPluginBase() {}, Me) With { _
+                    Dim ds As New MGDataStore(owner, Me) With { _
+                        .Name = name, _
                         .ID = id, _
+                        .Template = template, _
                         .Description = description _
                     }
                     dataStores.Add(ds)

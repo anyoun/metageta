@@ -5,39 +5,25 @@ Public Class MGDataStore
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private ReadOnly m_Owner As IDataStoreOwner
-    Private ReadOnly m_Template As IDataStoreTemplate
     Private ReadOnly m_DataMapper As DataMapper
     Private m_ID As Long = -1
     Private m_Name As String
+    Private m_Template As IDataStoreTemplate
     Private m_Description As String = ""
 
     Private ReadOnly m_AllPlugins As New List(Of IMGPluginBase)
-    Private ReadOnly m_TaggingPlugins As New List(Of IMGTaggingPlugin)
-    Private ReadOnly m_FileSourcePlugins As New List(Of IMGFileSourcePlugin)
-
-    Private ReadOnly m_FileActionPlugins As New List(Of IMGFileActionPlugin)
     Private ReadOnly m_FileActionDictionary As New Dictionary(Of String, IMGFileActionPlugin)
 
     Private ReadOnly m_ProcessActionThread As Thread
     Private ReadOnly m_StopProcessingActions As New ManualResetEvent(False)
 
 
-    Friend Sub New(ByVal owner As IDataStoreOwner, ByVal template As IDataStoreTemplate, ByVal name As String, ByVal plugins As IEnumerable(Of IMGPluginBase), ByVal dataMapper As DataMapper)
+    Friend Sub New(ByVal owner As IDataStoreOwner, ByVal dataMapper As DataMapper)
         m_Owner = owner
-        m_Template = template
-        m_Name = name
         m_DataMapper = dataMapper
-        For Each plugin In plugins
-            AddPlugin(plugin)
-        Next
 
-        Dim ifa = New ImportFileAction(Me)
-        m_FileActionPlugins.Add(ifa)
-        SetUpAction(ifa)
-
-        Dim rfsa = New RefreshFileSourcesAction(Me)
-        m_FileActionPlugins.Add(rfsa)
-        SetUpAction(rfsa)
+        SetUpAction(New ImportFileAction(Me))
+        SetUpAction(New RefreshFileSourcesAction(Me))
 
         m_ProcessActionThread = New Thread(AddressOf ProcessActionQueueThread)
         m_ProcessActionThread.Start()
@@ -79,27 +65,25 @@ Public Class MGDataStore
 #Region "Plugins"
 
     Friend Sub AddExistingPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
-        AddPlugin(plugin)
+        m_AllPlugins.Add(plugin)
         StartupPlugin(plugin, id, False)
     End Sub
-    Friend Sub AddNewPlugin(ByVal plugin As IMGPluginBase)
-        AddPlugin(plugin)
+
+    Friend Sub AddNewPlugin(ByVal pluginTypeName As String)
+        Dim t = Type.GetType(pluginTypeName)
+        If t Is Nothing Then
+            Throw New Exception(String.Format("Can't find type ""{0}"".", pluginTypeName))
+        End If
+        Dim plugin = CType(Activator.CreateInstance(t), IMGPluginBase)
+        m_AllPlugins.Add(plugin)
         'Datamapper will call StartupPlugin() after IDs have been assigned
     End Sub
-    Friend Sub AddPlugin(ByVal plugin As IMGPluginBase)
-        log.InfoFormat("Adding plugin: {0}", plugin.UniqueName)
-        m_AllPlugins.Add(plugin)
-        If TypeOf plugin Is IMGTaggingPlugin Then
-            m_TaggingPlugins.Add(CType(plugin, IMGTaggingPlugin))
-        ElseIf TypeOf plugin Is IMGFileSourcePlugin Then
-            m_FileSourcePlugins.Add(CType(plugin, IMGFileSourcePlugin))
-        ElseIf TypeOf plugin Is IMGFileActionPlugin Then
-            m_FileActionPlugins.Add(CType(plugin, IMGFileActionPlugin))
-        Else
-            Throw New Exception("Unknown plugin type: " + plugin.GetType().FullName)
-        End If
-    End Sub
+
     Friend Sub StartupPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long, ByVal firstRun As Boolean)
+        If Not Plugins.Contains(plugin) Then
+            Throw New Exception("Can't find plugin in StartupPlugin().")
+        End If
+
         plugin.Startup(Me, id)
 
         Dim settings = SettingInfoCollection.GetSettings(plugin)
@@ -118,25 +102,25 @@ Public Class MGDataStore
         End If
     End Sub
 
-    Private Sub SetUpAction(ByVal plugin As IMGFileActionPlugin)
-        For Each s In plugin.GetActions()
-            m_FileActionDictionary.Add(s, plugin)
+    Private Sub SetUpAction(ByVal ap As IMGFileActionPlugin)
+        For Each s In ap.GetActions()
+            m_FileActionDictionary.Add(s, ap)
         Next
     End Sub
 
     Public ReadOnly Property TaggingPlugins() As IEnumerable(Of IMGTaggingPlugin)
         Get
-            Return m_TaggingPlugins
+            Return m_AllPlugins.Where(Function(p) TypeOf p Is IMGTaggingPlugin).Cast(Of IMGTaggingPlugin)()
         End Get
     End Property
     Public ReadOnly Property FileSourcePlugins() As IEnumerable(Of IMGFileSourcePlugin)
         Get
-            Return m_FileSourcePlugins
+            Return m_AllPlugins.Where(Function(p) TypeOf p Is IMGFileSourcePlugin).Cast(Of IMGFileSourcePlugin)()
         End Get
     End Property
     Public ReadOnly Property FileActionPlugins() As IEnumerable(Of IMGFileActionPlugin)
         Get
-            Return m_FileActionPlugins
+            Return m_AllPlugins.Where(Function(p) TypeOf p Is IMGFileActionPlugin).Cast(Of IMGFileActionPlugin)()
         End Get
     End Property
 
@@ -224,10 +208,17 @@ Public Class MGDataStore
             End If
         End Set
     End Property
-    Public ReadOnly Property Template() As IDataStoreTemplate
+    Public Property Template() As IDataStoreTemplate
         Get
             Return m_Template
         End Get
+        Set(ByVal value As IDataStoreTemplate)
+            If value IsNot m_Template Then
+                m_Template = value
+                m_DataMapper.WriteDataStore(Me)
+                OnTemplateChanged()
+            End If
+        End Set
     End Property
     Public Property ID() As Long
         Get
@@ -334,6 +325,9 @@ Public Class MGDataStore
     End Sub
     Private Sub OnDescriptionChanged()
         OnPropertyChanged("Description")
+    End Sub
+    Private Sub OnTemplateChanged()
+        OnPropertyChanged("Template")
     End Sub
     Private Sub OnFilesChanged()
         OnPropertyChanged("Files")

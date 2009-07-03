@@ -32,15 +32,12 @@ Public Class DataStoreManager
     End Sub
 
     Public Function NewDataStore(ByVal name As String, ByVal template As IDataStoreTemplate) As MGDataStore
-        Dim plugins As New List(Of IMGPluginBase)
+        Dim data As New MGDataStore(Me, m_DataMapper)
+        data.Template = template
+        data.Name = name
         For Each pluginTypeName In template.GetPluginTypeNames()
-            Dim t = Type.GetType(pluginTypeName)
-            If t Is Nothing Then
-                Throw New Exception(String.Format("Can't find type ""{0}"".", pluginTypeName))
-            End If
-            plugins.Add(CType(Activator.CreateInstance(t), IMGPluginBase))
+            data.AddNewPlugin(pluginTypeName)
         Next
-        Dim data As New MGDataStore(Me, template, name, plugins, m_DataMapper)
         m_DataMapper.WriteNewDataStore(data)
         m_DataStores.Add(data)
         OnDataStoresChanged()
