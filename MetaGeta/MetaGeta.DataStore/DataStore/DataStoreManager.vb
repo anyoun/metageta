@@ -24,6 +24,12 @@ Public Class DataStoreManager
         OnDataStoresChanged()
     End Sub
 
+    Public Sub WaitForQueueToEmpty()
+        For Each ds In m_DataStores
+            ds.WaitForQueueToEmpty()
+        Next
+    End Sub
+
     Public Sub Shutdown()
         For Each ds In m_DataStores
             ds.Close()

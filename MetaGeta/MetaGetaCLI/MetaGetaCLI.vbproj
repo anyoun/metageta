@@ -81,6 +81,10 @@
     <WarningsAsErrors>41999,42016,42017,42018,42019,42020,42021,42022,42030,42032,42036,42104,42105,42106,42107,42108,42109</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\log4net\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -136,6 +140,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="My Project\app.manifest" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
@@ -148,6 +153,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DirectoryFileSourcePlugin\DirectoryFileSourcePlugin.vbproj">
+      <Project>{B7FACBDA-885E-42D7-968D-2BA174A70B2E}</Project>
+      <Name>DirectoryFileSourcePlugin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaInfoPlugin\MediaInfoPlugin.vbproj">
       <Project>{1B13DEB6-1B78-4D85-B3DB-F5282AF3DECD}</Project>
       <Name>MediaInfoPlugin</Name>
@@ -186,11 +195,10 @@
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
   <Target Name="AfterBuild">
+    <Copy Condition="'$(Platform)'=='x86'" SourceFiles="..\..\MediaInfo\x86\MediaInfo.dll" DestinationFolder="$(OutputPath)" />
+    <Copy Condition="'$(Platform)'=='x86'" SourceFiles="..\..\sqlite\x86\sqlite3.dll" DestinationFolder="$(OutputPath)" />
+    <Copy Condition="'$(Platform)'=='x64'" SourceFiles="..\..\MediaInfo\x64\MediaInfo.dll" DestinationFolder="$(OutputPath)" />
+    <Copy Condition="'$(Platform)'=='x64'" SourceFiles="..\..\sqlite\x64\sqlite3.dll" DestinationFolder="$(OutputPath)" />
   </Target>
-  -->
 </Project>

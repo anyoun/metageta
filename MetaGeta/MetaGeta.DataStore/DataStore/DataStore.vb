@@ -16,7 +16,7 @@ Public Class MGDataStore
 
     Private ReadOnly m_ProcessActionThread As Thread
     Private ReadOnly m_StopProcessingActions As New ManualResetEvent(False)
-
+    Private ReadOnly m_QueueThreadIsSleeping As New ManualResetEvent(False)
 
     Friend Sub New(ByVal owner As IDataStoreOwner, ByVal dataMapper As DataMapper)
         m_Owner = owner
@@ -83,6 +83,8 @@ Public Class MGDataStore
         If Not Plugins.Contains(plugin) Then
             Throw New Exception("Can't find plugin in StartupPlugin().")
         End If
+
+        log.InfoFormat("StartupPlugin(): {0}", plugin.GetType().FullName)
 
         plugin.Startup(Me, id)
 
@@ -161,7 +163,9 @@ Public Class MGDataStore
     End Sub
 
     Friend Sub ImportFile(ByVal file As MGFile, ByVal progress As ProgressStatus)
+        log.DebugFormat("ImportFile(): {0}....", file.FileName)
         For Each plugin As IMGTaggingPlugin In Me.TaggingPlugins
+            log.DebugFormat("Importing {0} with {1}....", file.FileName, plugin.GetType().FullName)
             plugin.Process(file, progress)
         Next
         OnFilesChanged()
@@ -272,7 +276,7 @@ Public Class MGDataStore
         log.Info("Stopping action queue...")
         SyncLock m_ActionWaitingQueue
             m_ActionWaitingQueue.Enqueue(Nothing)
-            Monitor.PulseAll(m_ActionWaitingQueue)
+            Monitor.Pulse(m_ActionWaitingQueue)
         End SyncLock
         m_StopProcessingActions.Set()
         log.Info("Joining...")
@@ -288,7 +292,9 @@ Public Class MGDataStore
             Dim nextItem As ActionQueueItem
             SyncLock m_ActionWaitingQueue
                 While m_ActionWaitingQueue.Count = 0
+                    m_QueueThreadIsSleeping.Set()
                     Monitor.Wait(m_ActionWaitingQueue)
+                    m_QueueThreadIsSleeping.Reset()
                 End While
                 nextItem = m_ActionWaitingQueue.Dequeue()
             End SyncLock
@@ -310,6 +316,16 @@ Public Class MGDataStore
         End While
     End Sub
 
+    Public Sub WaitForQueueToEmpty()
+        While True
+            SyncLock m_ActionWaitingQueue
+                'Prevents race condition were worker hasn't started yet
+                If m_ActionWaitingQueue.Count = 0 Then Exit While
+            End SyncLock
+            Thread.Sleep(100)
+        End While
+        m_QueueThreadIsSleeping.WaitOne()
+    End Sub
 #End Region
 
 #Region "Action Plugins"
@@ -365,7 +381,6 @@ Public Class MGDataStore
 #End Region
 
 End Class
-
 
 Public Class DataStoreCreationArguments
     Implements INotifyPropertyChanged, IDataErrorInfo
