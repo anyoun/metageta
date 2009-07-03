@@ -9,9 +9,15 @@ Public Class SettingsAttribute
 
     Public Sub New(ByVal friendlyName As String, ByVal defaultValue As Object, ByVal type As SettingType, ByVal category As String)
         m_FriendlyName = friendlyName
-        m_DefaultValue = defaultValue
         m_Type = type
         m_Category = category
+
+        If defaultValue.GetType().IsArray Then
+            Dim mi = GetType(Array).GetMethods().Where(Function(x) x.Name = "AsReadOnly").Single()
+            m_DefaultValue = mi.MakeGenericMethod(defaultValue.GetType().GetElementType()).Invoke(Nothing, New Object() {defaultValue})
+        Else
+            m_DefaultValue = defaultValue
+        End If
     End Sub
 
     Public ReadOnly Property FriendlyName() As String
