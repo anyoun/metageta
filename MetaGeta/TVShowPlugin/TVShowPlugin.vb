@@ -167,18 +167,23 @@ Public Class EducatedGuessImporter
                 justFoundPaWord = False
                 If Not foundPa And countOfNumbers > 2 Then
                     tags(TVShowDataStoreTemplate.PartNumber) = np.Value.ToString()
+                    foundPa = True
                 ElseIf Not foundSe And Not foundPa And countOfNumbers > 1 Then
                     tags(TVShowDataStoreTemplate.SeasonNumber) = tags(TVShowDataStoreTemplate.EpisodeNumber)
+                    foundSe = True
                     tags(TVShowDataStoreTemplate.EpisodeNumber) = np.Value.ToString()
+                    foundEp = True
                 ElseIf Not foundEp And countOfNumbers = 1 Then
                     If np.Value > 100 Then
                         'probably be season then ep number concatted
                         tags(TVShowDataStoreTemplate.EpisodeNumber) = (np.Value Mod 100).ToString()
+                        foundEp = True
                         tags(TVShowDataStoreTemplate.SeasonNumber) = Int(np.Value / 100).ToString()
+                        foundSe = True
                     Else
                         tags(TVShowDataStoreTemplate.EpisodeNumber) = np.Value.ToString()
+                        foundEp = True
                     End If
-
                 End If
 
             ElseIf TypeOf p Is LetterPhrase Then
@@ -190,21 +195,21 @@ Public Class EducatedGuessImporter
                 justFoundPaWord = False
 
                 For Each s In episodeWords
-                    If lp.Value.ToLower = s.ToLower Then
+                    If String.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase) Then
                         justFoundEpWord = True
                         gettingSeTi = False
                         gettingEpTi = False
                     End If
                 Next
                 For Each s In seasonWords
-                    If lp.Value.ToLower = s.ToLower Then
+                    If String.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase) Then
                         justFoundSeWord = True
                         gettingSeTi = False
                         gettingEpTi = False
                     End If
                 Next
                 For Each s In partWords
-                    If lp.Value.ToLower = s.ToLower Then
+                    If String.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase) Then
                         justFoundPaWord = True
                         gettingSeTi = False
                         gettingEpTi = False
@@ -236,8 +241,12 @@ Public Class EducatedGuessImporter
         Next 'stepping through ph with x
         'Debug.Write(ControlChars.NewLine)
 
-        If Not tags.ContainsKey(TVShowDataStoreTemplate.EpisodeTitle) _
-            And tags.ContainsKey(TVShowDataStoreTemplate.EpisodeNumber) Then
+        If foundEp And Not foundSe Then
+            'Default to season = 1
+            tags(TVShowDataStoreTemplate.SeasonNumber) = 1.ToString()
+        End If
+
+        If foundEp and Not tags.ContainsKey(TVShowDataStoreTemplate.EpisodeTitle) Then
             tags(TVShowDataStoreTemplate.EpisodeTitle) = String.Format("Episode {0}", tags(TVShowDataStoreTemplate.EpisodeNumber))
         End If
 
