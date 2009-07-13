@@ -62,6 +62,11 @@ Public Class MGDataStore
         End Get
     End Property
 
+    Public Sub RemoveFiles(ByVal files As IEnumerable(Of MGFile))
+        m_DataMapper.RemoveFiles(files, Me)
+        OnFilesChanged()
+    End Sub
+
 #Region "Plugins"
 
     Friend Sub AddExistingPlugin(ByVal plugin As IMGPluginBase, ByVal id As Long)
@@ -141,21 +146,24 @@ Public Class MGDataStore
     End Sub
 
     Friend Sub RefreshFileSources()
-        For Each path In From fs In Me.FileSourcePlugins _
+        Dim paths = From fs In Me.FileSourcePlugins _
                          From file In fs.GetFilesToAdd() _
                          Select file
-            Dim file = CreateFile(path)
-            EnqueueImportFile(file)
-        Next
+        ImportNewFiles(paths)
     End Sub
 
-    Public Function CreateFile(ByVal path As Uri) As MGFile
-        log.DebugFormat("CreateFile() ""{0}""", path.AbsolutePath)
-        Dim f As New MGFile(Me)
-        m_DataMapper.WriteNewFile(f, Me)
-        f.SetTag(MGFile.FileNameKey, path.AbsoluteUri)
-        RaiseEvent ItemAdded(Me, New MGFileEventArgs(f))
-        Return f
+    Public Function ImportNewFile(ByVal path As Uri) As MGFile
+        Return ImportNewFiles(path.SingleToEnumerable()).Single()
+    End Function
+
+    Public Function ImportNewFiles(ByVal paths As IEnumerable(Of Uri)) As IEnumerable(Of MGFile)
+        Dim files = (From p In paths Select New MGFile(Me)).ToArray()
+        m_DataMapper.WriteNewFiles(files, Me)
+        For Each fileAndPath In files.IndexInnerJoin(paths)
+            fileAndPath.First.SetTag(MGFile.FileNameKey, fileAndPath.Second.AbsoluteUri)
+            EnqueueImportFile(fileAndPath.First)
+        Next
+        Return files
     End Function
 
     Public Sub EnqueueImportFile(ByVal file As MGFile)
@@ -234,8 +242,6 @@ Public Class MGDataStore
             End If
         End Set
     End Property
-
-    Public Event ItemAdded As EventHandler(Of MGFileEventArgs)
 
     Public Overrides Function ToString() As String
         Return "MGDataStore: " & Name
@@ -371,7 +377,7 @@ Public Class MGDataStore
                                                       }
     End Function
 
-    Public Sub SetCreationArguemnts(ByVal args As DataStoreCreationArguments)
+    Public Sub SetCreationArguments(ByVal args As DataStoreCreationArguments)
         Name = args.Name
         Description = args.Description
         SetPluginSetting(CType(FileSourcePlugins.Single(), IMGPluginBase), "DirectoriesToWatch", args.DirectoriesToWatch)
@@ -380,6 +386,15 @@ Public Class MGDataStore
 
 #End Region
 
+#Region "Images"
+    Public Function GetImageDirectory() As String
+        Dim imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images")
+        If Not Directory.Exists(imagePath) Then
+            Directory.CreateDirectory(imagePath)
+        End If
+        Return imagePath
+    End Function
+#End Region
 End Class
 
 Public Class DataStoreCreationArguments

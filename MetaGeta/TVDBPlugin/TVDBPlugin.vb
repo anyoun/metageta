@@ -1,4 +1,5 @@
-﻿Imports MetaGeta.DataStore
+﻿Imports System.IO
+Imports MetaGeta.DataStore
 Imports TvdbConnector
 Imports TvdbConnector.Cache
 Imports TvdbConnector.Data
@@ -67,13 +68,21 @@ Public Class TVDBPlugin
             file.SetTag(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id.ToString())
             file.SetTag(TVShowDataStoreTemplate.EpisodeFirstAired, exactEpisode.FirstAired.ToUniversalTime().ToString("u"))
 
-            If False AndAlso exactEpisode.Banner.LoadBanner() Then
+            If exactEpisode.Banner IsNot Nothing Then
                 log.DebugFormat("Found banner: ""{0}"".", exactEpisode.Banner.BannerPath)
 
-                Dim imagefile = System.IO.Path.GetTempFileName()
-                exactEpisode.Banner.Banner.Save(imagefile)
-                file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, imagefile)
-
+                Dim imageLocalPath = Path.Combine(m_DataStore.GetImageDirectory(), exactEpisode.Banner.Id.ToString())
+                imageLocalPath = Path.ChangeExtension(imageLocalPath, "jpg")
+                If Not IO.File.Exists(imageLocalPath) Then
+                    log.DebugFormat("Loading banner...")
+                    If exactEpisode.Banner.LoadBanner() Then
+                        exactEpisode.Banner.Banner.Save(imageLocalPath)
+                        log.DebugFormat("OK")
+                    Else
+                        log.WarnFormat("Loading banner failed: {0}", exactEpisode.Banner.BannerPath)
+                    End If
+                End If
+                file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, imageLocalPath)
             End If
         End If
     End Sub

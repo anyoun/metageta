@@ -78,4 +78,12 @@ Public Module LinqExtensions
         Return info.GetCustomAttributes(GetType(T), inherit).Cast(Of T)().Single()
     End Function
 
+    <Extension()> Public Function IndexInnerJoin(Of T, U)(ByVal left As IEnumerable(Of T), ByVal right As IEnumerable(Of U)) As IEnumerable(Of Tuple(Of T, U))
+        Dim l = left.GetEnumerator(), r = right.GetEnumerator()
+        Dim results As New List(Of Tuple(Of T, U))
+        While l.MoveNext() And r.MoveNext()
+            results.Add(New Tuple(Of T, U)(l.Current, r.Current))
+        End While
+        Return results
+    End Function
 End Module

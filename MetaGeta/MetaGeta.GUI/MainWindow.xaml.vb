@@ -84,7 +84,7 @@ Partial Public Class MainWindow
         If dr.HasValue AndAlso dr.Value Then
             Dim args = win.DataStoreCreationArguments
             Dim ds = DataStoreManager.NewDataStore(args.Name, args.Tempate)
-            ds.SetCreationArguemnts(args)
+            ds.SetCreationArguments(args)
         End If
     End Sub
 

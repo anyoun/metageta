@@ -54,6 +54,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <ListView x:Name="lvItems"
         					ItemsSource="{Binding Path=Files}" View="{Binding Path=SelectedDataStoreColumnsView, ElementName=DataStoreView, Mode=Default}"
@@ -63,7 +64,7 @@
                                 IsEnabled="{Binding Path=IsFileSelectionValid, ElementName=DataStoreView}"/>
                     <ListView IsSynchronizedWithCurrentItem="True" Margin="8,8,8,8" 
                                   DataContext="{Binding Path=SelectedItem, ElementName=lvItems, Mode=Default}"
-                                  ItemsSource="{Binding Path=Tags}" Grid.Column="2" Grid.ColumnSpan="2">
+                                  ItemsSource="{Binding Path=Tags}" Grid.Column="2" Grid.ColumnSpan="3">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Name" CellTemplate="{DynamicResourceExtension Tag-Name}"/>
@@ -72,6 +73,8 @@
                         </ListView.View>
                     </ListView>
                     <Button Margin="8,8,8,8" Name="btnWriteTags" Grid.Column="3" Grid.Row="1" Content="Write Tags"
+                                IsEnabled="{Binding Path=IsFileSelectionValid, ElementName=DataStoreView}"/>
+                    <Button Margin="8,8,8,8" Name="btnRemove" Grid.Column="4" Grid.Row="1" Content="Remove"
                                 IsEnabled="{Binding Path=IsFileSelectionValid, ElementName=DataStoreView}"/>
                     <GridSplitter Margin="0,8,0,8" Width="5" RenderTransformOrigin="0.5,0.5" Grid.Column="1" HorizontalAlignment="Center" Grid.RowSpan="2"/>
                 </Grid>

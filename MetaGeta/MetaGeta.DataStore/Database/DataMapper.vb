@@ -146,11 +146,17 @@ Public Class DataMapper
             tran.Commit()
         End Using
     End Sub
-    Public Sub WriteNewFile(ByVal file As MGFile, ByVal dataStore As MGDataStore)
-        Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "INSERT INTO [File]([DatastoreID]) VALUES(?);SELECT last_insert_rowid() AS [ID]"
-            cmd.AddParam(dataStore.ID)
-            file.ID = CType(cmd.ExecuteScalar(), Long)
+    Public Sub WriteNewFiles(ByVal files As IEnumerable(Of MGFile), ByVal dataStore As MGDataStore)
+        Using tran = Connection.BeginTransaction()
+            For Each file In files
+                Using cmd = Connection.CreateCommand()
+                    cmd.Transaction = tran
+                    cmd.CommandText = "INSERT INTO [File]([DatastoreID]) VALUES(?);SELECT last_insert_rowid() AS [ID]"
+                    cmd.AddParam(dataStore.ID)
+                    file.ID = CType(cmd.ExecuteScalar(), Long)
+                End Using
+            Next
+            tran.Commit()
         End Using
     End Sub
 #End Region
@@ -310,6 +316,27 @@ Public Class DataMapper
             tran.Commit()
         End Using
     End Sub
+
+    Public Sub RemoveFiles(ByVal files As IEnumerable(Of MGFile), ByVal store As MGDataStore)
+        Using tran = Connection.BeginTransaction()
+            For Each file In files
+                log.DebugFormat("Removing file: {0}", file.ID)
+                Using cmd = Connection.CreateCommand()
+                    cmd.Transaction = tran
+                    cmd.CommandText = "DELETE FROM [Tag] WHERE [FileID] = ?"
+                    cmd.AddParam(file.ID)
+                    cmd.ExecuteNonQuery()
+                End Using
+                Using cmd = Connection.CreateCommand()
+                    cmd.Transaction = tran
+                    cmd.CommandText = "DELETE FROM [File] WHERE [FileID] = ?"
+                    cmd.AddParam(file.ID)
+                    cmd.ExecuteNonQuery()
+                End Using
+            Next
+            tran.Commit()
+        End Using
+    End Sub
 #End Region
 
 #Region "Settings"
@@ -402,5 +429,4 @@ Public Class DataMapper
             Return CType(val, T)
         End If
     End Function
-
 End Class

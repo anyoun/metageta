@@ -78,6 +78,9 @@ Partial Public Class DataStoreView
         Next
         tabQueue.IsSelected = True
     End Sub
+    Private Sub btnRemove_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnRemove.Click
+        DataStore.RemoveFiles(SelectedFiles.ToArray())
+    End Sub
 #End Region
 
     Private Sub OnMyPropertyChanged(ByVal name As String)
