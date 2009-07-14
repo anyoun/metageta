@@ -105,7 +105,7 @@ Public Class Mp4TagWriterPlugin
         p.StartInfo.RedirectStandardError = True
         p.StartInfo.RedirectStandardOutput = True
         p.StartInfo.UseShellExecute = False
-        p.StartInfo.CreateNoWindow = False
+        p.StartInfo.CreateNoWindow = True
         p.StartInfo.ErrorDialog = False
         p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden
         AddHandler p.OutputDataReceived, AddressOf OutputHandler
