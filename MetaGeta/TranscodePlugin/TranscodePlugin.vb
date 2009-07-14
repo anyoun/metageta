@@ -119,8 +119,7 @@ Public Class TranscodePlugin
         ElseIf Not IO.File.Exists(outputPath.LocalPath) Then
             log.ErrorFormat("Encoding failed- output file doesn't exist: ""{0}"".", outputPath.LocalPath)
         Else
-            Dim newFile = m_DataStore.CreateFile(outputPath)
-            m_DataStore.EnqueueImportFile(newFile)
+            Dim newFile = m_DataStore.ImportNewFile(outputPath) 'Will also enqueue an import
             m_DataStore.DoAction(newFile, Mp4TagWriterPlugin.c_WriteTagsAction)
         End If
     End Sub
@@ -139,9 +138,11 @@ Public Class TranscodePlugin
         Dim aspect = Double.Parse(file.GetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio))
 
         Dim s = CalculateDimensions(New Size(width, height), preset, aspect)
-
         cmd = cmd.Replace("%width%", s.Width.ToString())
         cmd = cmd.Replace("%height%", s.Height.ToString())
+
+        cmd = cmd.Replace("%fps%", CalculateFrameRate(Double.Parse(file.GetTag(TVShowDataStoreTemplate.FrameRate))).ToString())
+
         Return cmd
     End Function
 
@@ -164,13 +165,8 @@ Public Class TranscodePlugin
             End If
         End If
 
-        If s.Width Mod 2 = 1 Then
-            s.Width += 1
-        End If
-
-        If s.Height Mod 2 = 1 Then
-            s.Height += 1
-        End If
+        s.Width += s.Width Mod 2
+        s.Height += s.Height Mod 2
 
         Return s
     End Function
@@ -185,6 +181,50 @@ Public Class TranscodePlugin
         End Sub
     End Structure
 
+    Private Shared Function CalculateFrameRate(ByVal rate As Double) As FrameRate
+        Select Case rate
+            Case 119.88
+                Return New FrameRate(120000, 1001)
+            Case 60
+                Return New FrameRate(60)
+            Case 59.94
+                Return New FrameRate(60000, 1001)
+            Case 29.97, 29
+                Return New FrameRate(30000, 1001)
+            Case 25
+                Return New FrameRate(25)
+            Case 23.976
+                Return New FrameRate(24000, 1001)
+            Case 7.992
+                Return New FrameRate(8000, 1001)
+            Case Else
+                Throw New Exception(String.Format("Unknown frame rate: {0}.", rate))
+        End Select
+    End Function
+
+    Private Structure FrameRate
+        Public Numerator As Decimal
+        Public Denominator As Decimal
+
+        Public Sub New(ByVal numerator As Integer, ByVal denominator As Integer)
+            Me.Numerator = numerator
+            Me.Denominator = denominator
+        End Sub
+        Public Sub New(ByVal numerator As Double)
+            Me.Numerator = CDec(numerator)
+            Me.Denominator = 1
+        End Sub
+
+        Public Overrides Function ToString() As String
+            If Denominator = 1 Then
+                Return Numerator.ToString()
+            Else
+                Return String.Format("{0}/{1}", Numerator, Denominator)
+            End If
+        End Function
+    End Structure
+
+
 #End Region
 #Region "Constants"
     Private Shared ReadOnly Presets As XElement = _
@@ -196,13 +236,13 @@ Public Class TranscodePlugin
             -oac faac -faacopts mpeg=4:object=2:br=%audio-bitrate%:raw -channels 2 -srate 48000 -o "%output%"
         </Preset>
         <Preset Name="iPhone-ffmpeg" Encoder="ffmpeg" MaxWidth="480" MaxHeight="320">
-            -i "%input%" -vcodec libx264 -b %video-bitrate% -s %width%x%height%
+            -i "%input%" -r %fps% -vcodec libx264 -b %video-bitrate% -s %width%x%height%
             -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30 -threads 4
             -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 "%output%"
         </Preset>
         <Preset Name="iPhone-ffmpeg-30s" Encoder="ffmpeg" MaxWidth="480" MaxHeight="320">
             -t 30 -ss 0 
-            -i "%input%" -vcodec libx264 -b %video-bitrate% -s %width%x%height%
+            -i "%input%" -r %fps% -vcodec libx264 -b %video-bitrate% -s %width%x%height%
             -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30 -threads 4
             -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 "%output%"
         </Preset>

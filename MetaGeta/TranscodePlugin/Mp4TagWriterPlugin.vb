@@ -101,6 +101,7 @@ Public Class Mp4TagWriterPlugin
         sb.AppendFormat(" --{0} ""{1}"" ", apTagName, CapLength(value).Replace("""", """"""))
         sb.Append(" --overWrite ")
         p.StartInfo.Arguments = sb.ToString()
+        log.DebugFormat("{0} {1}", p.StartInfo.FileName, p.StartInfo.Arguments)
         p.StartInfo.RedirectStandardError = True
         p.StartInfo.RedirectStandardOutput = True
         p.StartInfo.UseShellExecute = False
