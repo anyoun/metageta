@@ -1,9 +1,6 @@
 ﻿Imports System.IO
+Imports TvdbLib.Data
 Imports MetaGeta.DataStore
-Imports TvdbConnector
-Imports TvdbConnector.Cache
-Imports TvdbConnector.Data
-Imports MetaGeta.TVShowPlugin
 Imports log4net
 Imports System.Reflection
 Imports MetaGeta.Utilities
@@ -14,19 +11,19 @@ Public Class TVDBPlugin
     Private Shared ReadOnly log As ILog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
 
     Private m_DataStore As MGDataStore
-    Private m_tvdbHandler As Tvdb
+    Private m_tvdbHandler As TvdbLib.TvdbHandler
     Private m_SeriesNameDictionary As New Dictionary(Of String, Integer?)
     Private m_ID As Long
 
 
     Public Sub Startup(ByVal dataStore As MetaGeta.DataStore.MGDataStore, ByVal id As Long) Implements IMGPluginBase.Startup
         m_DataStore = dataStore
-        m_tvdbHandler = New Tvdb(New XmlCacheProvider("C:\temp\tvdbcache"), "BC8024C516DFDA3B")
+        m_tvdbHandler = New TvdbLib.TvdbHandler(New TvdbLib.Cache.XmlCacheProvider("C:\temp\tvdbcache"), "BC8024C516DFDA3B")
         m_tvdbHandler.InitCache()
     End Sub
 
     Public Sub Shutdown() Implements IMGPluginBase.Shutdown
-        m_tvdbHandler.SaveCache()
+        m_tvdbHandler.CloseCache()
     End Sub
 
     Public ReadOnly Property ID() As Long Implements IMGPluginBase.PluginID
@@ -59,33 +56,37 @@ Public Class TVDBPlugin
 
         file.SetTag(TVShowDataStoreTemplate.SeriesDescription, series.Overview)
 
+        file.SetTag(TVShowDataStoreTemplate.SeriesBanner, LoadBannerToPath(series.SeriesBanners.FirstOrDefault()))
+        file.SetTag(TVShowDataStoreTemplate.SeriesPoster, LoadBannerToPath(series.PosterBanners.FirstOrDefault()))
+
         Dim exactEpisode = GetEpisode(series, file)
 
         If exactEpisode IsNot Nothing Then
-
             file.SetTag(TVShowDataStoreTemplate.EpisodeTitle, exactEpisode.EpisodeName)
             file.SetTag(TVShowDataStoreTemplate.EpisodeDescription, exactEpisode.Overview)
             file.SetTag(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id.ToString())
             file.SetTag(TVShowDataStoreTemplate.EpisodeFirstAired, exactEpisode.FirstAired.ToUniversalTime().ToString("u"))
 
-            If exactEpisode.Banner IsNot Nothing Then
-                log.DebugFormat("Found banner: ""{0}"".", exactEpisode.Banner.BannerPath)
-
-                Dim imageLocalPath = Path.Combine(m_DataStore.GetImageDirectory(), exactEpisode.Banner.Id.ToString())
-                imageLocalPath = Path.ChangeExtension(imageLocalPath, "jpg")
-                If Not IO.File.Exists(imageLocalPath) Then
-                    log.DebugFormat("Loading banner...")
-                    If exactEpisode.Banner.LoadBanner() Then
-                        exactEpisode.Banner.Banner.Save(imageLocalPath)
-                        log.DebugFormat("OK")
-                    Else
-                        log.WarnFormat("Loading banner failed: {0}", exactEpisode.Banner.BannerPath)
-                    End If
-                End If
-                file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, imageLocalPath)
-            End If
+            file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, LoadBannerToPath(exactEpisode.Banner))
         End If
     End Sub
+
+    Private Function LoadBannerToPath(ByVal banner As TvdbBanner) As String
+        If banner Is Nothing Then Return Nothing
+
+        Dim imageLocalPath = Path.Combine(m_DataStore.GetImageDirectory(), banner.Id.ToString())
+        imageLocalPath = Path.ChangeExtension(imageLocalPath, "jpg")
+        log.DebugFormat("Loading banner: {0}", banner.BannerPath)
+        If banner.LoadBanner() Then
+            banner.BannerImage.Save(imageLocalPath)
+            banner.UnloadBanner()
+            log.DebugFormat("OK")
+            Return imageLocalPath
+        Else
+            log.WarnFormat("Loading banner failed: {0}", banner.BannerPath)
+            Return Nothing
+        End If
+    End Function
 
     Private Function GetSeriesID(ByVal file As MGFile) As Integer?
         If file.GetTag(TVShowDataStoreTemplate.SeriesID) <> Nothing Then

@@ -86,4 +86,21 @@ Public Module LinqExtensions
         End While
         Return results
     End Function
+
+    <Extension()> Public Function Agree(Of T, TResult)(ByVal collection As IEnumerable(Of T), ByVal f As Func(Of T, TResult)) As TResult
+        Dim results = (From item In collection Select f(item)).ToArray()
+        If results.Count = 0 Then Return Nothing
+        Dim firstItem = results.First()
+        For Each r In results
+            If Not firstItem.Equals(r) Then Return Nothing
+        Next
+        Return firstItem
+    End Function
+
+    <Extension()> Public Function Coalesce(Of T)(ByVal collection As IEnumerable(Of T)) As T
+        For Each item In collection
+            If item IsNot Nothing Then Return item
+        Next
+        Return Nothing
+    End Function
 End Module

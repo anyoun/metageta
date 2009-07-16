@@ -31,6 +31,12 @@ Public Class NavigationTabManager
         BindingOperations.SetBinding(viewTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
         tabs.Add(viewTab)
 
+        If False Then
+            Dim tvShowTab As New NavigationTab(New TVShowView(dataStore), s_ViewImage, "TV Show") With {.Group = dataStore.Name}
+            BindingOperations.SetBinding(tvShowTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
+            tabs.Add(tvShowTab)
+        End If
+
         Return tabs
     End Function
 

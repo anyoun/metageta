@@ -40,6 +40,8 @@
     Public Const EpisodeID As String = "EpisodeID"
     Public Const EpisodeFirstAired As String = "EpisodeFirstAired"
 
+    Public Const SeriesBanner As String = "SeriesBanner"
+    Public Const SeriesPoster As String = "SeriesPoster"
     Public Const EpisodeBanner As String = "EpisodeBanner"
 
     Public Const SeriesDescription As String = "SeriesDescription"

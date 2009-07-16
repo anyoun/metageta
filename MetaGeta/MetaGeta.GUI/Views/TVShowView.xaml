@@ -1,0 +1,67 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:MetaGeta_GUI="clr-namespace:MetaGeta.GUI" 
+	x:Class="TVShowView" x:Name="TVShowView"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+    >
+    <UserControl.Resources>
+        <MetaGeta_GUI:TvShowDataContext DataStore="{Binding Path=DataStore, ElementName=TVShowView, Mode=OneWay}" x:Key="TvShowDataContext"/>
+        <MetaGeta_GUI:UriImageConverter x:Key="ValueConverter"/>
+
+        <DataTemplate x:Key="EpisodeTemplate" DataType="{x:Type MetaGeta_GUI:TvEpisode}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Path=SeasonNumber}"/>
+                <TextBlock Text="{Binding Path=EpisodeNumber}"/>
+                <TextBlock Text="{Binding Path=Title}"/>
+                <TextBlock Text="{Binding Path=AirDate}"/>
+                <TextBlock Text="{Binding Path=Length}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="TvSeriesTemplate" DataType="{x:Type MetaGeta_GUI:TvSeries}">
+            <StackPanel Margin="0,0,0,0" VerticalAlignment="Stretch" Height="Auto" Orientation="Horizontal">
+                <Image x:Name="imgSeriesImage" 
+							Source="{Binding Path=SeriesPosterPath, Converter={StaticResource ValueConverter}}" Width="150" Height="Auto" Margin="8,8,8,8"/>
+                <Grid>
+                    <!--<ItemsControl Margin="0,0,0,0" x:Name="lvEpisodes" 
+							ItemsSource="{Binding Path=Episodes, Mode=Default}"
+                            ItemTemplate="{StaticResource EpisodeTemplate}"
+							Width="Auto" Height="Auto"/>-->
+                    <ListView Margin="0,0,0,0" x:Name="lvEpisodes" 
+							ItemsSource="{Binding Path=Episodes, Mode=Default}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Season" DisplayMemberBinding="{Binding Path=SeasonNumber}"/>
+                                <GridViewColumn Header="Episode" DisplayMemberBinding="{Binding Path=EpisodeNumber}"/>
+                                <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Path=Title}"/>
+                                <GridViewColumn Header="AirDate" DisplayMemberBinding="{Binding Path=AirDate}"/>
+                                <GridViewColumn Header="Length" DisplayMemberBinding="{Binding Path=Length}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <Grid DataContext="{StaticResource TvShowDataContext}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.131*"/>
+            <RowDefinition Height="0.869*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.Row="2" Grid.RowSpan="1">
+            <ItemsControl Width="Auto" Height="Auto" 
+    			ItemsSource="{Binding Path=Data}"
+    			ItemTemplate="{DynamicResource TvSeriesTemplate}" d:UseSampleData="False"/>
+        </ScrollViewer>
+        <UniformGrid Margin="8,8,8,8" FirstColumn="2" Rows="1">
+            <Button Content="Grid" Margin="8,8,8,8"/>
+            <Button Content="Thumbnails" Margin="8,8,8,8"/>
+        </UniformGrid>
+    </Grid>
+</UserControl>

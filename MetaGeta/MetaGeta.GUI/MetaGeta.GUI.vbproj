@@ -161,6 +161,7 @@
       <DependentUpon>StringInputPrompt.xaml</DependentUpon>
     </Compile>
     <Compile Include="Editors\StringListEditor.vb" />
+    <Compile Include="Helpers\MGFileConverter.vb" />
     <Compile Include="NavigationTabManager.vb" />
     <Compile Include="Views\DataStoreView.xaml.vb">
       <DependentUpon>DataStoreView.xaml</DependentUpon>
@@ -191,6 +192,9 @@
     </Compile>
     <Compile Include="Views\DataStoreConfiguration.xaml.vb">
       <DependentUpon>DataStoreConfiguration.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TVShowView.xaml.vb">
+      <DependentUpon>TVShowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\NewDataStoreWindow.xaml.vb">
       <DependentUpon>NewDataStoreWindow.xaml</DependentUpon>
@@ -234,6 +238,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DataStoreConfiguration.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TVShowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
