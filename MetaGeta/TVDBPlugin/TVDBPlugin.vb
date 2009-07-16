@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Net
 Imports TvdbLib.Data
 Imports MetaGeta.DataStore
 Imports log4net
@@ -76,16 +77,20 @@ Public Class TVDBPlugin
 
         Dim imageLocalPath = Path.Combine(m_DataStore.GetImageDirectory(), banner.Id.ToString())
         imageLocalPath = Path.ChangeExtension(imageLocalPath, "jpg")
-        log.DebugFormat("Loading banner: {0}", banner.BannerPath)
-        If banner.LoadBanner() Then
-            banner.BannerImage.Save(imageLocalPath)
-            banner.UnloadBanner()
-            log.DebugFormat("OK")
-            Return imageLocalPath
-        Else
-            log.WarnFormat("Loading banner failed: {0}", banner.BannerPath)
-            Return Nothing
+        If Not File.Exists(imageLocalPath) Then
+            log.DebugFormat("Downloading banner ""{0}"" to ""{1}""", banner.BannerUri.AbsoluteUri, imageLocalPath)
+            Using wc As New WebClient()
+                Try
+                    wc.DownloadFile(banner.BannerUri, imageLocalPath)
+                Catch ex As Exception
+                    log.Warn("Loading banner failed.", ex)
+                    Return Nothing
+                End Try
+                log.DebugFormat("OK")
+            End Using
         End If
+
+        Return imageLocalPath
     End Function
 
     Private Function GetSeriesID(ByVal file As MGFile) As Integer?
