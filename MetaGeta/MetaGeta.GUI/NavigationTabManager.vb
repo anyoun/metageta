@@ -13,7 +13,10 @@ Public Class NavigationTabManager
         m_DataStoreManager = dataStoreManager
         AddHandler m_DataStoreManager.DataStores.CollectionChanged, AddressOf DataStoresChanged
 
-        m_BaseTabs = New NavigationTab(New EmptyView(), s_ConfigureImage, "Settings") With {.Group = "MetaGeta"}.SingleToEnumerable()
+        m_BaseTabs = New NavigationTab() { _
+            New NavigationTab(New EmptyView(), s_ConfigureImage, "Settings") With {.Group = "MetaGeta"}, _
+            New NavigationTab(New JobQueueView(dataStoreManager), s_ConfigureImage, "Jobs") With {.Group = "MetaGeta"} _
+        }
     End Sub
 
     Private Sub DataStoresChanged(ByVal sender As Object, ByVal e As EventArgs)
@@ -27,9 +30,17 @@ Public Class NavigationTabManager
         BindingOperations.SetBinding(configTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
         tabs.Add(configTab)
 
-        Dim viewTab = New NavigationTab(New DataStoreView(dataStore), s_ViewImage, "View") With {.Group = dataStore.Name}
-        BindingOperations.SetBinding(viewTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
-        tabs.Add(viewTab)
+        'Dim viewTab = New NavigationTab(New DataStoreView(dataStore), s_ViewImage, "View") With {.Group = dataStore.Name}
+        'BindingOperations.SetBinding(viewTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
+        'tabs.Add(viewTab)
+
+        Dim gridTab = New NavigationTab(New MasterDetailGridView(dataStore), s_ViewImage, "Grid") With {.Group = dataStore.Name}
+        BindingOperations.SetBinding(gridTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
+        tabs.Add(gridTab)
+
+        Dim importTab = New NavigationTab(New ImportStatusView(dataStore), s_ViewImage, "Import") With {.Group = dataStore.Name}
+        BindingOperations.SetBinding(importTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
+        tabs.Add(importTab)
 
         If False Then
             Dim tvShowTab As New NavigationTab(New TVShowView(dataStore), s_ViewImage, "TV Show") With {.Group = dataStore.Name}

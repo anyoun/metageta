@@ -15,6 +15,7 @@
     <OptionInfer>On</OptionInfer>
     <StartupObject>
     </StartupObject>
+    <ApplicationIcon>Resources\MetaGeta_16.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -193,6 +194,15 @@
     <Compile Include="Views\DataStoreConfiguration.xaml.vb">
       <DependentUpon>DataStoreConfiguration.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ImportStatusView.xaml.vb">
+      <DependentUpon>ImportStatusView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\JobQueueView.xaml.vb">
+      <DependentUpon>JobQueueView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MasterDetailGridView.xaml.vb">
+      <DependentUpon>MasterDetailGridView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TVShowView.xaml.vb">
       <DependentUpon>TVShowView.xaml</DependentUpon>
     </Compile>
@@ -238,6 +248,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DataStoreConfiguration.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ImportStatusView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\JobQueueView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MasterDetailGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -298,6 +320,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\view_detailed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MetaGeta_16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MetaGeta_16.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Target Name="BeforeBuild">

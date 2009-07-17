@@ -14,24 +14,15 @@ Public Class MGDataStore
     Private ReadOnly m_AllPlugins As New List(Of IMGPluginBase)
     Private ReadOnly m_FileActionDictionary As New Dictionary(Of String, IMGFileActionPlugin)
 
-    Private ReadOnly m_ProcessActionThread As Thread
-    Private ReadOnly m_StopProcessingActions As New ManualResetEvent(False)
-    Private ReadOnly m_QueueThreadIsSleeping As New ManualResetEvent(False)
-
     Friend Sub New(ByVal owner As IDataStoreOwner, ByVal dataMapper As DataMapper)
         m_Owner = owner
         m_DataMapper = dataMapper
 
         SetUpAction(New ImportFileAction(Me))
         SetUpAction(New RefreshFileSourcesAction(Me))
-
-        m_ProcessActionThread = New Thread(AddressOf ProcessActionQueueThread)
-        m_ProcessActionThread.Start()
     End Sub
 
     Public Sub Close()
-        CloseActionQueue()
-
         For Each plugin In m_AllPlugins
             plugin.Shutdown()
         Next
@@ -256,88 +247,14 @@ Public Class MGDataStore
         Return sb.ToString()
     End Function
 
-#Region "Action Queue"
-    Private ReadOnly m_ActionWaitingQueue As New Queue(Of ActionQueueItem)
-    Private ReadOnly m_AllActionItems As New List(Of ActionQueueItem)
-
-    Public ReadOnly Property ActionItems() As IEnumerable(Of ActionQueueItem)
-        Get
-            SyncLock m_ActionWaitingQueue
-                Return m_AllActionItems.ToArray()
-            End SyncLock
-        End Get
-    End Property
-
-    Private Sub EnqueueAction(ByVal action As String, ByVal file As MGFile)
-        SyncLock m_ActionWaitingQueue
-            Dim item As New ActionQueueItem(action, file)
-            m_ActionWaitingQueue.Enqueue(item)
-            Monitor.PulseAll(m_ActionWaitingQueue)
-            m_AllActionItems.Add(item)
-        End SyncLock
-        OnActionItemsChanged()
-    End Sub
-
-    Private Sub CloseActionQueue()
-        log.Info("Stopping action queue...")
-        SyncLock m_ActionWaitingQueue
-            m_ActionWaitingQueue.Enqueue(Nothing)
-            Monitor.Pulse(m_ActionWaitingQueue)
-        End SyncLock
-        m_StopProcessingActions.Set()
-        log.Info("Joining...")
-        m_ProcessActionThread.Join()
-        log.Info("Joined")
-    End Sub
-
-    Private Sub ProcessActionQueueThread()
-        Thread.CurrentThread.Name = "ProcessActionQueue"
-        While True
-            If m_StopProcessingActions.WaitOne(0, False) Then Return
-
-            Dim nextItem As ActionQueueItem
-            SyncLock m_ActionWaitingQueue
-                While m_ActionWaitingQueue.Count = 0
-                    m_QueueThreadIsSleeping.Set()
-                    Monitor.Wait(m_ActionWaitingQueue)
-                    m_QueueThreadIsSleeping.Reset()
-                End While
-                nextItem = m_ActionWaitingQueue.Dequeue()
-            End SyncLock
-            If nextItem Is Nothing Then Return
-
-            Dim action = m_FileActionDictionary(nextItem.Action)
-            nextItem.Status.Start()
-            Try
-                log.DebugFormat("Starting action ""{0}"" for file ""{1}""...", nextItem.Action, If(nextItem.File IsNot Nothing, nextItem.File.FileName, ""))
-                action.DoAction(nextItem.Action, nextItem.File, nextItem.Status)
-                nextItem.Status.Done(True)
-                nextItem.Status.StatusMessage = String.Empty
-                log.DebugFormat("Action ""{0}"" for file ""{1}"" done.", nextItem.Action, If(nextItem.File IsNot Nothing, nextItem.File.FileName, ""))
-            Catch ex As Exception
-                nextItem.Status.Done(False)
-                nextItem.Status.StatusMessage = ex.ToString()
-                log.ErrorFormat("Action ""{0}"" for file ""{1}"" failed with exception:\n{2}", nextItem.Action, If(nextItem.File IsNot Nothing, nextItem.File.FileName, ""), ex)
-            End Try
-        End While
-    End Sub
-
-    Public Sub WaitForQueueToEmpty()
-        While True
-            SyncLock m_ActionWaitingQueue
-                'Prevents race condition were worker hasn't started yet
-                If m_ActionWaitingQueue.Count = 0 Then Exit While
-            End SyncLock
-            Thread.Sleep(100)
-        End While
-        m_QueueThreadIsSleeping.WaitOne()
-    End Sub
-#End Region
-
 #Region "Action Plugins"
     Public Sub DoAction(ByVal file As MGFile, ByVal action As String)
-        EnqueueAction(action, file)
+        m_Owner.EnqueueAction(action, Me, file)
     End Sub
+
+    Friend Function LookupAction(ByVal action As String) As IMGFileActionPlugin
+        Return m_FileActionDictionary(action)
+    End Function
 #End Region
 
 #Region "Property Changed"
@@ -353,10 +270,6 @@ Public Class MGDataStore
     End Sub
     Private Sub OnFilesChanged()
         OnPropertyChanged("Files")
-    End Sub
-
-    Private Sub OnActionItemsChanged()
-        OnPropertyChanged("ActionItems")
     End Sub
 
     Private Sub OnPropertyChanged(ByVal propertyName As String)

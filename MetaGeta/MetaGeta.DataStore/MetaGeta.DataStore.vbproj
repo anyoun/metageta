@@ -138,7 +138,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Database\DataMapper.vb" />
-    <Compile Include="DataStore\ActionQueueItem.vb" />
     <Compile Include="DataStore\IDataStoreOwner.vb" />
     <Compile Include="DataStore\ImportFileAction.vb" />
     <Compile Include="DataStore\ProgressStatus.vb" />
@@ -146,6 +145,8 @@
     <Compile Include="FileProgress.vb" />
     <Compile Include="GlobalSettings\GlobalSetting.vb" />
     <Compile Include="IProgressReporter.vb" />
+    <Compile Include="JobQueue\Job.vb" />
+    <Compile Include="JobQueue\JobQueue.vb" />
     <Compile Include="Model\TagCollection.vb" />
     <Compile Include="DataStore\DataStore.vb" />
     <Compile Include="DataStore\DataStoreManager.vb" />

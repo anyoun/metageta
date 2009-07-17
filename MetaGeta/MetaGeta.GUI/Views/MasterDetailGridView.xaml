@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="MasterDetailGridView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    >
+    
+    <UserControl.Resources>
+        <DataTemplate x:Key="Tag-Name">
+            <TextBlock Text="{Binding Path=Name, Mode=OneWay}" TextWrapping="Wrap" MaxWidth="300"/>
+        </DataTemplate>
+        <DataTemplate x:Key="Tag-Value">
+            <TextBlock Text="{Binding Path=Value, Mode=OneWay}" TextWrapping="Wrap" MaxWidth="300"/>
+        </DataTemplate>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.936*"/>
+            <RowDefinition Height="0.07*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.651*" MinWidth="100"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <ListView x:Name="lvItems"
+        					ItemsSource="{Binding Path=DataStore.Files}" View="{Binding Path=SelectedDataStoreColumnsView, Mode=Default}"
+                            SelectionMode="Extended"
+                            Margin="8,8,8,8" Grid.RowSpan="2"/>
+        <Button Margin="8,8,8,8" x:Name="btnConvertToIpod" Content="Convert to iPod" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                IsEnabled="{Binding Path=IsFileSelectionValid}"/>
+        <ListView IsSynchronizedWithCurrentItem="True" Margin="8,8,8,8" 
+                                  DataContext="{Binding Path=SelectedItem, ElementName=lvItems, Mode=Default}"
+                                  ItemsSource="{Binding Path=Tags}" Grid.Column="2" Grid.ColumnSpan="3">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Name" CellTemplate="{DynamicResourceExtension Tag-Name}"/>
+                    <GridViewColumn Header="Value" CellTemplate="{DynamicResourceExtension Tag-Value}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button Margin="8,8,8,8" Name="btnWriteTags" Grid.Column="3" Grid.Row="1" Content="Write Tags"
+                                IsEnabled="{Binding Path=IsFileSelectionValid}"/>
+        <Button Margin="8,8,8,8" Name="btnRemove" Grid.Column="4" Grid.Row="1" Content="Remove"
+                                IsEnabled="{Binding Path=IsFileSelectionValid}"/>
+        <GridSplitter Margin="0,8,0,8" Width="5" RenderTransformOrigin="0.5,0.5" Grid.Column="1" HorizontalAlignment="Center" Grid.RowSpan="2"/>
+    </Grid>
+</UserControl>

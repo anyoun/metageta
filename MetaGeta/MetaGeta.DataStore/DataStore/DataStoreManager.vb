@@ -8,6 +8,7 @@ Public Class DataStoreManager
 
     Private ReadOnly m_DataMapper As DataMapper
     Private ReadOnly m_DataStores As New ObservableCollection(Of MGDataStore)
+    Private ReadOnly m_JobQueue As New JobQueue()
 
     Public Sub New()
         log.InfoFormat("DataStoreManager ctor")
@@ -25,12 +26,11 @@ Public Class DataStoreManager
     End Sub
 
     Public Sub WaitForQueueToEmpty()
-        For Each ds In m_DataStores
-            ds.WaitForQueueToEmpty()
-        Next
+        m_JobQueue.WaitForQueueToEmpty()
     End Sub
 
     Public Sub Shutdown()
+        m_JobQueue.Dispose()
         For Each ds In m_DataStores
             ds.Close()
         Next
@@ -55,6 +55,16 @@ Public Class DataStoreManager
         m_DataMapper.RemoveDataStore(dataStore)
         DataStores.Remove(dataStore)
     End Sub
+
+    Public Sub EnqueueAction(ByVal action As String, ByVal dataStore As MGDataStore, ByVal file As MGFile) Implements IDataStoreOwner.EnqueueAction
+        m_JobQueue.EnqueueAction(action, dataStore, file)
+    End Sub
+
+    Public ReadOnly Property JobQueue() As JobQueue
+        Get
+            Return m_JobQueue
+        End Get
+    End Property
 
     Public ReadOnly Property DataStores() As ObservableCollection(Of MGDataStore)
         Get
@@ -82,4 +92,5 @@ Public Class DataStoreManager
         End Set
     End Property
 #End Region
+
 End Class
