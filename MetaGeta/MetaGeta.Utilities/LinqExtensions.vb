@@ -78,11 +78,13 @@ Public Module LinqExtensions
         Return info.GetCustomAttributes(GetType(T), inherit).Cast(Of T)().Single()
     End Function
 
-    <Extension()> Public Function IndexInnerJoin(Of T, U)(ByVal left As IEnumerable(Of T), ByVal right As IEnumerable(Of U)) As IEnumerable(Of Tuple(Of T, U))
+    <Extension()> Public Function IndexInnerJoin(Of T, U)(ByVal left As IEnumerable(Of T), ByVal right As IEnumerable(Of U)) As IEnumerable(Of Tuple(Of T, U, Integer))
         Dim l = left.GetEnumerator(), r = right.GetEnumerator()
-        Dim results As New List(Of Tuple(Of T, U))
+        Dim results As New List(Of Tuple(Of T, U, Integer))
+        Dim i = 0
         While l.MoveNext() And r.MoveNext()
-            results.Add(New Tuple(Of T, U)(l.Current, r.Current))
+            results.Add(New Tuple(Of T, U, Integer)(l.Current, r.Current, i))
+            i += 1
         End While
         Return results
     End Function
@@ -102,5 +104,8 @@ Public Module LinqExtensions
             If item IsNot Nothing Then Return item
         Next
         Return Nothing
+    End Function
+    <Extension()> Public Function Coalesce(Of T)(ByVal item As T, ByVal ParamArray rest As T()) As T
+        Return If(item IsNot Nothing, item, rest.Coalesce())
     End Function
 End Module

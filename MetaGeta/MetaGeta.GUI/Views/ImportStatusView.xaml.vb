@@ -7,11 +7,8 @@ Partial Public Class ImportStatusView
     Private ReadOnly m_DataStore As MGDataStore
 
     Public Sub New(ByVal dataStore As MGDataStore)
-        ' This call is required by the Windows Form Designer.
+        m_DataStore = dataStore
         InitializeComponent()
-
-        ' Add any initialization after the InitializeComponent() call.
-        m_DataStore = DataStore
     End Sub
 
     Public ReadOnly Property DataStore() As MGDataStore
@@ -21,9 +18,7 @@ Partial Public Class ImportStatusView
     End Property
 
     Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnRefresh.Click
-        If DataStore IsNot Nothing Then
-            DataStore.EnqueueRefreshFileSources()
-        End If
+        DataStore.BeginRefresh()
     End Sub
 
 End Class

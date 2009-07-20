@@ -3,11 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="ImportStatusView"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Name="userControl"
     >
     <Grid Height="Auto" Width="Auto">
-        <ProgressBar x:Name="pbImport" Margin="8,8,8,0" VerticalAlignment="Top" Height="66"/>
+        <ProgressBar x:Name="pbImport" Margin="8,8,8,0" VerticalAlignment="Top" Height="66" Value="{Binding Path=DataStore.ImportStatus.ProgressPct, ElementName=userControl, Mode=OneWay}" IsIndeterminate="{Binding Path=DataStore.ImportStatus.IsIndeterminate, ElementName=userControl, Mode=Default}"/>
         <Button x:Name="btnRefresh" Content="Refresh" Margin="140.772,116,140.771,125.96" VerticalAlignment="Top" HorizontalAlignment="Center" Width="200" Height="50"/>
-        <TextBlock Margin="8,78,8,0" Text="filename" TextWrapping="Wrap" Height="34" VerticalAlignment="Top" TextAlignment="Center" FontSize="14"/>
+        <TextBlock Margin="8,78,8,0" Text="{Binding Path=DataStore.ImportStatus.StatusMessage, ElementName=userControl, Mode=Default}" TextWrapping="Wrap" Height="34" VerticalAlignment="Top" TextAlignment="Center" FontSize="14"/>
     </Grid>
 </UserControl>

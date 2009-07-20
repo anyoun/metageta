@@ -119,7 +119,7 @@ Public Class TranscodePlugin
         ElseIf Not IO.File.Exists(outputPath.LocalPath) Then
             log.ErrorFormat("Encoding failed- output file doesn't exist: ""{0}"".", outputPath.LocalPath)
         Else
-            Dim newFile = m_DataStore.ImportNewFile(outputPath) 'Will also enqueue an import
+            Dim newFile = m_DataStore.AddNewFile(outputPath) 'Will also enqueue an import
             m_DataStore.DoAction(newFile, Mp4TagWriterPlugin.c_WriteTagsAction)
         End If
     End Sub

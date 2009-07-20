@@ -62,7 +62,7 @@ Partial Public Class DataStoreView
 #Region "Button event handlers"
     Private Sub btnImport_Click(ByVal sender As System.Object, ByVal e As System.Windows.RoutedEventArgs) Handles btnImport.Click
         If DataStore IsNot Nothing Then
-            DataStore.EnqueueRefreshFileSources()
+            DataStore.BeginRefresh()
         End If
     End Sub
 

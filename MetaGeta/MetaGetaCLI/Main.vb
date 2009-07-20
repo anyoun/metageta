@@ -10,7 +10,7 @@ Module Main
 
         For Each ds In dsm.DataStores
             Console.WriteLine("Refreshing {0}...", ds.Name)
-            ds.EnqueueRefreshFileSources()
+            ds.BeginRefresh()
         Next
 
         dsm.WaitForQueueToEmpty()

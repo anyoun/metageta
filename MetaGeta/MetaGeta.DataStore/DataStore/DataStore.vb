@@ -14,15 +14,19 @@ Public Class MGDataStore
     Private ReadOnly m_AllPlugins As New List(Of IMGPluginBase)
     Private ReadOnly m_FileActionDictionary As New Dictionary(Of String, IMGFileActionPlugin)
 
+    Private ReadOnly m_ShutdownEvent As New ManualResetEvent(False)
+
     Friend Sub New(ByVal owner As IDataStoreOwner, ByVal dataMapper As DataMapper)
         m_Owner = owner
         m_DataMapper = dataMapper
 
-        SetUpAction(New ImportFileAction(Me))
-        SetUpAction(New RefreshFileSourcesAction(Me))
+        m_ImportThread.IsBackground = True
+        m_ImportThread.Start()
     End Sub
 
     Public Sub Close()
+        m_ShutdownEvent.Set()
+        m_ImportThread.Join()
         For Each plugin In m_AllPlugins
             plugin.Shutdown()
         Next
@@ -132,43 +136,100 @@ Public Class MGDataStore
 
 #Region "Importing"
 
-    Public Sub EnqueueRefreshFileSources()
-        DoAction(Nothing, RefreshFileSourcesAction.c_RefreshFileSourcesAction)
+    Private ReadOnly m_ImportThread As New Thread(AddressOf ImportThread)
+    Private ReadOnly m_ImportNow As New AutoResetEvent(False)
+
+    Private m_LastImportStatus As New ImportStatus()
+    Private m_LastImportStatusLock As New Object()
+
+    ''' <summary>
+    ''' Starts an asynchronous refresh and import from all FileSourcePlugins.
+    ''' </summary>
+    ''' <remarks></remarks>
+    Public Sub BeginRefresh()
+        m_ImportNow.Set()
     End Sub
 
-    Friend Sub RefreshFileSources()
-        Dim paths = From fs In Me.FileSourcePlugins _
-                         From file In fs.GetFilesToAdd() _
-                         Select file
-        ImportNewFiles(paths)
+    Public ReadOnly Property ImportStatus() As ImportStatus
+        Get
+            SyncLock m_LastImportStatusLock
+                Return m_LastImportStatus
+            End SyncLock
+        End Get
+    End Property
+
+    Private Sub SetImportStatus(ByVal message As String, Optional ByVal progressPct As Integer = -1)
+        SyncLock m_LastImportStatusLock
+            If progressPct = -1 Then
+                m_LastImportStatus = New ImportStatus(message)
+            Else
+                m_LastImportStatus = New ImportStatus(message, progressPct)
+            End If
+        End SyncLock
+        OnPropertyChanged("ImportStatus")
     End Sub
 
-    Public Function ImportNewFile(ByVal path As Uri) As MGFile
-        Return ImportNewFiles(path.SingleToEnumerable()).Single()
-    End Function
+    Public Sub ImportThread()
+        While True
+            Dim wakeupHandle = WaitHandle.WaitAny(New WaitHandle() {m_ImportNow, m_ShutdownEvent})
+            If wakeupHandle = 1 Then Return
 
-    Public Function ImportNewFiles(ByVal paths As IEnumerable(Of Uri)) As IEnumerable(Of MGFile)
-        Dim files = (From p In paths Select New MGFile(Me)).ToArray()
-        m_DataMapper.WriteNewFiles(files, Me)
-        For Each fileAndPath In files.IndexInnerJoin(paths)
-            fileAndPath.First.SetTag(MGFile.FileNameKey, fileAndPath.Second.AbsoluteUri)
-            EnqueueImportFile(fileAndPath.First)
-        Next
-        Return files
-    End Function
+            SetImportStatus("Listing files...")
 
-    Public Sub EnqueueImportFile(ByVal file As MGFile)
-        DoAction(file, ImportFileAction.c_ImportAction)
+            'Get list of files
+            Dim newPaths = (From fs In Me.FileSourcePlugins _
+                      From path In fs.GetFilesToAdd() _
+                      Select path).ToArray()
+            Dim files = (From p In newPaths Select New MGFile(Me)).ToArray()
+            m_DataMapper.WriteNewFiles(files, Me)
+
+            For Each fileAndPath In files.IndexInnerJoin(newPaths)
+                Dim newfile = fileAndPath.First
+                Dim filePath = fileAndPath.Second
+                Dim index = fileAndPath.Third
+                SetImportStatus(String.Format("Importing ""{0}""", filePath.LocalPath), CInt(index / files.Length * 100))
+                ImportNewFile(newfile, filePath)
+            Next
+
+            SetImportStatus("Import complete.", 100)
+
+            OnFilesChanged()
+        End While
     End Sub
 
-    Friend Sub ImportFile(ByVal file As MGFile, ByVal progress As ProgressStatus)
-        log.DebugFormat("ImportFile(): {0}....", file.FileName)
-        For Each plugin As IMGTaggingPlugin In Me.TaggingPlugins
-            log.DebugFormat("Importing {0} with {1}....", file.FileName, plugin.GetType().FullName)
-            plugin.Process(file, progress)
-        Next
+    Public Function AddNewFile(ByVal path As Uri) As MGFile
+        Dim file As New MGFile(Me)
+        m_DataMapper.WriteNewFiles(file.SingleToEnumerable(), Me)
+        ImportNewFile(file, path)
         OnFilesChanged()
+        Return file
+    End Function
+
+    Private Sub ImportNewFile(ByVal newfile As MGFile, ByVal filePath As Uri)
+        newfile.SetTag(MGFile.FileNameKey, filePath.AbsoluteUri)
+        newfile.SetTag("ImportComplete", False.ToString())
+
+        log.DebugFormat("Importing file: {0}....", filePath)
+
+        For Each plugin As IMGTaggingPlugin In Me.TaggingPlugins
+            log.DebugFormat("Importing {0} with {1}....", newfile.FileName, plugin.GetType().FullName)
+            Try
+                plugin.Process(newfile, New ProgressStatus())
+            Catch ex As Exception
+                log.Warn(String.Format("Importing ""{0}"" with {1} failed.", filePath, plugin.GetType().FullName), ex)
+            End Try
+        Next
     End Sub
+
+    Private m_ImportQueueCache As ReadOnlyCollection(Of MGFile)
+    Private ReadOnly Property ImportQueue() As IEnumerable(Of MGFile)
+        Get
+            If m_ImportQueueCache Is Nothing OrElse m_ImportQueueCache.Count = 0 Then
+                m_ImportQueueCache = New ReadOnlyCollection(Of MGFile)(Files.Where(Function(f) Not Boolean.Parse(f.GetTag("ImportComplete").Coalesce("False"))).ToArray())
+            End If
+            Return m_ImportQueueCache
+        End Get
+    End Property
 
 #End Region
 
@@ -308,6 +369,54 @@ Public Class MGDataStore
         Return imagePath
     End Function
 #End Region
+End Class
+
+Public Class ImportStatus
+    Private ReadOnly m_StatusMessage As String
+    Private ReadOnly m_ProgressPct As Integer
+    Private ReadOnly m_IsImporting As Boolean
+    Private ReadOnly m_IsIndeterminate As Boolean
+
+    Public Sub New(ByVal statusMessage As String, ByVal progressPct As Integer)
+        m_StatusMessage = statusMessage
+        m_ProgressPct = progressPct
+        m_IsImporting = True
+        m_IsIndeterminate = False
+    End Sub
+
+    Public Sub New()
+        Me.New(String.Empty, 0)
+        m_IsImporting = False
+    End Sub
+
+    Public Sub New(ByVal statusMessage As String)
+        Me.New(statusMessage, 0)
+        m_IsIndeterminate = True
+    End Sub
+
+    Public ReadOnly Property StatusMessage() As String
+        Get
+            Return m_StatusMessage
+        End Get
+    End Property
+
+    Public ReadOnly Property ProgressPct() As Integer
+        Get
+            Return m_ProgressPct
+        End Get
+    End Property
+
+    Public ReadOnly Property IsImporting() As Boolean
+        Get
+            Return m_IsImporting
+        End Get
+    End Property
+
+    Public ReadOnly Property IsIndeterminate() As Boolean
+        Get
+            Return m_IsIndeterminate
+        End Get
+    End Property
 End Class
 
 Public Class DataStoreCreationArguments
