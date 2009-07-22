@@ -22,7 +22,7 @@ Partial Public Class MasterDetailGridView
 
     Public ReadOnly Property SelectedDataStoreColumnsView() As ViewBase
         Get
-            Dim grid As New GridView()
+            Dim grid As New Controls.GridView()
             If Not DataStore Is Nothing Then
                 grid.Columns.Clear()
 
