@@ -164,6 +164,7 @@
     </Compile>
     <Compile Include="Editors\StringListEditor.vb" />
     <Compile Include="Helpers\MGFileConverter.vb" />
+    <Compile Include="Helpers\RelayCommand.vb" />
     <Compile Include="NavigationTabManager.vb" />
     <Compile Include="Views\DataStoreView.xaml.vb">
       <DependentUpon>DataStoreView.xaml</DependentUpon>

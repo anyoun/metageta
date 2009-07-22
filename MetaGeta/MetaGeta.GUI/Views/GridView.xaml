@@ -1,9 +1,11 @@
 ﻿<UserControl
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:my="http://schemas.microsoft.com/wpf/2008/toolkit"
-    x:Class="GridView"
+    x:Class="GridView" x:Name="myGridView"
     DataContext="{Binding RelativeSource={RelativeSource Self}}" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:GUI="clr-namespace:MetaGeta.GUI"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignHeight="222" d:DesignWidth="278" >
+
     <UserControl.Resources>
 
         <!-- Generic brushes -->
@@ -63,10 +65,27 @@
             </Setter>
         </Style>
 
+        <ContextMenu x:Key="menuGridRow">
+            <MenuItem Name="miConvertToIphone" Header="Convert to iPhone Format"
+                      Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=ConvertToIphoneCommand}"          
+                      CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
+            <MenuItem Name="miWriteMp4Tags" Header="Write MP4 Tags"
+                      Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=WriteMp4TagsCommand}"          
+                      CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
+            <MenuItem Name="miRemoveFile" Header="Remove"
+                      Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=RemoveFileCommand}"          
+                      CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
+            <Separator />
+            <MenuItem Name="miShowProperties" Header="Properties"
+                      Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=ShowPropertiesCommand}"          
+                      CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
+        </ContextMenu>
+
         <Style x:Key="{x:Type my:DataGridRow}" TargetType="{x:Type my:DataGridRow}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource ListViewItemFocusVisual}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="ContextMenu" Value="{StaticResource menuGridRow}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type my:DataGridRow}">
@@ -84,7 +103,7 @@
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Rectangle x:Name="UpperHighlight" Visibility="Collapsed" Fill="#75FFFFFF"/>
-                                    <my:DataGridCellsPresenter />
+                                    <my:DataGridCellsPresenter Grid.RowSpan="2" />
                                 </Grid>
                             </Border>
                         </Border>
