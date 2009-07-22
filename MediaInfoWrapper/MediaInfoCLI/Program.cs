@@ -25,7 +25,7 @@ namespace MediaInfoCLI
             if (File.Exists(path))
                 TestFile(mi, path);
             else if (Directory.Exists(path))
-                foreach (var file in Directory.GetFiles(path))
+                foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
                     TestFile(mi, file);
             else
                 Console.WriteLine("Can't find path: {0}", path);
