@@ -15,7 +15,7 @@
     <OptionInfer>On</OptionInfer>
     <StartupObject>
     </StartupObject>
-    <ApplicationIcon>Resources\MetaGeta_16.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\MetaGeta_Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -338,10 +338,13 @@
     <Resource Include="Resources\view_detailed.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\MetaGeta_16.png" />
+    <SplashScreen Include="SplashScreen.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\MetaGeta_16.ico" />
+    <None Include="Resources\MetaGeta_Icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MetaGeta_Image.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Target Name="BeforeBuild">

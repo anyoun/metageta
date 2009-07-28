@@ -60,17 +60,17 @@ Namespace My.Resources
             End Set
         End Property
         
-        Friend ReadOnly Property MetaGeta_16() As System.Drawing.Bitmap
+        Friend ReadOnly Property MetaGeta_Icon() As System.Drawing.Icon
             Get
-                Dim obj As Object = ResourceManager.GetObject("MetaGeta_16", resourceCulture)
-                Return CType(obj,System.Drawing.Bitmap)
+                Dim obj As Object = ResourceManager.GetObject("MetaGeta_Icon", resourceCulture)
+                Return CType(obj,System.Drawing.Icon)
             End Get
         End Property
         
-        Friend ReadOnly Property MetaGeta_161() As System.Drawing.Icon
+        Friend ReadOnly Property MetaGeta_Image() As System.Drawing.Bitmap
             Get
-                Dim obj As Object = ResourceManager.GetObject("MetaGeta_161", resourceCulture)
-                Return CType(obj,System.Drawing.Icon)
+                Dim obj As Object = ResourceManager.GetObject("MetaGeta_Image", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property
     End Module
