@@ -76,7 +76,10 @@ Partial Public Class GridView
         End Get
     End Property
     Public Sub ShowProperties(ByVal param As MGFile)
-        MessageBox.Show("Properties")
+        Dim win As New FilePropertiesView(param)
+        PresentationTraceSources.SetTraceLevel(win, PresentationTraceLevel.High)
+        win.Owner = Window.GetWindow(Me)
+        win.ShowDialog()
     End Sub
 
     Public ReadOnly Property DataStore() As MGDataStore

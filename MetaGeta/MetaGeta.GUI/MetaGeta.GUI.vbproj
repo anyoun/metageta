@@ -196,6 +196,9 @@
     <Compile Include="Views\DataStoreConfiguration.xaml.vb">
       <DependentUpon>DataStoreConfiguration.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\FilePropertiesView.xaml.vb">
+      <DependentUpon>FilePropertiesView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GridView.xaml.vb">
       <DependentUpon>GridView.xaml</DependentUpon>
     </Compile>
@@ -253,6 +256,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DataStoreConfiguration.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FilePropertiesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
