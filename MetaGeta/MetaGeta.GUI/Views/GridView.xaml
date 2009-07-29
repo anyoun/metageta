@@ -11,7 +11,7 @@
 	d:DesignHeight="222" d:DesignWidth="278" >
 
     <UserControl.Resources>
-        
+
         <ContextMenu x:Key="menuGridRow">
             <MenuItem Name="miConvertToIphone" Header="Convert to iPhone Format"
                       Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=ConvertToIphoneCommand}"          
@@ -35,9 +35,11 @@
     </UserControl.Resources>
     <Grid>
         <toolkit:DataGrid AutoGenerateColumns="False" Margin="0" x:Name="DataGrid1" 
-                     ItemsSource="{Binding Path=DataStore.Files, Mode=Default}" IsSynchronizedWithCurrentItem="True" 
-                     HeadersVisibility="Column" IsReadOnly="True" CanUserResizeRows="False" GridLinesVisibility="None"
-					 d:GenerateSampleData="True" IsTextSearchEnabled="True"
-					 />
+                          ItemsSource="{Binding Path=DataStore.Files, Mode=Default}" IsSynchronizedWithCurrentItem="True" 
+                          HeadersVisibility="Column" IsReadOnly="True" CanUserResizeRows="False" GridLinesVisibility="None"
+					      d:GenerateSampleData="True" IsTextSearchEnabled="True"
+                          SelectionMode="Extended" SelectionUnit="FullRow"
+                          SelectedCellsChanged="DataGrid1_SelectedCellsChanged" 
+					      />
     </Grid>
 </UserControl>
