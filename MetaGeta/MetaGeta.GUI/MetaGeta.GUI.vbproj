@@ -166,9 +166,6 @@
     <Compile Include="Helpers\MGFileConverter.vb" />
     <Compile Include="Helpers\RelayCommand.vb" />
     <Compile Include="NavigationTabManager.vb" />
-    <Compile Include="Views\DataStoreView.xaml.vb">
-      <DependentUpon>DataStoreView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainWindow.xaml.vb">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -208,9 +205,6 @@
     <Compile Include="Views\JobQueueView.xaml.vb">
       <DependentUpon>JobQueueView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MasterDetailGridView.xaml.vb">
-      <DependentUpon>MasterDetailGridView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\TVShowView.xaml.vb">
       <DependentUpon>TVShowView.xaml</DependentUpon>
     </Compile>
@@ -243,10 +237,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\DataStoreView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -272,10 +262,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\JobQueueView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\MasterDetailGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

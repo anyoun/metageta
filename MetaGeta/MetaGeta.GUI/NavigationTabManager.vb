@@ -30,17 +30,9 @@ Public Class NavigationTabManager
         BindingOperations.SetBinding(configTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
         tabs.Add(configTab)
 
-        'Dim viewTab = New NavigationTab(New DataStoreView(dataStore), s_ViewImage, "View") With {.Group = dataStore.Name}
-        'BindingOperations.SetBinding(viewTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
-        'tabs.Add(viewTab)
-
-        Dim gridViewTab = New NavigationTab(New GridView(dataStore), s_ViewImage, "Grid2") With {.Group = dataStore.Name}
+        Dim gridViewTab = New NavigationTab(New GridView(dataStore), s_ViewImage, "Grid") With {.Group = dataStore.Name}
         BindingOperations.SetBinding(gridViewTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
         tabs.Add(gridViewTab)
-
-        Dim gridTab = New NavigationTab(New MasterDetailGridView(dataStore), s_ViewImage, "Grid") With {.Group = dataStore.Name}
-        BindingOperations.SetBinding(gridTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
-        tabs.Add(gridTab)
 
         Dim importTab = New NavigationTab(New ImportStatusView(dataStore), s_ViewImage, "Import") With {.Group = dataStore.Name}
         BindingOperations.SetBinding(importTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
