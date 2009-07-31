@@ -112,7 +112,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-    <Page Include="Views\SettingsEditor.xaml">
+    <Page Include="Editors\SettingsEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -120,7 +120,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="Views\SettingsEditor.xaml.vb">
+    <Compile Include="Editors\SettingsEditor.xaml.vb">
       <DependentUpon>SettingsEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\GlobalSettingsEditor.xaml.vb">
@@ -134,7 +134,11 @@
     <Import Include="MetaGeta.DataStore" />
     <Import Include="MetaGeta.GUI" />
     <Import Include="MetaGeta.Utilities" />
+    <Import Include="System.Collections.ObjectModel" />
+    <Import Include="System.ComponentModel" />
+    <Import Include="System.IO" />
     <Import Include="System.Linq" />
+    <Import Include="System.Reflection" />
     <Import Include="System.Xml.Linq" />
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="System" />
@@ -165,7 +169,13 @@
     <Compile Include="Editors\StringListEditor.vb" />
     <Compile Include="Helpers\MGFileConverter.vb" />
     <Compile Include="Helpers\RelayCommand.vb" />
-    <Compile Include="NavigationTabManager.vb" />
+    <Compile Include="ViewModels\DataStoreConfigurationViewModel.vb" />
+    <Compile Include="ViewModels\FilePropertiesViewModel.vb" />
+    <Compile Include="ViewModels\GridViewModel.vb" />
+    <Compile Include="ViewModels\ImportStatusViewModel.vb" />
+    <Compile Include="ViewModels\JobQueueViewModel.vb" />
+    <Compile Include="ViewModels\NavigationTabGroup.vb" />
+    <Compile Include="ViewModels\NavigationTabManager.vb" />
     <Compile Include="MainWindow.xaml.vb">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -186,12 +196,14 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Navigation\NavigationTab.vb" />
-    <Compile Include="Views\EmptyView.xaml.vb">
-      <DependentUpon>EmptyView.xaml</DependentUpon>
+    <Compile Include="ViewModels\NavigationTab.vb" />
+    <Compile Include="ViewModels\NullViewModel.vb" />
+    <Compile Include="ViewModels\TvShowViewModel.vb" />
+    <Compile Include="Views\NullView.xaml.vb">
+      <DependentUpon>NullView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\DataStoreConfiguration.xaml.vb">
-      <DependentUpon>DataStoreConfiguration.xaml</DependentUpon>
+    <Compile Include="Views\DataStoreConfigurationView.xaml.vb">
+      <DependentUpon>DataStoreConfigurationView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FilePropertiesView.xaml.vb">
       <DependentUpon>FilePropertiesView.xaml</DependentUpon>
@@ -205,8 +217,8 @@
     <Compile Include="Views\JobQueueView.xaml.vb">
       <DependentUpon>JobQueueView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TVShowView.xaml.vb">
-      <DependentUpon>TVShowView.xaml</DependentUpon>
+    <Compile Include="Views\TvShowView.xaml.vb">
+      <DependentUpon>TvShowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\NewDataStoreWindow.xaml.vb">
       <DependentUpon>NewDataStoreWindow.xaml</DependentUpon>
@@ -241,11 +253,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\EmptyView.xaml">
+    <Page Include="Views\NullView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\DataStoreConfiguration.xaml">
+    <Page Include="Views\DataStoreConfigurationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -265,7 +277,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\TVShowView.xaml">
+    <Page Include="Views\TvShowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -330,7 +342,7 @@
     <None Include="Resources\MetaGeta_Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\MetaGeta_Image.png" />
+    <Resource Include="Resources\MetaGeta_Image.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Target Name="BeforeBuild">

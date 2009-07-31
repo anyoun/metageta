@@ -1,7 +1,6 @@
 ﻿<UserControl x:Class="JobQueueView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    DataContext="{Binding RelativeSource={RelativeSource Self}}"
     >
 
     <UserControl.Resources>
@@ -37,7 +36,7 @@
     </UserControl.Resources>
     
     <Grid>
-        <ListView IsSynchronizedWithCurrentItem="True" x:Name="lvQueue" Width="Auto" Height="Auto" ItemsSource="{Binding Path=DataStoreManager.JobQueue.ActionItems}">
+        <ListView IsSynchronizedWithCurrentItem="True" x:Name="lvQueue" Width="Auto" Height="Auto" ItemsSource="{Binding Path=JobQueue.ActionItems}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>

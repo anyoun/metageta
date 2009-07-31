@@ -1,12 +1,12 @@
 ﻿<UserControl
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:MetaGeta_GUI="clr-namespace:MetaGeta.GUI" 
-	x:Class="TVShowView" x:Name="TVShowView"
+	x:Class="TvShowView" x:Name="TvShowView"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
     >
     <UserControl.Resources>
-        <MetaGeta_GUI:TvShowDataContext DataStore="{Binding Path=DataStore, ElementName=TVShowView, Mode=OneWay}" x:Key="TvShowDataContext"/>
+        <MetaGeta_GUI:TvShowDataContext DataStore="{Binding Path=DataStore}" x:Key="TvShowDataContext"/>
         <MetaGeta_GUI:UriImageConverter x:Key="ValueConverter"/>
 
         <DataTemplate x:Key="EpisodeTemplate" DataType="{x:Type MetaGeta_GUI:TvEpisode}">

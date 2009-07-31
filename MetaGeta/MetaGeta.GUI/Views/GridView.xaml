@@ -7,7 +7,6 @@
     xmlns:GUI="clr-namespace:MetaGeta.GUI"
     
     x:Class="GridView" x:Name="myGridView"
-    DataContext="{Binding RelativeSource={RelativeSource Self}}" 
 	d:DesignHeight="222" d:DesignWidth="278" >
 
     <UserControl.Resources>
