@@ -20,7 +20,7 @@
         End Function
 
         Public Function GetDataStores(ByVal owner As IDataStoreOwner) As IEnumerable(Of MGDataStore) Implements IDataMapper.GetDataStores
-            Return New MGDataStore() {New MGDataStore(owner, Me)}
+            Return New MGDataStore() {New MGDataStore(owner, Me) With {.Name = "Sample DataStore"}}
         End Function
 
         Public Function GetFiles(ByVal dataStore As MGDataStore) As IList(Of MGFile) Implements IDataMapper.GetFiles
