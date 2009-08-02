@@ -10,9 +10,11 @@
     Private ReadOnly m_StopProcessingActions As New ManualResetEvent(False)
     Private ReadOnly m_QueueThreadIsSleeping As New ManualResetEvent(False)
 
-    Public Sub New()
-        m_ProcessActionThread = New Thread(AddressOf ProcessActionQueueThread)
-        m_ProcessActionThread.Start()
+    Public Sub New(ByVal designMode As Boolean)
+        If Not designMode Then
+            m_ProcessActionThread = New Thread(AddressOf ProcessActionQueueThread)
+            m_ProcessActionThread.Start()
+        End If
     End Sub
 
     Public ReadOnly Property ActionItems() As IEnumerable(Of Job)

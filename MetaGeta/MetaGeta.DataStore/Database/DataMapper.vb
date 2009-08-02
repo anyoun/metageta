@@ -1,6 +1,8 @@
 ﻿Imports System.Data.SQLite
+Imports MetaGeta.DataStore.Database
 
 Public Class DataMapper
+    Implements IDataMapper
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private Shared ReadOnly s_ConnectionSlot As LocalDataStoreSlot
@@ -32,11 +34,11 @@ Public Class DataMapper
         m_FileName = filename
     End Sub
 
-    Public Sub Initialize()
+    Public Sub Initialize() Implements IDataMapper.Initialize
         CheckDatabaseVersion()
     End Sub
 
-    Public Sub Close()
+    Public Sub Close() Implements IDataMapper.Close
         'Must be synchronous...
         For Each conn In s_Connections
             conn.Close()
@@ -122,7 +124,7 @@ Public Class DataMapper
     End Sub
 
 #Region "Creating"
-    Public Sub WriteNewDataStore(ByVal dataStore As MGDataStore)
+    Public Sub WriteNewDataStore(ByVal dataStore As MGDataStore) Implements IDataMapper.WriteNewDataStore
         Using tran = Connection.BeginTransaction()
             Using cmd = Connection.CreateCommand()
                 cmd.CommandText = "INSERT INTO [DataStore]([Name], [Description], [TemplateName]) VALUES(?,?,?);SELECT last_insert_rowid() AS [ID]"
@@ -146,7 +148,7 @@ Public Class DataMapper
             tran.Commit()
         End Using
     End Sub
-    Public Sub WriteNewFiles(ByVal files As IEnumerable(Of MGFile), ByVal dataStore As MGDataStore)
+    Public Sub WriteNewFiles(ByVal files As IEnumerable(Of MGFile), ByVal dataStore As MGDataStore) Implements IDataMapper.WriteNewFiles
         Using tran = Connection.BeginTransaction()
             For Each file In files
                 Using cmd = Connection.CreateCommand()
@@ -162,7 +164,7 @@ Public Class DataMapper
 #End Region
 
 #Region "Reading"
-    Public Function GetDataStores(ByVal owner As IDataStoreOwner) As IEnumerable(Of MGDataStore)
+    Public Function GetDataStores(ByVal owner As IDataStoreOwner) As IEnumerable(Of MGDataStore) Implements IDataMapper.GetDataStores
         log.Debug("Loading DataStores...")
         Dim dataStores As New List(Of MGDataStore)
         Using cmd = Connection.CreateCommand()
@@ -207,7 +209,7 @@ Public Class DataMapper
 
         Return dataStores
     End Function
-    Public Function GetTag(ByVal file As MGFile, ByVal tagName As String) As String
+    Public Function GetTag(ByVal file As MGFile, ByVal tagName As String) As String Implements IDataMapper.GetTag
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Value] FROM [Tag] WHERE [FileID] = ? AND [Name] = ?"
             cmd.AddParam(file.ID)
@@ -215,7 +217,7 @@ Public Class DataMapper
             Return CType(cmd.ExecuteScalar(), String)
         End Using
     End Function
-    Public Function GetFiles(ByVal dataStore As MGDataStore) As IList(Of MGFile)
+    Public Function GetFiles(ByVal dataStore As MGDataStore) As IList(Of MGFile) Implements IDataMapper.GetFiles
         Dim files As New List(Of MGFile)
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [FileID] FROM [File] WHERE [DatastoreID] = ?"
@@ -228,7 +230,7 @@ Public Class DataMapper
         End Using
         Return files
     End Function
-    Public Function GetAllTagOnFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile))
+    Public Function GetAllTagOnFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile)) Implements IDataMapper.GetAllTagOnFiles
         Dim files As New List(Of Tuple(Of MGTag, MGFile))
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [File].[FileID], [Tag].[Value] FROM [File] LEFT OUTER JOIN [Tag] on [Tag].[FileID] = [File].[FileID] WHERE [DatastoreID] = ? AND [Tag].[Name] = ?"
@@ -244,7 +246,7 @@ Public Class DataMapper
         End Using
         Return files
     End Function
-    Public Function GetAllTags(ByVal fileId As Long) As MGTagCollection
+    Public Function GetAllTags(ByVal fileId As Long) As MGTagCollection Implements IDataMapper.GetAllTags
         Dim tags As New List(Of MGTag)
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Name], [Value] FROM [Tag] WHERE [FileID] = ?"
@@ -260,7 +262,7 @@ Public Class DataMapper
 #End Region
 
 #Region "Writing Changes"
-    Public Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String)
+    Public Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String) Implements IDataMapper.WriteTag
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "INSERT OR REPLACE INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
             cmd.AddParam(file.ID)
@@ -269,7 +271,7 @@ Public Class DataMapper
             cmd.ExecuteNonQuery()
         End Using
     End Sub
-    Public Sub WriteDataStore(ByVal dataStore As MGDataStore)
+    Public Sub WriteDataStore(ByVal dataStore As MGDataStore) Implements IDataMapper.WriteDataStore
         Using tran = Connection.BeginTransaction()
             Using cmd = Connection.CreateCommand()
                 cmd.CommandText = "UPDATE [DataStore] SET [Name] = ?, [Description] = ? WHERE [DatastoreID] = ?"
@@ -285,7 +287,7 @@ Public Class DataMapper
 #End Region
 
 #Region "Removing"
-    Public Sub RemoveDataStore(ByVal datastore As MGDataStore)
+    Public Sub RemoveDataStore(ByVal datastore As MGDataStore) Implements IDataMapper.RemoveDataStore
         log.DebugFormat("Removing datastore: {0}", datastore.Name)
         Using tran = Connection.BeginTransaction()
             Using cmd = Connection.CreateCommand()
@@ -317,7 +319,7 @@ Public Class DataMapper
         End Using
     End Sub
 
-    Public Sub RemoveFiles(ByVal files As IEnumerable(Of MGFile), ByVal store As MGDataStore)
+    Public Sub RemoveFiles(ByVal files As IEnumerable(Of MGFile), ByVal store As MGDataStore) Implements IDataMapper.RemoveFiles
         Using tran = Connection.BeginTransaction()
             For Each file In files
                 log.DebugFormat("Removing file: {0}", file.ID)
@@ -341,7 +343,7 @@ Public Class DataMapper
 
 #Region "Settings"
 
-    Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, ByVal settingName As String) As String
+    Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, ByVal settingName As String) As String Implements IDataMapper.GetPluginSetting
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Value] FROM [PluginSetting] WHERE [DatastoreID] = ? AND [PluginID] = ? AND [Name] = ?"
             cmd.AddParam(dataStore.ID)
@@ -350,7 +352,7 @@ Public Class DataMapper
             Return CType(cmd.ExecuteScalar(), String)
         End Using
     End Function
-    Public Sub WritePluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, ByVal settingName As String, ByVal settingValue As String)
+    Public Sub WritePluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, ByVal settingName As String, ByVal settingValue As String) Implements IDataMapper.WritePluginSetting
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "INSERT OR REPLACE INTO [PluginSetting]([DatastoreID], [PluginID], [Name], [Value]) VALUES(?, ?, ?, ?)"
             cmd.AddParam(dataStore.ID)
@@ -361,14 +363,14 @@ Public Class DataMapper
         End Using
     End Sub
 
-    Public Function GetGlobalSetting(ByVal settingName As String) As String
+    Public Function GetGlobalSetting(ByVal settingName As String) As String Implements IDataMapper.GetGlobalSetting
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT coalesce([Value], [DefaultValue]) FROM [GlobalSetting] WHERE [Name] = ?"
             cmd.AddParam(settingName)
             Return CType(cmd.ExecuteScalar(), String)
         End Using
     End Function
-    Public Sub WriteGlobalSetting(ByVal settingName As String, ByVal settingValue As String)
+    Public Sub WriteGlobalSetting(ByVal settingName As String, ByVal settingValue As String) Implements IDataMapper.WriteGlobalSetting
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "UPDATE [GlobalSetting] SET [Value] = ? WHERE [Name] = ?"
             cmd.AddParam(settingValue)
@@ -395,7 +397,7 @@ Public Class DataMapper
     '        tran.Commit()
     '    End Using
     'End Sub
-    Public Function ReadGlobalSettings() As IList(Of GlobalSetting)
+    Public Function ReadGlobalSettings() As IList(Of GlobalSetting) Implements IDataMapper.ReadGlobalSettings
         Dim settings As New List(Of GlobalSetting)
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [Name], [Value], [DefaultValue], [Type] FROM [GlobalSetting]"

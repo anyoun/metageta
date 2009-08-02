@@ -7,7 +7,7 @@
     <Grid Height="Auto" Width="Auto">
         <ProgressBar x:Name="pbImport" Margin="8,8,8,0" VerticalAlignment="Top" Height="66"
                      Value="{Binding Path=ImportStatus.ProgressPct, Mode=OneWay}" 
-                     IsIndeterminate="{Binding Path=ImportStatus}"/>
+                     IsIndeterminate="{Binding Path=ImportStatus.IsIndeterminate}"/>
         <Button x:Name="btnRefresh" Content="Refresh" Margin="140.772,116,140.771,125.96" VerticalAlignment="Top" HorizontalAlignment="Center" Width="200" Height="50"
                 Command="{Binding Path=ImportCommand}"
                 />

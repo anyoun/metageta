@@ -5,8 +5,15 @@
 
     Public Sub New(ByVal dataStore As MGDataStore)
         m_DataStore = dataStore
+        AddHandler m_DataStore.PropertyChanged, AddressOf DataStorePropertyChanged
 
         m_ImportCommand = New RelayCommand(AddressOf Import)
+    End Sub
+
+    Private Sub DataStorePropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs)
+        If e.PropertyName = "ImportStatus" Then
+            OnPropertyChanged("ImportStatus")
+        End If
     End Sub
 
     Private Sub Import()

@@ -46,7 +46,8 @@ Partial Public Class GridView
     End Sub
 
     Private Sub DataGrid1_SelectedCellsChanged(ByVal sender As System.Object, ByVal e As Microsoft.Windows.Controls.SelectedCellsChangedEventArgs)
-        Dim cells = DataGrid1.SelectedCells.ToArray()
-        m_ViewModel.SelectedFiles = (From cell In cells Select CType(cell.Item, MGFile)).Distinct().ToList()
+        If m_ViewModel IsNot Nothing Then
+            m_ViewModel.SelectedFiles = (From cell In DataGrid1.SelectedCells Where TypeOf cell.Item Is MGFile Select CType(cell.Item, MGFile)).Distinct().ToList()
+        End If
     End Sub
 End Class

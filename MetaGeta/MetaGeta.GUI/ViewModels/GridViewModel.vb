@@ -6,11 +6,18 @@
 
     Public Sub New(ByVal dataStore As MGDataStore)
         m_DataStore = dataStore
+        AddHandler m_DataStore.PropertyChanged, AddressOf DataStorePropertyChanged
 
         m_ConvertToIphoneCommand = New RelayCommand(Of IList(Of MGFile))(AddressOf ConvertToIphone, AddressOf IsNonEmpty, Function() SelectedFiles)
         m_WriteMp4TagsCommand = New RelayCommand(Of IList(Of MGFile))(AddressOf WriteMp4Tags, AddressOf IsNonEmpty, Function() SelectedFiles)
         m_RemoveFileCommand = New RelayCommand(Of IList(Of MGFile))(AddressOf RemoveFile, AddressOf IsNonEmpty, Function() SelectedFiles)
         m_ShowPropertiesCommand = New RelayCommand(Of IList(Of MGFile))(AddressOf ShowProperties, AddressOf IsExactlyOne, Function() SelectedFiles)
+    End Sub
+
+    Private Sub DataStorePropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs)
+        If e.PropertyName = "Files" Then
+            OnPropertyChanged("Files")
+        End If
     End Sub
 
     Public ReadOnly Property ColumnNames() As String()

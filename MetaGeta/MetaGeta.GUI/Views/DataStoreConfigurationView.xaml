@@ -41,11 +41,12 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
-                <ListBox IsSynchronizedWithCurrentItem="True" Margin="8,8,8,8" x:Name="lstPlugins" 
-					ItemsSource="{Binding Path=Plugins}" ItemTemplate="{DynamicResource PluginsTemplate}"/>
+                <ListBox Margin="8,8,8,8" x:Name="lstPlugins" 
+                         SelectedItem="{Binding Path=SelectedPlugin, Mode=TwoWay}"
+					     ItemsSource="{Binding Path=Plugins}" ItemTemplate="{DynamicResource PluginsTemplate}"/>
 
                 <MetaGeta_GUI:SettingsEditor Margin="8,8,8,8" Grid.Column="2" x:Name="sePluginSettings" 
-					Settings="{Binding Path=SelectedItem, ElementName=lstPlugins, Mode=Default}"/>
+					Settings="{Binding Path=SelectedPluginSettings}"/>
 
                 <GridSplitter Margin="0,8,0,8" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="1" Width="5"/>
             </Grid>

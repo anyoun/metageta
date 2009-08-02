@@ -7,23 +7,23 @@ Public Class NavigationTabManager
 
     Private ReadOnly m_DataStoreManager As DataStoreManager
     Private ReadOnly m_TabGroups As New ObservableCollection(Of NavigationTabGroupBase)
+    Private ReadOnly m_MetaGetaTabGroup As NamedNavigationTabGroup
 
     Public Sub New(ByVal dataStoreManager As DataStoreManager)
+        Me.New()
+
         m_DataStoreManager = dataStoreManager
         AddHandler m_DataStoreManager.DataStores.CollectionChanged, AddressOf DataStoresChanged
-
-        Dim mgGroup As New NamedNavigationTabGroup("MetaGeta")
-        mgGroup.Children.Add(New NullViewModel("Settings", s_ConfigureImage))
-        mgGroup.Children.Add(New JobQueueViewModel(dataStoreManager))
-        m_TabGroups.Add(mgGroup)
-
+        m_MetaGetaTabGroup.Children.Add(New JobQueueViewModel(dataStoreManager))
         AddTabGroups(dataStoreManager.DataStores)
-
-        'm_BaseTabs = New NavigationTab() { _
-        '    New NavigationTab(New NullView(), s_ConfigureImage, "Settings") With {.Group = "MetaGeta"}, _
-        '    New NavigationTab(New JobQueueView(dataStoreManager), s_ConfigureImage, "Jobs") With {.Group = "MetaGeta"} _
-        '}
     End Sub
+
+    Private Sub New()
+        m_MetaGetaTabGroup = New NamedNavigationTabGroup("MetaGeta")
+        m_MetaGetaTabGroup.Children.Add(New NullViewModel("Settings", s_ConfigureImage))
+        m_TabGroups.Add(m_MetaGetaTabGroup)
+    End Sub
+
 
     Private Sub DataStoresChanged(ByVal sender As Object, ByVal e As NotifyCollectionChangedEventArgs)
         Dim oldItems = e.OldItems.Cast(Of MGDataStore)()
@@ -72,29 +72,7 @@ Public Class NavigationTabManager
         group.Children.Add(New DataStoreConfigurationViewModel(dataStore))
         group.Children.Add(New GridViewModel(dataStore))
         group.Children.Add(New ImportStatusViewModel(dataStore))
-        'group.Children.Add(New TvShowViewModel(dataStore))
 
-        'Dim tabs = New List(Of NavigationTab)
-
-        'Dim configTab = New NavigationTab(New DataStoreConfigurationView(dataStore), s_RunImage, "Configuration")
-        'BindingOperations.SetBinding(configTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
-        'tabs.Add(configTab)
-
-        'Dim gridViewTab = New NavigationTab(New GridView(dataStore), s_ViewImage, "Grid") With {.Group = dataStore.Name}
-        'BindingOperations.SetBinding(gridViewTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
-        'tabs.Add(gridViewTab)
-
-        'Dim importTab = New NavigationTab(New ImportStatusView(dataStore), s_ViewImage, "Import") With {.Group = dataStore.Name}
-        'BindingOperations.SetBinding(importTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
-        'tabs.Add(importTab)
-
-        'If False Then
-        '    Dim tvShowTab As New NavigationTab(New TvShowView(dataStore), s_ViewImage, "TV Show") With {.Group = dataStore.Name}
-        '    BindingOperations.SetBinding(tvShowTab, NavigationTab.GroupProperty, New Binding("Name") With {.Source = dataStore})
-        '    tabs.Add(tvShowTab)
-        'End If
-
-        'Return tabs
         Return group
     End Function
 
@@ -113,4 +91,12 @@ Public Class NavigationTabManager
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs) Implements INotifyPropertyChanged.PropertyChanged
 
     Private Shared ReadOnly s_ConfigureImage As New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/configure.png"))
+
+    Public Class DesignTimeNavigationTabManager
+        Inherits NavigationTabManager
+
+        Public Sub New()
+            MyBase.New(New DataStoreManager(designMode:=True))
+        End Sub
+    End Class
 End Class

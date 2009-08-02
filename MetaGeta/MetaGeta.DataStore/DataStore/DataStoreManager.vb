@@ -1,4 +1,4 @@
-﻿Imports System.Reflection
+﻿Imports MetaGeta.DataStore.Database
 
 Public Class DataStoreManager
     Implements INotifyPropertyChanged
@@ -6,19 +6,20 @@ Public Class DataStoreManager
 
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
-    Private ReadOnly m_DataMapper As DataMapper
+    Private ReadOnly m_DataMapper As IDataMapper
     Private ReadOnly m_DataStores As New ObservableCollection(Of MGDataStore)
-    Private ReadOnly m_JobQueue As New JobQueue()
+    Private ReadOnly m_JobQueue As JobQueue
 
-    Public Sub New()
+    Public Sub New(ByVal designMode As Boolean)
         log.InfoFormat("DataStoreManager ctor")
-        Dim filename As String
-        If IsInDesignMode Then
-            filename = "c:\temp\metageta.db3"
+
+        If Not designMode Then
+            m_DataMapper = New DataMapper("metageta.db3")
         Else
-            filename = "metageta.db3"
+            m_DataMapper = New MockDataMapper()
         End If
-        m_DataMapper = New DataMapper(filename)
+
+        m_JobQueue = New JobQueue(designMode:=designMode)
 
         m_DataMapper.Initialize()
         m_DataStores.AddRange(m_DataMapper.GetDataStores(Me))
@@ -79,18 +80,4 @@ Public Class DataStoreManager
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(name))
     End Sub
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
-
-#Region "Design Mode"
-    Private Shared s_IsInDesignMode As Boolean = False
-
-    Public Shared Property IsInDesignMode() As Boolean
-        Get
-            Return s_IsInDesignMode
-        End Get
-        Set(ByVal value As Boolean)
-            s_IsInDesignMode = value
-        End Set
-    End Property
-#End Region
-
 End Class

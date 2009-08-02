@@ -5,7 +5,7 @@ Public Class MGDataStore
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private ReadOnly m_Owner As IDataStoreOwner
-    Private ReadOnly m_DataMapper As DataMapper
+    Private ReadOnly m_DataMapper As IDataMapper
     Private m_ID As Long = -1
     Private m_Name As String
     Private m_Template As IDataStoreTemplate
@@ -16,7 +16,7 @@ Public Class MGDataStore
 
     Private ReadOnly m_ShutdownEvent As New ManualResetEvent(False)
 
-    Friend Sub New(ByVal owner As IDataStoreOwner, ByVal dataMapper As DataMapper)
+    Friend Sub New(ByVal owner As IDataStoreOwner, ByVal dataMapper As IDataMapper)
         m_Owner = owner
         m_DataMapper = dataMapper
 

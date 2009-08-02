@@ -167,9 +167,11 @@
       <DependentUpon>StringInputPrompt.xaml</DependentUpon>
     </Compile>
     <Compile Include="Editors\StringListEditor.vb" />
+    <Compile Include="Helpers\DesignModeDataHelper.vb" />
     <Compile Include="Helpers\MGFileConverter.vb" />
     <Compile Include="Helpers\RelayCommand.vb" />
     <Compile Include="ViewModels\DataStoreConfigurationViewModel.vb" />
+    <Compile Include="Helpers\DesignOrRuntimeDataContext.vb" />
     <Compile Include="ViewModels\FilePropertiesViewModel.vb" />
     <Compile Include="ViewModels\GridViewModel.vb" />
     <Compile Include="ViewModels\ImportStatusViewModel.vb" />
@@ -343,6 +345,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\MetaGeta_Image.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Target Name="BeforeBuild">
