@@ -152,11 +152,14 @@
             </Setter>
         </Style>
 
+        <!--
         <ObjectDataProvider x:Key="DesignTimeData" ObjectType="{x:Type GUI:NavigationTabManager+DesignTimeNavigationTabManager}"/>
+         GUI:DesignModeDataHelper.DesignTimeDataContext="{StaticResource DesignTimeData}"
+        -->
 
     </Window.Resources>
 
-    <DockPanel x:Name="DockPanel1" GUI:DesignModeDataHelper.DesignTimeDataContext="{StaticResource DesignTimeData}">
+    <DockPanel x:Name="DockPanel1">
         <Grid x:Name="LeftHandGrid" DockPanel.Dock="Left" Width="200">
             <TreeView x:Name="lbDataStores" Margin="6,6,6,34" 
                       ItemsSource="{Binding Path=Tabs}"                     
