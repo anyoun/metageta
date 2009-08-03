@@ -26,27 +26,24 @@ Public Class NavigationTabManager
 
 
     Private Sub DataStoresChanged(ByVal sender As Object, ByVal e As NotifyCollectionChangedEventArgs)
-        Dim oldItems = e.OldItems.Cast(Of MGDataStore)()
-        Dim newItems = e.NewItems.Cast(Of MGDataStore)()
-
         Select Case e.Action
             Case NotifyCollectionChangedAction.Reset
-                RemoveTabGroupForDataStore(oldItems)
-                AddTabGroups(newItems)
+                RemoveTabGroupForDataStore(e.OldItems.Cast(Of MGDataStore)())
+                AddTabGroups(e.NewItems.Cast(Of MGDataStore)())
 
             Case NotifyCollectionChangedAction.Add
-                AddTabGroups(newItems)
+                AddTabGroups(e.NewItems.Cast(Of MGDataStore)())
 
             Case NotifyCollectionChangedAction.Move
-                RemoveTabGroupForDataStore(oldItems)
-                AddTabGroups(newItems)
+                RemoveTabGroupForDataStore(e.OldItems.Cast(Of MGDataStore)())
+                AddTabGroups(e.NewItems.Cast(Of MGDataStore)())
 
             Case NotifyCollectionChangedAction.Remove
-                RemoveTabGroupForDataStore(oldItems)
+                RemoveTabGroupForDataStore(e.OldItems.Cast(Of MGDataStore)())
 
             Case NotifyCollectionChangedAction.Replace
-                RemoveTabGroupForDataStore(oldItems)
-                AddTabGroups(newItems)
+                RemoveTabGroupForDataStore(e.OldItems.Cast(Of MGDataStore)())
+                AddTabGroups(e.NewItems.Cast(Of MGDataStore)())
 
             Case Else
                 Throw New Exception()
