@@ -176,12 +176,13 @@ Public Class DataMapper
                     Dim description = rdr.GetString(2)
                     Dim templateName = rdr.GetString(3)
                     Dim template = TemplateFinder.GetTemplateByName(templateName)
-                    Dim ds As New MGDataStore(owner, Me) With { _
-                        .Name = name, _
-                        .ID = id, _
-                        .Template = template, _
-                        .Description = description _
-                    }
+                    Dim ds As New MGDataStore(owner, Me)
+                    Using (ds.SuspendUpdates())
+                        ds.Name = name
+                        ds.ID = id
+                        ds.Template = template
+                        ds.Description = description
+                    End Using
                     dataStores.Add(ds)
                 End While
             End Using

@@ -255,8 +255,10 @@ Public Class MGDataStore
         Set(ByVal value As String)
             If value <> m_Name Then
                 m_Name = value
-                m_DataMapper.WriteDataStore(Me)
-                OnNameChanged()
+                If Not AreUpdatesSuspended Then
+                    m_DataMapper.WriteDataStore(Me)
+                    OnNameChanged()
+                End If
             End If
         End Set
     End Property
@@ -267,8 +269,10 @@ Public Class MGDataStore
         Set(ByVal value As String)
             If value <> m_Description Then
                 m_Description = value
-                m_DataMapper.WriteDataStore(Me)
-                OnDescriptionChanged()
+                If Not AreUpdatesSuspended Then
+                    m_DataMapper.WriteDataStore(Me)
+                    OnDescriptionChanged()
+                End If
             End If
         End Set
     End Property
@@ -279,8 +283,10 @@ Public Class MGDataStore
         Set(ByVal value As IDataStoreTemplate)
             If value IsNot m_Template Then
                 m_Template = value
-                m_DataMapper.WriteDataStore(Me)
-                OnTemplateChanged()
+                If Not AreUpdatesSuspended Then
+                    m_DataMapper.WriteDataStore(Me)
+                    OnTemplateChanged()
+                End If
             End If
         End Set
     End Property
@@ -294,6 +300,58 @@ Public Class MGDataStore
             End If
         End Set
     End Property
+
+#Region "Suspending Updates"
+
+    Private m_SuspendCount As Integer = 0
+
+    Private ReadOnly Property AreUpdatesSuspended() As Boolean
+        Get
+            Return m_SuspendCount <> 0
+        End Get
+    End Property
+
+    Public Function SuspendUpdates() As IDisposable
+        m_SuspendCount += 1
+        Return New SuspendUpdatesToken(Me)
+    End Function
+
+    Private Class SuspendUpdatesToken
+        Implements IDisposable
+
+        Private ReadOnly m_DataStore As MGDataStore
+
+        Public Sub New(ByVal dataStore As MGDataStore)
+            m_DataStore = dataStore
+        End Sub
+
+        Private disposedValue As Boolean = False        ' To detect redundant calls
+
+        ' IDisposable
+        Protected Overridable Sub Dispose(ByVal disposing As Boolean)
+            If Not Me.disposedValue Then
+                If disposing Then
+                    m_DataStore.m_SuspendCount -= 1
+                End If
+
+                ' TODO: free your own state (unmanaged objects).
+                ' TODO: set large fields to null.
+            End If
+            Me.disposedValue = True
+        End Sub
+
+#Region " IDisposable Support "
+        ' This code added by Visual Basic to correctly implement the disposable pattern.
+        Public Sub Dispose() Implements IDisposable.Dispose
+            ' Do not change this code.  Put cleanup code in Dispose(ByVal disposing As Boolean) above.
+            Dispose(True)
+            GC.SuppressFinalize(Me)
+        End Sub
+#End Region
+
+    End Class
+
+#End Region
 
     Public Overrides Function ToString() As String
         Return "MGDataStore: " & Name

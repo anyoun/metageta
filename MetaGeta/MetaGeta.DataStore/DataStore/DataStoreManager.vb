@@ -40,8 +40,10 @@ Public Class DataStoreManager
 
     Public Function NewDataStore(ByVal name As String, ByVal template As IDataStoreTemplate) As MGDataStore
         Dim data As New MGDataStore(Me, m_DataMapper)
-        data.Template = template
-        data.Name = name
+        Using (data.SuspendUpdates())
+            data.Template = template
+            data.Name = name
+        End Using
         For Each pluginTypeName In template.GetPluginTypeNames()
             data.AddNewPlugin(pluginTypeName)
         Next
