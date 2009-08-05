@@ -22,7 +22,7 @@ if(test-path hkcu:\Software\7-Zip) {
 	throw "No 7zip!"
 }
 
-$extrafiles = @( "log4net.xml", "TvdbConnector.xml" )
+$extrafiles = @( "log4net.xml", "TvdbLib.xml", "System.Data.SQLite.xml" )
 
 $timestamp = (get-date).ToString("yyyyMMdd")
 
