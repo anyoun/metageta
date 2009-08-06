@@ -171,7 +171,6 @@
     <Compile Include="Helpers\MGFileConverter.vb" />
     <Compile Include="Helpers\RelayCommand.vb" />
     <Compile Include="ViewModels\DataStoreConfigurationViewModel.vb" />
-    <Compile Include="Helpers\DesignOrRuntimeDataContext.vb" />
     <Compile Include="ViewModels\FilePropertiesViewModel.vb" />
     <Compile Include="ViewModels\GridViewModel.vb" />
     <Compile Include="ViewModels\ImportStatusViewModel.vb" />

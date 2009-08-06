@@ -1,25 +1,69 @@
 ﻿Imports System.Text.RegularExpressions
 Imports System.Net.Cache
 Imports System.Globalization
+Imports System.Net
 
 Public Class TvShowViewModel
     Inherits NavigationTab
 
     Private ReadOnly m_DataStore As MGDataStore
+    Private m_Series As ObservableCollection(Of TvSeries)
 
     Public Sub New(ByVal dataStore As MGDataStore)
         m_DataStore = dataStore
+        AddHandler m_DataStore.PropertyChanged, AddressOf DataStorePropertyChanged
+
+        m_Series = CreateRuntimeData()
     End Sub
 
-    Public ReadOnly Property DataStore() As MGDataStore
-        Get
-            Return m_DataStore
-        End Get
-    End Property
+    Private Sub DataStorePropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs)
+        If e.PropertyName = "ImportStatus" Then
+            m_Series = CreateRuntimeData()
+            OnPropertyChanged("Series")
+        End If
+    End Sub
 
     Public Overrides ReadOnly Property Caption() As String
         Get
             Return "TV Shows"
+        End Get
+    End Property
+
+    Private Function CreateRuntimeData() As ObservableCollection(Of TvSeries)
+        Dim results As New ObservableCollection(Of TvSeries)
+        Dim seriesList = From f In m_DataStore.Files Group By SeriesName = f.GetTag(TVShowDataStoreTemplate.SeriesTitle) Into Group Order By SeriesName
+        For Each seriesGroup In seriesList
+            Dim series As New TvSeries(seriesGroup.SeriesName)
+            series.SeriesBannerPath = seriesGroup.Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.SeriesBanner)).Coalesce()
+            series.SeriesPosterPath = seriesGroup.Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.SeriesPoster)).Coalesce()
+
+            Dim episodeGroups = From f In seriesGroup.Group Group By _
+                                EpisodeNumber = f.GetTag(TVShowDataStoreTemplate.EpisodeNumber), _
+                                SeasonNumber = f.GetTag(TVShowDataStoreTemplate.SeasonNumber) _
+                                Into Group _
+                                Select SeasonNumber, _
+                                    EpisodeNumber, _
+                                    Group, _
+                                    FirstAired = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.EpisodeFirstAired)).Coalesce(), _
+                                    Length = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.PlayTime)).Coalesce(), _
+                                    Title = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.EpisodeTitle)).Coalesce()
+            Dim episodes = From ep In episodeGroups _
+                           Select New TvEpisode(series, ep.SeasonNumber, ep.EpisodeNumber, ep.Title) With { _
+                               .AirDateString = ep.FirstAired, _
+                               .LengthString = ep.Length _
+                           }
+            episodes = From ep In episodes Order By ep.SeasonNumber, ep.EpisodeNumber Select ep
+
+            series.Episodes.AddRange(episodes)
+            results.Add(series)
+        Next
+        Return results
+    End Function
+
+
+    Public ReadOnly Property Series() As ObservableCollection(Of TvSeries)
+        Get
+            Return m_Series
         End Get
     End Property
 
@@ -32,68 +76,21 @@ Public Class TvShowViewModel
     Private Shared ReadOnly s_ViewImage As New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/view_detailed.png"))
 End Class
 
-Public Class TvShowDataContext
-    Inherits DesignOrRuntimeDataContext(Of ObservableCollection(Of TvSeries))
-
-    Public Shared ReadOnly DataStoreProperty As DependencyProperty = DependencyProperty.Register("DataStore", GetType(MGDataStore), MethodBase.GetCurrentMethod().DeclaringType)
-
-    Public Property DataStore() As MGDataStore
+Public Class DesignTimeTvShowViewModel
+    Public ReadOnly Property Series() As ObservableCollection(Of TvSeries)
         Get
-            Return CType(GetValue(DataStoreProperty), MGDataStore)
+            Dim results As New ObservableCollection(Of TvSeries)
+            results.Add(New TvSeries("Mythbusters") With {.SeriesBannerPath = "f:\ipod\73388-g.jpg", .SeriesPosterPath = "f:\ipod\img_posters_73388-1.jpg"})
+            results.Last().Episodes.Add(New TvEpisode(results.Last(), 8, 1, "Demolition Derby"))
+            results.Last().Episodes.Add(New TvEpisode(results.Last(), 8, 2, "Alaska Special 2"))
+            results.Last().Episodes.Add(New TvEpisode(results.Last(), 8, 3, "Banana Slip/Double-Dip"))
+            results.Add(New TvSeries("Arrested Development") With {.SeriesBannerPath = "f:\ipod\72173-g.jpg", .SeriesPosterPath = "f:\ipod\72173-1.jpg"})
+            results.Last().Episodes.Add(New TvEpisode(results.Last(), 1, 1, "Pilot") With {.AirDate = New DateTime(2003, 11, 2), .Length = New TimeSpan(0, 22, 0)})
+            results.Last().Episodes.Add(New TvEpisode(results.Last(), 1, 2, "Top Banana") With {.AirDate = New DateTime(2003, 11, 9), .Length = New TimeSpan(0, 22, 0)})
+            results.Last().Episodes.Add(New TvEpisode(results.Last(), 1, 3, "Bringing Up Buster") With {.AirDate = New DateTime(2003, 11, 16), .Length = New TimeSpan(0, 22, 0)})
+            Return results
         End Get
-        Set(ByVal value As MGDataStore)
-            SetValue(DataStoreProperty, value)
-        End Set
     End Property
-
-    Protected Overrides Function CreateDesigntimeData() As ObservableCollection(Of TvSeries)
-        Dim results As New ObservableCollection(Of TvSeries)
-        results.Add(New TvSeries("Mythbusters") With {.SeriesBannerPath = "f:\ipod\73388-g.jpg", .SeriesPosterPath = "f:\ipod\img_posters_73388-1.jpg"})
-        results.Last().Episodes.Add(New TvEpisode(results.Last(), 8, 1, "Demolition Derby"))
-        results.Last().Episodes.Add(New TvEpisode(results.Last(), 8, 2, "Alaska Special 2"))
-        results.Last().Episodes.Add(New TvEpisode(results.Last(), 8, 3, "Banana Slip/Double-Dip"))
-        results.Add(New TvSeries("Arrested Development") With {.SeriesBannerPath = "f:\ipod\72173-g.jpg", .SeriesPosterPath = "f:\ipod\72173-1.jpg"})
-        results.Last().Episodes.Add(New TvEpisode(results.Last(), 1, 1, "Pilot") With {.AirDate = New DateTime(2003, 11, 2), .Length = New TimeSpan(0, 22, 0)})
-        results.Last().Episodes.Add(New TvEpisode(results.Last(), 1, 2, "Top Banana") With {.AirDate = New DateTime(2003, 11, 9), .Length = New TimeSpan(0, 22, 0)})
-        results.Last().Episodes.Add(New TvEpisode(results.Last(), 1, 3, "Bringing Up Buster") With {.AirDate = New DateTime(2003, 11, 16), .Length = New TimeSpan(0, 22, 0)})
-        Return results
-    End Function
-
-    Protected Overrides Function CreateRuntimeData() As ObservableCollection(Of TvSeries)
-        Dim results As New ObservableCollection(Of TvSeries)
-        Dim seriesList = From f In DataStore.Files Group By SeriesName = f.GetTag(TVShowDataStoreTemplate.SeriesTitle) Into Group Order By SeriesName
-        For Each seriesGroup In seriesList
-            Dim series As New TvSeries(seriesGroup.SeriesName)
-            series.SeriesBannerPath = seriesGroup.Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.SeriesBanner)).Coalesce()
-            series.SeriesPosterPath = seriesGroup.Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.SeriesPoster)).Coalesce()
-
-            Dim episodeGroups = From f In seriesGroup.Group Group By _
-                                EpisodeNumber = f.GetTag(TVShowDataStoreTemplate.EpisodeNumber), _
-                                SeasonNumber = f.GetTag(TVShowDataStoreTemplate.SeasonNumber) _
-                                Into Group _
-                                Order By SeasonNumber, EpisodeNumber _
-                                Select SeasonNumber, _
-                                    EpisodeNumber, _
-                                    Group, _
-                                    FirstAired = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.EpisodeFirstAired)).Coalesce(), _
-                                    Length = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.PlayTime)).Coalesce(), _
-                                    Title = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.EpisodeTitle)).Coalesce()
-            Dim episodes = From ep In episodeGroups _
-                           Select New TvEpisode(series, ep.SeasonNumber, ep.EpisodeNumber, ep.Title) With { _
-                               .AirDate = DateTime.ParseExact(ep.FirstAired, "u", CultureInfo.CurrentCulture), _
-                               .Length = TimeSpan.Parse(ep.Length) _
-                           }
-
-            series.Episodes.AddRange(episodes)
-            results.Add(series)
-        Next
-        Return results
-    End Function
-
-
-    Protected Overrides Function CreateInstanceCore() As System.Windows.Freezable
-        Return New TvShowDataContext()
-    End Function
 End Class
 
 Public Class TvSeries
@@ -134,6 +131,12 @@ Public Class TvSeries
             m_SeriesPosterPath = value
         End Set
     End Property
+
+    Public ReadOnly Property HasPoster() As Boolean
+        Get
+            Return SeriesBannerPath IsNot Nothing
+        End Get
+    End Property
 End Class
 
 Public Class TvEpisode
@@ -152,9 +155,9 @@ Public Class TvEpisode
 
     Public Sub New(ByVal series As TvSeries, ByVal seasonNumber As Integer, ByVal episodeNumber As Integer, ByVal title As String)
         m_Series = series
+        m_SeasonNumber = seasonNumber
+        m_EpisodeNumber = episodeNumber
         m_Title = title
-        m_AirDate = AirDate
-        m_Length = Length
     End Sub
 
     Public ReadOnly Property Series() As TvSeries
@@ -190,6 +193,17 @@ Public Class TvEpisode
         End Set
     End Property
 
+    Public Property AirDateString() As String
+        Get
+            Return m_AirDate.ToString()
+        End Get
+        Set(ByVal value As String)
+            If value IsNot Nothing Then
+                m_AirDate = DateTime.ParseExact(value, "u", CultureInfo.CurrentCulture)
+            End If
+        End Set
+    End Property
+
     Public Property Length() As TimeSpan
         Get
             Return m_Length
@@ -197,6 +211,33 @@ Public Class TvEpisode
         Set(ByVal value As TimeSpan)
             m_Length = value
         End Set
+    End Property
+
+    Public Property LengthString() As String
+        Get
+            Return m_Length.ToString()
+        End Get
+        Set(ByVal value As String)
+            If value IsNot Nothing Then
+                m_Length = TimeSpan.Parse(value)
+            End If
+        End Set
+    End Property
+
+    Public ReadOnly Property LongName() As String
+        Get
+            If SeasonNumber = 0 Then
+                Return String.Format("{1:00} - {2}", EpisodeNumber, Title)
+            Else
+                Return String.Format("{0:00}x{1:00} - {2}", SeasonNumber, EpisodeNumber, Title)
+            End If
+        End Get
+    End Property
+
+    Public ReadOnly Property IsEven() As Boolean
+        Get
+            Return EpisodeNumber Mod 2 = 0
+        End Get
     End Property
 End Class
 
@@ -208,7 +249,11 @@ Public Class UriImageConverter
         If value Is Nothing Then
             Return Nothing
         Else
-            Return New BitmapImage(New Uri(CType(value, String)), New RequestCachePolicy(RequestCacheLevel.Default))
+            Try
+                Return New BitmapImage(New Uri(CType(value, String)), New RequestCachePolicy(RequestCacheLevel.Default))
+            Catch wex As WebException
+                Return Nothing
+            End Try
         End If
     End Function
 

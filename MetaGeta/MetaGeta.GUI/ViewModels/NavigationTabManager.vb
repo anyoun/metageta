@@ -69,6 +69,7 @@ Public Class NavigationTabManager
         group.Children.Add(New DataStoreConfigurationViewModel(dataStore))
         group.Children.Add(New GridViewModel(dataStore))
         group.Children.Add(New ImportStatusViewModel(dataStore))
+        group.Children.Add(New TvShowViewModel(dataStore))
 
         Return group
     End Function

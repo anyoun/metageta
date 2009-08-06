@@ -159,7 +159,7 @@
 
     </Window.Resources>
 
-    <DockPanel x:Name="DockPanel1">
+    <DockPanel x:Name="DockPanel1" GUI:DesignModeDataHelper.DesignTimeDataContext="{x:Type GUI:NavigationTabManager+DesignTimeNavigationTabManager}">
         <Grid x:Name="LeftHandGrid" DockPanel.Dock="Left" Width="200">
             <TreeView x:Name="lbDataStores" Margin="6,6,6,34" 
                       ItemsSource="{Binding Path=Tabs}"                     
