@@ -4,7 +4,6 @@ Imports System.Text
 Public Class EducatedGuessImporter
     Implements IMGTaggingPlugin, IMGPluginBase
 
-
     Private Shared ReadOnly log As log4net.ILog = log4net.LogManager.GetLogger(Reflection.MethodBase.GetCurrentMethod().DeclaringType)
 
     Private m_ID As Long
@@ -135,6 +134,10 @@ Public Class EducatedGuessImporter
         Dim justFoundPaWord As Boolean = False
         Dim foundPa As Boolean = False
 
+        Dim versionWords() As String = {"v", "ver", "version"}
+        Dim justFoundVerWord As Boolean = False
+        Dim foundVer As Boolean = False
+
         Dim s As String
         Dim countOfNumbers, countOfWords As Integer
         countOfNumbers = 0
@@ -156,6 +159,10 @@ Public Class EducatedGuessImporter
                 ElseIf justFoundPaWord Then
                     tags(TVShowDataStoreTemplate.PartNumber) = np.Value.ToString()
                     foundPa = True
+                ElseIf justFoundVerWord Then
+                    'Ignore version for now
+                    foundVer = True
+                    countOfNumbers -= 1
                 End If
 
                 countOfNumbers += 1
@@ -165,6 +172,7 @@ Public Class EducatedGuessImporter
                 justFoundEpWord = False
                 justFoundSeWord = False
                 justFoundPaWord = False
+                justFoundVerWord = False
                 If Not foundPa And countOfNumbers > 2 Then
                     tags(TVShowDataStoreTemplate.PartNumber) = np.Value.ToString()
                     foundPa = True
@@ -193,6 +201,7 @@ Public Class EducatedGuessImporter
                 justFoundEpWord = False
                 justFoundSeWord = False
                 justFoundPaWord = False
+                justFoundVerWord = False
 
                 For Each s In episodeWords
                     If String.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase) Then
@@ -215,17 +224,24 @@ Public Class EducatedGuessImporter
                         gettingEpTi = False
                     End If
                 Next
+                For Each s In versionWords
+                    If String.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase) Then
+                        justFoundVerWord = True
+                        gettingSeTi = False
+                        gettingEpTi = False
+                    End If
+                Next
 
                 If gettingSeTi Then
                     tags(TVShowDataStoreTemplate.SeriesTitle) = tags(TVShowDataStoreTemplate.SeriesTitle) & " " & lp.Value
                 ElseIf gettingEpTi Then
                     tags(TVShowDataStoreTemplate.EpisodeTitle) = tags(TVShowDataStoreTemplate.EpisodeTitle) & " " & lp.Value
-                ElseIf countOfWords = 0 And Not justFoundSeWord And Not justFoundEpWord Then
+                ElseIf countOfWords = 0 And Not justFoundSeWord And Not justFoundEpWord And Not justFoundPaWord And Not justFoundVerWord Then
                     'Debug.WriteLine("SeriesTitle=" & ph(x))
                     tags(TVShowDataStoreTemplate.SeriesTitle) = lp.Value
                     foundSeriesTitle = True
                     gettingSeTi = True
-                ElseIf countOfWords > 0 And Not justFoundSeWord And Not justFoundEpWord Then
+                ElseIf countOfWords > 0 And Not justFoundSeWord And Not justFoundEpWord And Not justFoundPaWord And Not justFoundVerWord Then
                     'Debug.WriteLine("EpisodeTitle=" & ph(x))
                     tags(TVShowDataStoreTemplate.EpisodeTitle) = lp.Value
                     gettingEpTi = True
