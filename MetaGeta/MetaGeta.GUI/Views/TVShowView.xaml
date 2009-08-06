@@ -1,52 +1,81 @@
 ﻿<UserControl
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:MetaGeta_GUI="clr-namespace:MetaGeta.GUI" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:GUI="clr-namespace:MetaGeta.GUI" 
 	x:Class="TvShowView" x:Name="TvShowView"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600" Background="#FFFFFFFF"
     >
     <UserControl.Resources>
-        <MetaGeta_GUI:TvShowDataContext DataStore="{Binding Path=DataStore}" x:Key="TvShowDataContext"/>
-        <MetaGeta_GUI:UriImageConverter x:Key="ValueConverter"/>
+        <GUI:UriImageConverter x:Key="ValueConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-        <DataTemplate x:Key="EpisodeTemplate" DataType="{x:Type MetaGeta_GUI:TvEpisode}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding Path=SeasonNumber}"/>
-                <TextBlock Text="{Binding Path=EpisodeNumber}"/>
-                <TextBlock Text="{Binding Path=Title}"/>
-                <TextBlock Text="{Binding Path=AirDate}"/>
-                <TextBlock Text="{Binding Path=Length}"/>
-            </StackPanel>
+        <Style x:Key="TextBase" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Liberation Sans"/>
+        </Style>
+
+        <Style x:Key="TitleText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBase}" >
+            <Setter Property="FontSize" Value="18"/>
+        </Style>
+
+        <Style x:Key="SmallText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBase}" >
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!--FFCE73-->
+
+        <DataTemplate x:Key="EpisodeTemplate" DataType="{x:Type GUI:TvEpisode}">
+            <Border>
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsEven}" Value="True">
+                                <Setter Property="Background" Value="#FFFFCE73"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Horizontal" SnapsToDevicePixels="True">
+                    <TextBlock Text="{Binding Path=SeasonNumber}" Style="{StaticResource SmallText}" Width="20" TextAlignment="Center" />
+                    <Line Y1="0" Y2="14" Stroke="#FFA66C00" StrokeDashArray="1,1" StrokeThickness="1" SnapsToDevicePixels="True"/>
+                    <TextBlock Text="{Binding Path=EpisodeNumber}" Style="{StaticResource SmallText}" Width="20" TextAlignment="Center" />
+                    <Line Y1="0" Y2="14" Stroke="#FFA66C00" StrokeDashArray="1,1" StrokeThickness="1" SnapsToDevicePixels="True"/>
+                    <TextBlock Margin="3,0,0,0" Text="{Binding Path=Title}" Style="{StaticResource SmallText}" />
+                </StackPanel>
+            </Border>
         </DataTemplate>
 
-        <DataTemplate x:Key="TvSeriesTemplate" DataType="{x:Type MetaGeta_GUI:TvSeries}">
-            <StackPanel Margin="0,0,0,0" VerticalAlignment="Stretch" Height="Auto" Orientation="Horizontal">
-                <Image x:Name="imgSeriesImage" 
-							Source="{Binding Path=SeriesPosterPath, Converter={StaticResource ValueConverter}}" Width="150" Height="Auto" Margin="8,8,8,8"/>
-                <Grid>
-                    <!--<ItemsControl Margin="0,0,0,0" x:Name="lvEpisodes" 
-							ItemsSource="{Binding Path=Episodes, Mode=Default}"
-                            ItemTemplate="{StaticResource EpisodeTemplate}"
-							Width="Auto" Height="Auto"/>-->
-                    <ListView Margin="0,0,0,0" x:Name="lvEpisodes" 
-							ItemsSource="{Binding Path=Episodes, Mode=Default}">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="Season" DisplayMemberBinding="{Binding Path=SeasonNumber}"/>
-                                <GridViewColumn Header="Episode" DisplayMemberBinding="{Binding Path=EpisodeNumber}"/>
-                                <GridViewColumn Header="Title" DisplayMemberBinding="{Binding Path=Title}"/>
-                                <GridViewColumn Header="AirDate" DisplayMemberBinding="{Binding Path=AirDate}"/>
-                                <GridViewColumn Header="Length" DisplayMemberBinding="{Binding Path=Length}"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </Grid>
-            </StackPanel>
+        <DataTemplate x:Key="TvSeriesTemplate" DataType="{x:Type GUI:TvSeries}">
+            <Grid>
+                <Border BorderThickness="3,3,3,0" HorizontalAlignment="Left" Width="156" Visibility="{Binding Path=HasPoster, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Image x:Name="imgSeriesImage" Source="{Binding Path=SeriesPosterPath, Converter={StaticResource ValueConverter}}" 
+        				Width="150" Height="225" Margin="0,0,0,0" Grid.Column="0" HorizontalAlignment="Right" Grid.RowSpan="2" VerticalAlignment="Top" Stretch="Uniform" StretchDirection="Both">
+                        <Image.Effect>
+                            <DropShadowEffect ShadowDepth="0"/>
+                        </Image.Effect>
+                    </Image>
+                </Border>
+                <StackPanel Orientation="Vertical"  HorizontalAlignment="Stretch" Margin="156,0,0,0">
+                    <Border HorizontalAlignment="Stretch" BorderThickness="3,3,3,3" CornerRadius="5,5,5,5" >
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#FFBF6D30" Offset="0"/>
+                                <GradientStop Color="#FFFF6C00" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <TextBlock Style="{StaticResource TitleText}" Text="{Binding Path=Name}" Grid.ColumnSpan="1" Grid.RowSpan="1" Grid.Column="1" FontStyle="Normal" TextAlignment="Left" Background="{x:Null}" Foreground="#FFFFFFFF" Margin="10,0,10,0"/>
+                    </Border>
+                    <ItemsControl Margin="0,0,0,0" x:Name="lvEpisodes" 
+        				ItemsSource="{Binding Path=Episodes}"
+        				ItemTemplate="{StaticResource EpisodeTemplate}"
+        				Width="Auto" Height="Auto" Grid.ColumnSpan="1" Grid.RowSpan="1" Grid.Row="1" Grid.Column="1"/>
+                </StackPanel>
+            </Grid>
         </DataTemplate>
 
     </UserControl.Resources>
 
-    <Grid DataContext="{StaticResource TvShowDataContext}">
+    <Grid GUI:DesignModeDataHelper.DesignTimeDataContext="{x:Type GUI:DesignTimeTvShowViewModel}">
         <Grid.RowDefinitions>
             <RowDefinition Height="0.131*"/>
             <RowDefinition Height="0.869*"/>
@@ -56,7 +85,7 @@
         </Grid.ColumnDefinitions>
         <ScrollViewer Grid.Row="2" Grid.RowSpan="1">
             <ItemsControl Width="Auto" Height="Auto" 
-    			ItemsSource="{Binding Path=Data}"
+    			ItemsSource="{Binding Path=Series}"
     			ItemTemplate="{DynamicResource TvSeriesTemplate}" d:UseSampleData="False"/>
         </ScrollViewer>
         <UniformGrid Margin="8,8,8,8" FirstColumn="2" Rows="1">
