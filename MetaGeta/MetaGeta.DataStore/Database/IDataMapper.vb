@@ -5,11 +5,9 @@ Namespace Database
         Sub WriteNewDataStore(ByVal dataStore As MGDataStore)
         Sub WriteNewFiles(ByVal files As IEnumerable(Of MGFile), ByVal dataStore As MGDataStore)
         Function GetDataStores(ByVal owner As IDataStoreOwner) As IEnumerable(Of MGDataStore)
-        Function GetTag(ByVal file As MGFile, ByVal tagName As String) As String
         Function GetFiles(ByVal dataStore As MGDataStore) As IList(Of MGFile)
-        Function GetAllTagOnFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile))
-        Function GetAllTags(ByVal fileId As Long) As MGTagCollection
-        Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String)
+        Function GetTagOnAllFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile))
+        Sub WriteFile(ByVal file As MGFile)
         Sub WriteDataStore(ByVal dataStore As MGDataStore)
         Sub RemoveDataStore(ByVal datastore As MGDataStore)
         Sub RemoveFiles(ByVal files As IEnumerable(Of MGFile), ByVal store As MGDataStore)

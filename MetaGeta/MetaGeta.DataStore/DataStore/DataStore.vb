@@ -36,19 +36,8 @@ Public Class MGDataStore
         m_Owner.DeleteDataStore(Me)
     End Sub
 
-    Friend Function GetTag(ByVal file As MGFile, ByVal tagName As String, Optional ByVal tran As DbTransaction = Nothing) As String
-        Return m_DataMapper.GetTag(file, tagName)
-    End Function
-    Friend Sub SetTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String, Optional ByVal tran As DbTransaction = Nothing)
-        m_DataMapper.WriteTag(file, tagName, tagValue)
-    End Sub
-
-    Friend Function GetAllTags(ByVal fileId As Long) As MGTagCollection
-        Return m_DataMapper.GetAllTags(fileId)
-    End Function
-
     Public Function GetAllTagOnFiles(ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile))
-        Return m_DataMapper.GetAllTagOnFiles(Me, tagName)
+        Return m_DataMapper.GetTagOnAllFiles(Me, tagName)
     End Function
 
     Public ReadOnly Property Files() As IList(Of MGFile)
@@ -218,6 +207,7 @@ Public Class MGDataStore
             Catch ex As Exception
                 log.Warn(String.Format("Importing ""{0}"" with {1} failed.", filePath, plugin.GetType().FullName), ex)
             End Try
+            m_DataMapper.WriteFile(newfile)
         Next
     End Sub
 

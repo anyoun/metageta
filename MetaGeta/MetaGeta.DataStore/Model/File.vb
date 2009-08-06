@@ -4,22 +4,22 @@ Public Class MGFile
 
     Private m_ID As Long = -1
     Private ReadOnly m_DataStore As MGDataStore
-
+    Private m_Tags As New MGTagCollection()
 
     Friend Sub New(ByVal datastore As MGDataStore)
         m_DataStore = datastore
     End Sub
     Friend Sub New(ByVal id As Long, ByVal datastore As MGDataStore)
-        Me.New(datastore)
+        m_DataStore = datastore
         m_ID = id
     End Sub
 
     Public Function GetTag(ByVal tagName As String) As String
-        Return m_DataStore.GetTag(Me, tagName)
+        Return m_Tags.GetValue(tagName)
     End Function
 
     Public Sub SetTag(ByVal tagName As String, ByVal tagValue As String)
-        m_DataStore.SetTag(Me, tagName, tagValue)
+        m_Tags.SetValue(tagName, tagValue)
     End Sub
 
     Public Property ID() As Long
@@ -27,7 +27,9 @@ Public Class MGFile
             Return m_ID
         End Get
         Set(ByVal value As Long)
-            m_ID = value
+            If m_ID <> value Then
+                m_ID = value
+            End If
         End Set
     End Property
 
@@ -47,7 +49,7 @@ Public Class MGFile
 
     Public ReadOnly Property Tags() As MGTagCollection
         Get
-            Return m_DataStore.GetAllTags(ID)
+            Return m_Tags
         End Get
     End Property
 

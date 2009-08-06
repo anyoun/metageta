@@ -210,28 +210,28 @@ Public Class DataMapper
 
         Return dataStores
     End Function
-    Public Function GetTag(ByVal file As MGFile, ByVal tagName As String) As String Implements IDataMapper.GetTag
-        Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "SELECT [Value] FROM [Tag] WHERE [FileID] = ? AND [Name] = ?"
-            cmd.AddParam(file.ID)
-            cmd.AddParam(tagName)
-            Return CType(cmd.ExecuteScalar(), String)
-        End Using
-    End Function
     Public Function GetFiles(ByVal dataStore As MGDataStore) As IList(Of MGFile) Implements IDataMapper.GetFiles
         Dim files As New List(Of MGFile)
         Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "SELECT [FileID] FROM [File] WHERE [DatastoreID] = ?"
+            cmd.CommandText = "SELECT [File].[FileID], [Tag].[Name], [Tag].[Value] FROM [File] LEFT OUTER JOIN [Tag] on [Tag].[FileID] = [File].[FileID] WHERE [DatastoreID] = ? AND [Tag].[Value] IS NOT NULL ORDER BY [File].[FileID]"
             cmd.AddParam(dataStore.ID)
             Using rdr = cmd.ExecuteReader()
+                Dim file As MGFile = Nothing
                 While rdr.Read()
-                    files.Add(New MGFile(rdr.GetInt64(0), dataStore))
+                    Dim nextId = rdr.GetInt64(0)
+                    If file Is Nothing OrElse file.ID <> nextId Then
+                        If file IsNot Nothing Then
+                            files.Add(file)
+                        End If
+                        file = New MGFile(nextId, dataStore)
+                    End If
+                    file.Tags.SetValue(rdr.GetString(1), rdr.GetString(2))
                 End While
             End Using
         End Using
         Return files
     End Function
-    Public Function GetAllTagOnFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile)) Implements IDataMapper.GetAllTagOnFiles
+    Public Function GetTagOnAllFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) As IList(Of Tuple(Of MGTag, MGFile)) Implements IDataMapper.GetTagOnAllFiles
         Dim files As New List(Of Tuple(Of MGTag, MGFile))
         Using cmd = Connection.CreateCommand()
             cmd.CommandText = "SELECT [File].[FileID], [Tag].[Value] FROM [File] LEFT OUTER JOIN [Tag] on [Tag].[FileID] = [File].[FileID] WHERE [DatastoreID] = ? AND [Tag].[Name] = ?"
@@ -247,29 +247,28 @@ Public Class DataMapper
         End Using
         Return files
     End Function
-    Public Function GetAllTags(ByVal fileId As Long) As MGTagCollection Implements IDataMapper.GetAllTags
-        Dim tags As New List(Of MGTag)
-        Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "SELECT [Name], [Value] FROM [Tag] WHERE [FileID] = ?"
-            cmd.AddParam(fileId)
-            Using rdr = cmd.ExecuteReader()
-                While rdr.Read()
-                    tags.Add(New MGTag(rdr.GetString(0), rdr.GetString(1)))
-                End While
-            End Using
-        End Using
-        Return New MGTagCollection(tags)
-    End Function
 #End Region
 
 #Region "Writing Changes"
-    Public Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String) Implements IDataMapper.WriteTag
-        Using cmd = Connection.CreateCommand()
-            cmd.CommandText = "INSERT OR REPLACE INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
-            cmd.AddParam(file.ID)
-            cmd.AddParam(tagName)
-            cmd.AddParam(tagValue)
-            cmd.ExecuteNonQuery()
+    Public Sub WriteFile(ByVal file As MGFile) Implements IDataMapper.WriteFile
+        Using tran = Connection.BeginTransaction()
+            Using cmd = Connection.CreateCommand()
+                cmd.Transaction = tran
+                cmd.CommandText = "DELETE FROM [Tag] WHERE [FileID] = ?"
+                cmd.AddParam(file.ID)
+                cmd.ExecuteNonQuery()
+            End Using
+            For Each tag In file.Tags
+                Using cmd = Connection.CreateCommand()
+                    cmd.Transaction = tran
+                    cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)"
+                    cmd.AddParam(file.ID)
+                    cmd.AddParam(tag.Name)
+                    cmd.AddParam(tag.Value)
+                    cmd.ExecuteNonQuery()
+                End Using
+            Next
+            tran.Commit()
         End Using
     End Sub
     Public Sub WriteDataStore(ByVal dataStore As MGDataStore) Implements IDataMapper.WriteDataStore

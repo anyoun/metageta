@@ -10,13 +10,9 @@
 
         End Sub
 
-        Public Function GetAllTagOnFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) _
-            As IList(Of Tuple(Of MGTag, MGFile)) Implements IDataMapper.GetAllTagOnFiles
+        Public Function GetTagOnAllFiles(ByVal dataStore As MGDataStore, ByVal tagName As String) _
+            As IList(Of Tuple(Of MGTag, MGFile)) Implements IDataMapper.GetTagOnAllFiles
             Return New List(Of Tuple(Of MGTag, MGFile))
-        End Function
-
-        Public Function GetAllTags(ByVal fileId As Long) As MGTagCollection Implements IDataMapper.GetAllTags
-            Return New MGTagCollection(New MGTag() {})
         End Function
 
         Public Function GetDataStores(ByVal owner As IDataStoreOwner) As IEnumerable(Of MGDataStore) Implements IDataMapper.GetDataStores
@@ -33,10 +29,6 @@
 
         Public Function GetPluginSetting(ByVal dataStore As MGDataStore, ByVal pluginID As Long, _
                                          ByVal settingName As String) As String Implements IDataMapper.GetPluginSetting
-            Return String.Empty
-        End Function
-
-        Public Function GetTag(ByVal file As MGFile, ByVal tagName As String) As String Implements IDataMapper.GetTag
             Return String.Empty
         End Function
 
@@ -77,8 +69,7 @@
 
         End Sub
 
-        Public Sub WriteTag(ByVal file As MGFile, ByVal tagName As String, ByVal tagValue As String) _
-            Implements IDataMapper.WriteTag
+        Public Sub WriteFile(ByVal file As MGFile) Implements IDataMapper.WriteFile
 
         End Sub
     End Class
