@@ -346,6 +346,15 @@
     <Resource Include="Resources\MetaGeta_Image.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\tv.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\fileimport.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\text_block.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

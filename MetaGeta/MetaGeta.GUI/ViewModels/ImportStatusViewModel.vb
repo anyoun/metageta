@@ -41,8 +41,9 @@
 
     Public Overrides ReadOnly Property Icon() As System.Windows.Media.ImageSource
         Get
-            Return Nothing
+            Return s_ViewImage
         End Get
     End Property
 
+    Private Shared ReadOnly s_ViewImage As New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/fileimport.png"))
 End Class

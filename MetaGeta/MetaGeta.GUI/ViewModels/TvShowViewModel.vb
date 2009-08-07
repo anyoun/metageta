@@ -73,7 +73,7 @@ Public Class TvShowViewModel
         End Get
     End Property
 
-    Private Shared ReadOnly s_ViewImage As New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/view_detailed.png"))
+    Private Shared ReadOnly s_ViewImage As New BitmapImage(New Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/tv.png"))
 End Class
 
 Public Class DesignTimeTvShowViewModel
