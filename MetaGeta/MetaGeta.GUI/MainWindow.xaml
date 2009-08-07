@@ -5,14 +5,14 @@
     Height="651" Width="932" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:GUI="clr-namespace:MetaGeta.GUI"
-    mc:Ignorable="d">
+    mc:Ignorable="d" SnapsToDevicePixels="True">
 
     <Window.Resources>
 
         <DataTemplate DataType="{x:Type GUI:NavigationTab}">
             <StackPanel Orientation="Horizontal" Margin="7,0,0,0">
-                <Image Source="{Binding Path=Icon}" Width="16" Height="16" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                <TextBlock Text="{Binding Path=Caption}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Image Source="{Binding Path=Icon}" Width="16" Height="16" RenderOptions.BitmapScalingMode="NearestNeighbor" d:UseSampleData="True"/>
+                <TextBlock Text="{Binding Path=Caption}" Padding="5,2,0,4" HorizontalAlignment="Center" VerticalAlignment="Center" d:UseSampleData="True"/>
             </StackPanel>
         </DataTemplate>
 
@@ -36,6 +36,12 @@
                         </PathFigure.Segments>
                     </PathFigure>
                 </PathFigureCollection>
+            </PathGeometry.Figures>
+        </PathGeometry>
+        
+        <PathGeometry x:Key="Plus">
+            <PathGeometry.Figures>
+                M-1,-1 -3,-1 -3,1 -1,1 -1,3 1,3 1,1 3,1 3,-1 1,-1 1,-3 -1,-3 z
             </PathGeometry.Figures>
         </PathGeometry>
         
@@ -152,11 +158,6 @@
             </Setter>
         </Style>
 
-        <!--
-        <ObjectDataProvider x:Key="DesignTimeData" ObjectType="{x:Type GUI:NavigationTabManager+DesignTimeNavigationTabManager}"/>
-         GUI:DesignModeDataHelper.DesignTimeDataContext="{StaticResource DesignTimeData}"
-        -->
-
     </Window.Resources>
 
     <DockPanel x:Name="DockPanel1" GUI:DesignModeDataHelper.DesignTimeDataContext="{x:Type GUI:NavigationTabManager+DesignTimeNavigationTabManager}">
@@ -166,7 +167,24 @@
                       PreviewMouseDown="lbDataStores_PreviewMouseDown" SelectedValuePath=""
                      />
             
-            <Button x:Name="btnNewDataStore" Margin="6,0,0,6" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="24" Width="24" Content="+" FontWeight="Bold" FontSize="14"/>
+            <Button x:Name="btnNewDataStore" Margin="6,0,96,6" VerticalAlignment="Bottom" Height="24">
+            	<StackPanel Orientation="Horizontal" >
+			        <Path Height="16" Width="16" Stretch="Fill" Data="{StaticResource Plus}" Margin="0,0,5,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+			        	<Path.Stroke>
+			        		<SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlDarkDarkColorKey}}"/>
+			        	</Path.Stroke>
+			        	<Path.Fill>
+			        		<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+			        			<GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="0"/>
+			        			<GradientStop Color="{DynamicResource {x:Static SystemColors.ControlLightColorKey}}" Offset="0.486"/>
+			        			<GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkColorKey}}" Offset="0.506"/>
+			        			<GradientStop Color="{DynamicResource {x:Static SystemColors.ControlDarkDarkColorKey}}" Offset="1"/>
+			        		</LinearGradientBrush>
+			        	</Path.Fill>
+			        </Path>
+                    <TextBlock Text="Add Library" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+				</StackPanel>
+            </Button>            
         </Grid>
 
         <ContentControl x:Name="CurrentViewContentControl" 
