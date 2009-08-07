@@ -13,6 +13,9 @@ Public Class MGFile
         m_DataStore = datastore
         m_ID = id
     End Sub
+    Public Sub New()
+        Me.New(Nothing)
+    End Sub
 
     Public Function GetTag(ByVal tagName As String) As String
         Return m_Tags.GetValue(tagName)
