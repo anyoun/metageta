@@ -6,32 +6,19 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" 
-    xmlns:MetaGeta_DataStore="clr-namespace:MetaGeta.DataStore;assembly=MetaGeta.DataStore"
-    ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" MinHeight="217" MinWidth="390" x:Name="window">
+    ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterOwner" SizeToContent="WidthAndHeight" MinHeight="217" MinWidth="390" x:Name="window" Height="292" Width="464">
     <Window.Resources>
-        <!--<ObjectDataProvider x:Key="CreationArgs" d:IsDataSource="True" ObjectType="{x:Type MetaGeta_DataStore:DataStoreCreationArguments}"/>-->
-        <!--<ObjectDataProvider x:Key="TemplateFinderDS" d:IsDataSource="True" ObjectType="{x:Type MetaGeta_DataStore:TemplateFinder}"/>-->
-
         <ControlTemplate x:Key="validationTemplate">
             <DockPanel>
-                <Border BorderBrush="Red" BorderThickness="1">
+                <Border BorderBrush="Red" BorderThickness="1" DockPanel.Dock="Top">
                     <AdornedElementPlaceholder x:Name="errorAdorner" />
                 </Border>
 
-                <Grid>
-                    <Ellipse HorizontalAlignment="Center" Margin="3,3,0,0" VerticalAlignment="Top" Width="16" Height="16" Fill="#FFFF0000"
-                           ToolTip="{Binding ElementName=errorAdorner, Path=AdornedElement.(Validation.Errors).CurrentItem.ErrorContent}">
-                        <Ellipse.Stroke>
-                            <SolidColorBrush/>
-                        </Ellipse.Stroke>
-                    </Ellipse>
-                    <TextBlock HorizontalAlignment="Center" Margin="3,0,0,0" VerticalAlignment="Top" 
-                           Text="!" FontSize="16" Foreground="AliceBlue" FontWeight="Bold"
-                           ToolTip="{Binding ElementName=errorAdorner, Path=AdornedElement.(Validation.Errors).CurrentItem.ErrorContent}"/>
+                <Grid DockPanel.Dock="Bottom">
+                    <TextBlock Foreground="Red" FontStyle="Italic" Text="{Binding ElementName=errorAdorner, Path=AdornedElement.(Validation.Errors).CurrentItem.ErrorContent}"/>
                 </Grid>
             </DockPanel>
         </ControlTemplate>
-
 
     </Window.Resources>
     <Grid Height="Auto" Width="Auto" MinWidth="374" MinHeight="181">
@@ -40,36 +27,40 @@
             <ColumnDefinition Width="0.79*" MinWidth="0.6"/>
         </Grid.ColumnDefinitions>
 
-        <TextBox x:Name="tbName" Margin="6.935,8,26,0" VerticalAlignment="Top" Grid.Column="1" TextWrapping="Wrap" 
+        <TextBox x:Name="tbName" Margin="8,8,8,0" VerticalAlignment="Top" Grid.Column="1" TextWrapping="Wrap" 
                  Text="{Binding Path=DataStoreCreationArguments.Name, ElementName=window, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
                  Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
-        <TextBox x:Name="tbDescription" Margin="6.935,33.96,26,125.04" Grid.Column="1" TextWrapping="Wrap" 
+        <TextBox x:Name="tbDescription" Margin="8,48,8,131.84" Grid.Column="1" TextWrapping="Wrap" 
                  Text="{Binding Path=DataStoreCreationArguments.Description, ElementName=window, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" 
                  Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
-        <TextBox x:Name="tbDirectories" Margin="6.935,0,60,73.12" VerticalAlignment="Bottom" TextWrapping="Wrap" Grid.Column="1" d:LayoutOverrides="Height"
-                 Text="{Binding Path=DataStoreCreationArguments.DirectoriesToWatch, Mode=Default, ElementName=window, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
-                 Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
-        <TextBox x:Name="tbExtensions" Margin="6.935,0,26,41.16" TextWrapping="Wrap" VerticalAlignment="Bottom" Grid.Column="1"
+        <TextBox x:Name="tbExtensions" Margin="8,0,8,37.96" TextWrapping="Wrap" VerticalAlignment="Bottom" Grid.Column="1"
                  Text="{Binding Path=DataStoreCreationArguments.Extensions, Mode=Default, ElementName=window, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}"
                  Validation.ErrorTemplate="{StaticResource validationTemplate}"/>
 
         <TextBlock x:Name="blkName" d:LayoutOverrides="Width" HorizontalAlignment="Right" Margin="0,11,5.351,0" VerticalAlignment="Top" Text="Name:" TextWrapping="Wrap" />
-        <TextBlock x:Name="blkDescription" HorizontalAlignment="Right" Margin="0,36.96,5.351,0" VerticalAlignment="Top" Text="Description:" TextWrapping="Wrap"/>
-        <TextBlock x:Name="blkTemplate" Margin="0,0,9.065,102.08" VerticalAlignment="Bottom" Text="Template:" TextWrapping="Wrap" d:LayoutOverrides="HorizontalAlignment, Height" HorizontalAlignment="Right" Width="Auto" />
+        <TextBlock x:Name="blkDescription" HorizontalAlignment="Right" Margin="0,50.96,5.351,0" VerticalAlignment="Top" Text="Description:" TextWrapping="Wrap"/>
+        <TextBlock x:Name="blkTemplate" Margin="0,0,9.065,108.88" Text="Template:" TextWrapping="Wrap" d:LayoutOverrides="HorizontalAlignment, Height" HorizontalAlignment="Right" Width="Auto" VerticalAlignment="Bottom" />
 
         <ComboBox x:Name="cmbTemplate" IsSynchronizedWithCurrentItem="True" 
                   ItemsSource="{Binding Path=TemplateFinder.AvailableTemplates, Mode=Default, ElementName=window}" 
-                  Margin="6.935,0,13,99.08" VerticalAlignment="Bottom" Grid.Column="1" d:LayoutOverrides="Height" 
-                  SelectedItem="{Binding Path=DataStoreCreationArguments.Tempate, Mode=Default, ElementName=window}"/>
+                  Margin="8,0,8,105.88" Grid.Column="1" d:LayoutOverrides="Height" 
+                  SelectedItem="{Binding Path=DataStoreCreationArguments.Tempate, Mode=Default, ElementName=window}" VerticalAlignment="Bottom"/>
+        <Grid HorizontalAlignment="Right" Margin="0,0,8,8" VerticalAlignment="Bottom" Width="108.06" Height="25.96" Grid.Column="1">
 
-        <Button x:Name="btnOK" d:LayoutOverrides="Width, Height" Padding="10,3,10,3" HorizontalAlignment="Right" Margin="0,0,76.053,8" VerticalAlignment="Bottom" Content="OK" Grid.Column="1" IsDefault="True" Height="25.96" Width="40.007" 
-                IsEnabled="{Binding Path=DataStoreCreationArguments.IsValid, ElementName=window}" />
+        	<Button x:Name="btnOK" d:LayoutOverrides="Width, Height" Padding="10,3,10,3" HorizontalAlignment="Left" Content="OK" IsDefault="True" Height="25.96" Width="40.007" 
+        		IsEnabled="{Binding Path=DataStoreCreationArguments.IsValid, ElementName=window}" />
 
-        <Button x:Name="btnCancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="Cancel" Padding="10,3,10,3" Margin="0,0,8,8" Grid.Column="1" IsCancel="True" />
+        	<Button x:Name="btnCancel" Content="Cancel" Padding="10,3,10,3" Margin="49.007,0,0,0" IsCancel="True" d:LayoutOverrides="Width, Height" />
 
-        <Button x:Name="btnDirectory" HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="..." Grid.Column="1" Margin="0,0,13,73.12" d:LayoutOverrides="Width, Height" Padding="7,1,7,1"/>
-        <TextBlock x:Name="blkDirectories"  HorizontalAlignment="Right" Margin="0,0,9.065,76.12" VerticalAlignment="Bottom" Text="Directories:" TextWrapping="Wrap" d:LayoutOverrides="Height"/>
+        </Grid>
+        <DockPanel Margin="8,0,8,79.92" Grid.Column="1" Height="21.96" VerticalAlignment="Bottom">
+        	<Button x:Name="btnDirectory" Content="..." d:LayoutOverrides="Width" Padding="7,1,7,1" Width="25.8" Height="21.96" DockPanel.Dock="Right"/>
+        	<TextBox x:Name="tbDirectories" TextWrapping="Wrap"
+        		Text="{Binding Path=DataStoreCreationArguments.DirectoriesToWatch, ElementName=window, Mode=Default, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+        		Validation.ErrorTemplate="{StaticResource validationTemplate}" Width="Auto" Height="Auto" Margin="0,0,15,0"/>
+        </DockPanel>
+        <TextBlock x:Name="blkDirectories"  HorizontalAlignment="Right" Margin="0,0,9.065,82.92" Text="Directories:" TextWrapping="Wrap" d:LayoutOverrides="Height" VerticalAlignment="Bottom"/>
 
-        <TextBlock x:Name="blkExtensions" Margin="0,0,9.065,45.16" Text="Extensions:" TextWrapping="Wrap" VerticalAlignment="Bottom" d:LayoutOverrides="HorizontalAlignment, Width" HorizontalAlignment="Right"/>
+        <TextBlock x:Name="blkExtensions" Margin="0,0,9.065,41.96" Text="Extensions:" TextWrapping="Wrap" VerticalAlignment="Bottom" d:LayoutOverrides="HorizontalAlignment, Width" HorizontalAlignment="Right"/>
     </Grid>
 </Window>
