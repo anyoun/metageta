@@ -3,21 +3,21 @@
 Partial Public Class NewDataStoreWindow
     Implements INotifyPropertyChanged
 
-    Private ReadOnly m_Arguments As DataStoreCreationArguments
+    Private ReadOnly m_Arguments As DataStoreBuilder
 
     Public Sub New()
-        Me.New(New DataStoreCreationArguments())
+        Me.New(New DataStoreBuilder())
     End Sub
 
-    Public Sub New(ByVal arguments As DataStoreCreationArguments)
+    Public Sub New(ByVal arguments As DataStoreBuilder)
         m_Arguments = arguments
-        'RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("DataStoreCreationArguments"))
+        'RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("DataStoreBuilder"))
 
         ' This call is required by the Windows Form Designer.
         InitializeComponent()
     End Sub
 
-    Public ReadOnly Property DataStoreCreationArguments() As DataStoreCreationArguments
+    Public ReadOnly Property DataStoreCreationArguments() As DataStoreBuilder
         Get
             Return m_Arguments
         End Get

@@ -141,6 +141,7 @@
     <Compile Include="Database\DataMapper.vb" />
     <Compile Include="Database\IDataMapper.vb" />
     <Compile Include="Database\MockDataMapper.vb" />
+    <Compile Include="DataStore\DataStoreBuilder.vb" />
     <Compile Include="DataStore\IDataStoreOwner.vb" />
     <Compile Include="DataStore\ProgressStatus.vb" />
     <Compile Include="FileProgress.vb" />
