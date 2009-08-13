@@ -355,6 +355,10 @@
     <Resource Include="Resources\text_block.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\iPhone_icon_12.png" />
+    <Resource Include="Resources\iPod_icon_12.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

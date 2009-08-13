@@ -46,11 +46,18 @@ Public Class TvShowViewModel
                                     Group, _
                                     FirstAired = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.EpisodeFirstAired)).Coalesce(), _
                                     Length = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.PlayTime)).Coalesce(), _
-                                    Title = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.EpisodeTitle)).Coalesce()
+                                    Title = Group.Select(Function(file) file.GetTag(TVShowDataStoreTemplate.EpisodeTitle)).Coalesce(), _
+                                    Ipod = Group.Any(Function(file) Boolean.Parse(file.GetTag(TVShowDataStoreTemplate.iPodClassicCompatible))), _
+                                    Iphone = Group.Any(Function(file) Boolean.Parse(file.GetTag(TVShowDataStoreTemplate.iPhoneCompatible))), _
+                                    Computer = Group.Any()
+
             Dim episodes = From ep In episodeGroups _
                            Select New TvEpisode(series, ep.SeasonNumber, ep.EpisodeNumber, ep.Title) With { _
                                .AirDateString = ep.FirstAired, _
-                               .LengthString = ep.Length _
+                               .LengthString = ep.Length, _
+                               .HasComputerVersion = ep.Computer, _
+                               .HasIphoneVersion = ep.Iphone, _
+                               .HasIpodVersion = ep.Ipod _
                            }
             episodes = From ep In episodes Order By ep.SeasonNumber, ep.EpisodeNumber Select ep
 
@@ -146,13 +153,13 @@ Public Class TvEpisode
     Private ReadOnly m_Series As TvSeries
     Private ReadOnly m_SeasonNumber As Integer, m_EpisodeNumber As Integer
 
+    Private m_HasComputerVersion As Boolean, m_HasIpodVersion As Boolean, m_HasIphoneVersion As Boolean
 
     Public Sub New(ByVal series As TvSeries, ByVal seasonNumber As String, ByVal episodeNumber As String, ByVal title As String)
         Me.New(series, 1, 1, title)
         If Not Integer.TryParse(seasonNumber, m_SeasonNumber) Then m_SeasonNumber = 0
         If Not Integer.TryParse(episodeNumber, m_EpisodeNumber) Then m_EpisodeNumber = 0
     End Sub
-
     Public Sub New(ByVal series As TvSeries, ByVal seasonNumber As Integer, ByVal episodeNumber As Integer, ByVal title As String)
         m_Series = series
         m_SeasonNumber = seasonNumber
@@ -192,7 +199,6 @@ Public Class TvEpisode
             m_AirDate = value
         End Set
     End Property
-
     Public Property AirDateString() As String
         Get
             Return m_AirDate.ToString()
@@ -212,7 +218,6 @@ Public Class TvEpisode
             m_Length = value
         End Set
     End Property
-
     Public Property LengthString() As String
         Get
             Return m_Length.ToString()
@@ -238,6 +243,31 @@ Public Class TvEpisode
         Get
             Return EpisodeNumber Mod 2 = 0
         End Get
+    End Property
+
+    Public Property HasComputerVersion() As Boolean
+        Get
+            Return m_HasComputerVersion
+        End Get
+        Set(ByVal value As Boolean)
+            m_HasComputerVersion = value
+        End Set
+    End Property
+    Public Property HasIpodVersion() As Boolean
+        Get
+            Return m_HasIpodVersion
+        End Get
+        Set(ByVal value As Boolean)
+            m_HasIpodVersion = value
+        End Set
+    End Property
+    Public Property HasIphoneVersion() As Boolean
+        Get
+            Return m_HasIphoneVersion
+        End Get
+        Set(ByVal value As Boolean)
+            m_HasIphoneVersion = value
+        End Set
     End Property
 End Class
 
