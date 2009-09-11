@@ -1,8 +1,8 @@
 ﻿<UserControl
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:Class="Editors.ItemListEditor"
-    x:Name="ItemListEditor" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Class="MetaGeta.GUI.Editors.ItemListEditor"
+    x:Name="ItemListEditorControl" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignHeight="76.96" d:DesignWidth="74"
 	>
     <Grid>
@@ -11,8 +11,8 @@
         	<RowDefinition Height="40" />
         </Grid.RowDefinitions>
         <ListBox x:Name="ListBox1" Grid.Row="0" Margin="8"
-                 ItemsSource="{Binding Path=Items, ElementName=ItemListEditor, Mode=OneWay}"
-                 ItemTemplate="{Binding Path=ItemTemplate, ElementName=ItemListEditor, Mode=OneWay}"
+                 ItemsSource="{Binding Path=Items, ElementName=ItemListEditorControl, Mode=OneWay}"
+                 ItemTemplate="{Binding Path=ItemTemplate, ElementName=ItemListEditorControl, Mode=OneWay}"
                  />
         <Button x:Name="btnAdd" Margin="8" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="24" Content="+" Click="btnAdd_Click" />
         <Button x:Name="btnRemove" Margin="8,8,40,8" Grid.Row="1" HorizontalAlignment="Right" Width="24" VerticalAlignment="Bottom" Content="-" Click="btnRemove_Click"/>

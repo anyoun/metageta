@@ -6,7 +6,7 @@
 	xmlns:GUI="clr-namespace:MetaGeta.GUI"
 	xmlns:Editors="clr-namespace:MetaGeta.GUI.Editors"
 	mc:Ignorable="d"
-	x:Class="SettingsEditor"
+	x:Class="MetaGeta.GUI.Editors.SettingsEditor"
 	x:Name="UserControl"
 	d:DesignWidth="640" d:DesignHeight="480">
 

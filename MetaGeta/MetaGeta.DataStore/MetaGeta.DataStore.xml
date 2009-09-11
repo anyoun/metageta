@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MetaGeta.DataStore</name>
+    </assembly>
+    <members>
+        <member name="M:MetaGeta.DataStore.MGDataStore.BeginRefresh">
+            <summary>
+            Starts an asynchronous refresh and import from all FileSourcePlugins.
+            </summary>
+            <remarks></remarks>
+        </member>
+    </members>
+</doc>

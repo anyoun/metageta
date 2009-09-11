@@ -1,7 +1,7 @@
 ﻿<Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    x:Class="NewDataStoreWindow"
+    x:Class="MetaGeta.GUI.NewDataStoreWindow"
     Title="NewDataStoreWindow"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -47,15 +47,18 @@
                   SelectedItem="{Binding Path=DataStoreCreationArguments.Tempate, Mode=Default, ElementName=window}" VerticalAlignment="Bottom"/>
         <Grid HorizontalAlignment="Right" Margin="0,0,8,8" VerticalAlignment="Bottom" Width="108.06" Height="25.96" Grid.Column="1">
 
-        	<Button x:Name="btnOK" d:LayoutOverrides="Width, Height" Padding="10,3,10,3" HorizontalAlignment="Left" Content="OK" IsDefault="True" Height="25.96" Width="40.007" 
-        		IsEnabled="{Binding Path=DataStoreCreationArguments.IsValid, ElementName=window}" />
+            <Button x:Name="btnOK" d:LayoutOverrides="Width, Height" Padding="10,3,10,3" HorizontalAlignment="Left" Content="OK" IsDefault="True" Height="25.96" Width="40.007" 
+        		    IsEnabled="{Binding Path=DataStoreCreationArguments.IsValid, ElementName=window}"
+                    Click="btnOK_Click"/>
 
-        	<Button x:Name="btnCancel" Content="Cancel" Padding="10,3,10,3" Margin="49.007,0,0,0" IsCancel="True" d:LayoutOverrides="Width, Height" />
+            <Button x:Name="btnCancel" Content="Cancel" Padding="10,3,10,3" Margin="49.007,0,0,0" IsCancel="True" d:LayoutOverrides="Width, Height"
+                    Click="btnCancel_Click"/>
 
         </Grid>
         <DockPanel Margin="8,0,8,79.92" Grid.Column="1" Height="21.96" VerticalAlignment="Bottom">
-        	<Button x:Name="btnDirectory" Content="..." d:LayoutOverrides="Width" Padding="7,1,7,1" Width="25.8" Height="21.96" DockPanel.Dock="Right"/>
-        	<TextBox x:Name="tbDirectories" TextWrapping="Wrap"
+            <Button x:Name="btnDirectory" Content="..." d:LayoutOverrides="Width" Padding="7,1,7,1" Width="25.8" Height="21.96" DockPanel.Dock="Right"
+                    Click="btnDirectory_Click"/>
+            <TextBox x:Name="tbDirectories" TextWrapping="Wrap"
         		Text="{Binding Path=DataStoreCreationArguments.DirectoriesToWatch, ElementName=window, Mode=Default, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
         		Validation.ErrorTemplate="{StaticResource validationTemplate}" Width="Auto" Height="Auto" Margin="0,0,15,0"/>
         </DockPanel>

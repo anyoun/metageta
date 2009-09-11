@@ -1,0 +1,194 @@
+// Copyright 2009 Will Thomas
+// 
+// This file is part of MetaGeta.
+// 
+// MetaGeta is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// MetaGeta is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with MetaGeta. If not, see <http://www.gnu.org/licenses/>.
+
+#region
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using log4net;
+using MetaGeta.DataStore;
+using MetaGeta.Utilities;
+using TvdbLib;
+using TvdbLib.Cache;
+using TvdbLib.Data;
+
+#endregion
+
+namespace MetaGeta.TVDBPlugin {
+    public class TVDBPlugin : IMGTaggingPlugin, IMGPluginBase {
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly Dictionary<string, int?> m_SeriesNameDictionary = new Dictionary<string, int?>();
+        private MGDataStore m_DataStore;
+
+        private long m_ID;
+        private TvdbHandler m_tvdbHandler;
+
+        public long ID {
+            get { return m_ID; }
+        }
+
+        #region IMGPluginBase Members
+
+        public void Startup(MGDataStore dataStore, long id) {
+            m_DataStore = dataStore;
+            m_tvdbHandler = new TvdbHandler(new XmlCacheProvider("C:\\temp\\tvdbcache"), "BC8024C516DFDA3B");
+            m_tvdbHandler.InitCache();
+        }
+
+        public void Shutdown() {
+            m_tvdbHandler.CloseCache();
+        }
+
+        long IMGPluginBase.PluginID {
+            get { return ID; }
+        }
+
+        public string FriendlyName {
+            get { return "The TVDB Plugin"; }
+        }
+
+        public string UniqueName {
+            get { return "TVDBPlugin"; }
+        }
+
+        public Version Version {
+            get { return new Version(1, 0, 0, 0); }
+        }
+
+        public event PropertyChangedEventHandler SettingChanged;
+
+        #endregion
+
+        #region IMGTaggingPlugin Members
+
+        public void Process(MGFile file, ProgressStatus reporter) {
+            //prompt user for series name lookups??
+            int? seriesID = GetSeriesID(file);
+            if (seriesID == null)
+                return;
+            TvdbSeries series = GetSeries(seriesID.Value);
+
+            file.SetTag(TVShowDataStoreTemplate.SeriesDescription, series.Overview);
+
+            file.SetTag(TVShowDataStoreTemplate.SeriesBanner, LoadBannerToPath(series.SeriesBanners.FirstOrDefault()));
+            file.SetTag(TVShowDataStoreTemplate.SeriesPoster, LoadBannerToPath(series.PosterBanners.FirstOrDefault()));
+
+            TvdbEpisode exactEpisode = GetEpisode(series, file);
+
+            if (exactEpisode != null) {
+                file.SetTag(TVShowDataStoreTemplate.EpisodeTitle, exactEpisode.EpisodeName);
+                file.SetTag(TVShowDataStoreTemplate.EpisodeDescription, exactEpisode.Overview);
+                file.SetTag(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id.ToString());
+                file.SetTag(TVShowDataStoreTemplate.EpisodeFirstAired, exactEpisode.FirstAired.ToUniversalTime().ToString("u"));
+
+                file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, LoadBannerToPath(exactEpisode.Banner));
+            }
+        }
+
+        #endregion
+
+        private string LoadBannerToPath(TvdbBanner banner) {
+            if (banner == null)
+                return null;
+
+            string imageLocalPath = Path.Combine(m_DataStore.GetImageDirectory(), banner.Id.ToString());
+            imageLocalPath = Path.ChangeExtension(imageLocalPath, "jpg");
+            if (!File.Exists(imageLocalPath)) {
+                log.DebugFormat("Downloading banner \"{0}\" to \"{1}\"", banner.BannerUri.AbsoluteUri, imageLocalPath);
+                using (var wc = new WebClient()) {
+                    try {
+                        wc.DownloadFile(banner.BannerUri, imageLocalPath);
+                    } catch (Exception ex) {
+                        log.Warn("Loading banner failed.", ex);
+                        return null;
+                    }
+                    log.DebugFormat("OK");
+                }
+            }
+
+            return imageLocalPath;
+        }
+
+        private int? GetSeriesID(MGFile file) {
+            if (file.GetTag(TVShowDataStoreTemplate.SeriesID) != null)
+                return int.Parse(file.GetTag(TVShowDataStoreTemplate.SeriesID));
+
+            string seriesName = file.GetTag(TVShowDataStoreTemplate.SeriesTitle);
+
+            if (seriesName == null)
+                return null;
+
+            int? seriesID = default(int?);
+
+            if (!m_SeriesNameDictionary.TryGetValue(seriesName, out seriesID)) {
+                List<TvdbSearchResult> searchResult = m_tvdbHandler.SearchSeries(seriesName);
+                if (searchResult.Count == 0) {
+                    log.DebugFormat("Couldn't find series: \"{0}\".", seriesName);
+                    seriesID = null;
+                } else if (searchResult.Count == 1) {
+                    log.DebugFormat("Found series: \"{0}\" -> \"{1}\".", seriesName, searchResult.Single().SeriesName);
+                    seriesID = searchResult.Single().Id;
+                } else {
+                    log.DebugFormat("Multiple results for \"{0}\": {1}", seriesName, searchResult.Select(s => s.SeriesName).JoinToString(", "));
+                    TvdbSearchResult exactMatch = searchResult.FirstOrDefault(s => string.Equals(s.SeriesName, seriesName, StringComparison.CurrentCultureIgnoreCase));
+                    if (((exactMatch != null))) {
+                        seriesID = exactMatch.Id;
+                        log.Debug("Found an exact match.");
+                    } else {
+                        seriesID = null;
+                        log.Debug("No exact match.");
+                    }
+                }
+                m_SeriesNameDictionary.Add(seriesName, seriesID);
+            }
+            if (seriesID.HasValue) {
+                file.SetTag(TVShowDataStoreTemplate.SeriesID, seriesID.Value.ToString());
+                return seriesID.Value;
+            } else
+                return null;
+        }
+
+        private TvdbSeries GetSeries(int seriesID) {
+            log.DebugFormat("Getting series {0}. IsCached: {1}", seriesID, m_tvdbHandler.IsCached(seriesID, TvdbLanguage.DefaultLanguage, true, false, false));
+            TvdbSeries s = m_tvdbHandler.GetSeries(seriesID, TvdbLanguage.DefaultLanguage, true, false, false, true);
+            log.DebugFormat("{0} is {1}", seriesID, s);
+            return s;
+        }
+
+        private TvdbEpisode GetEpisode(TvdbSeries series, MGFile file) {
+            int seasonNumber = int.Parse(file.GetTag(TVShowDataStoreTemplate.SeasonNumber));
+            int episodeNumber = int.Parse(file.GetTag(TVShowDataStoreTemplate.EpisodeNumber));
+            TvdbEpisode ep = null;
+            try {
+                ep = series.Episodes.Find(episode => episode.EpisodeNumber == episodeNumber && episode.SeasonNumber == seasonNumber);
+            } catch (Exception ex) {
+                log.WarnFormat("TVDB exception", ex);
+            }
+
+            if ((ep != null))
+                log.DebugFormat("Found episode: {0} - s{1}e{2} - {3}.", series.SeriesName, seasonNumber, episodeNumber, ep.EpisodeName);
+            else
+                log.DebugFormat("Couldn't find episode: {0} - s{1}e{2}.", series.SeriesName, seasonNumber, episodeNumber);
+            return ep;
+        }
+    }
+}

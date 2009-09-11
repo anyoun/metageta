@@ -6,7 +6,7 @@
     xmlns:toolkit="clr-namespace:Microsoft.Windows.Controls;assembly=WPFToolkit"
     xmlns:GUI="clr-namespace:MetaGeta.GUI"
     
-    x:Class="GridView" x:Name="myGridView"
+    x:Class="MetaGeta.GUI.GridView" x:Name="myGridView"
 	d:DesignHeight="222" d:DesignWidth="278" >
 
     <UserControl.Resources>

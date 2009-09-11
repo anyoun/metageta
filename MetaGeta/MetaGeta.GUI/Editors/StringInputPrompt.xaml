@@ -1,4 +1,4 @@
-﻿<Window x:Class="Editors.StringInputPrompt" x:Name="StringInputPrompt"
+﻿<Window x:Class="MetaGeta.GUI.Editors.StringInputPrompt" x:Name="StringInputPromptControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="StringInputPrompt" Height="133" Width="300"
@@ -7,7 +7,7 @@
     <Grid>
         <Button Height="23" Margin="98,0,105,8" Name="btnOK"  VerticalAlignment="Bottom" IsDefault="True" Click="btnOK_Click">OK</Button>
         <Button Height="23" Margin="193,0,8,8" Name="btnCancel" VerticalAlignment="Bottom" IsCancel="True" Click="btnCancel_Click">Cancel</Button>
-        <TextBox Height="23" Margin="8,40,8,0" Name="TextBox1" VerticalAlignment="Top" Text="{Binding ElementName=StringInputPrompt, Path=EditingString}" />
-        <Label Height="28" Margin="8,8,8,0" Name="Label1" VerticalAlignment="Top" Content="{Binding ElementName=StringInputPrompt, Path=LabelText}" />
+        <TextBox Height="23" Margin="8,40,8,0" Name="TextBox1" VerticalAlignment="Top" Text="{Binding ElementName=StringInputPromptControl, Path=EditingString}" />
+        <Label Height="28" Margin="8,8,8,0" Name="Label1" VerticalAlignment="Top" Content="{Binding ElementName=StringInputPromptControl, Path=LabelText}" />
     </Grid>
 </Window>

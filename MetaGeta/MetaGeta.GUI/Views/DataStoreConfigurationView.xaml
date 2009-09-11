@@ -1,11 +1,11 @@
 ﻿<UserControl
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-    x:Class="DataStoreConfigurationView" x:Name="DataStoreConfiguration" 
+    x:Class="MetaGeta.GUI.DataStoreConfigurationView" x:Name="DataStoreConfiguration" 
     Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" 
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-	mc:Ignorable="d" xmlns:MetaGeta_GUI="clr-namespace:MetaGeta.GUI"
+	mc:Ignorable="d" xmlns:MetaGeta_GUI="clr-namespace:MetaGeta.GUI" xmlns:Editors="clr-namespace:MetaGeta.GUI.Editors"
     >
     <UserControl.Resources>
         <DataTemplate x:Key="PluginsTemplate">
@@ -45,7 +45,7 @@
                          SelectedItem="{Binding Path=SelectedPlugin, Mode=TwoWay}"
 					     ItemsSource="{Binding Path=Plugins}" ItemTemplate="{DynamicResource PluginsTemplate}"/>
 
-                <MetaGeta_GUI:SettingsEditor Margin="8,8,8,8" Grid.Column="2" x:Name="sePluginSettings" 
+                <Editors:SettingsEditor Margin="8,8,8,8" Grid.Column="2" x:Name="sePluginSettings" 
 					Settings="{Binding Path=SelectedPluginSettings}"/>
 
                 <GridSplitter Margin="0,8,0,8" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="1" Width="5"/>
