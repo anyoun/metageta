@@ -15,6 +15,21 @@
     <OptionInfer>On</OptionInfer>
     <StartupObject>MetaGeta.GUI.MetaGetaGuiApplication</StartupObject>
     <ApplicationIcon>Resources\MetaGeta_Icon.ico</ApplicationIcon>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,7 +45,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DefineDebug>false</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <IncrementalBuild>false</IncrementalBuild>
+    <IncrementalBuild>true</IncrementalBuild>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DocumentationFile>MetaGeta.GUI.xml</DocumentationFile>
@@ -126,12 +141,12 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="My Project\AssemblyInfo.cs">
+    <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="My Project\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
+    <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\DataStoreConfigurationViewModel.cs" />
@@ -180,14 +195,17 @@
       <DependentUpon>NewDataStoreWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <EmbeddedResource Include="My Project\Resources.resx">
-      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <None Include="app.config" />
+    <EmbeddedResource Include="Resources\MediaInfo.dll.x64.gz" />
+    <EmbeddedResource Include="Resources\MediaInfo.dll.x86.gz" />
     <None Include="Resources\MetaGeta_Icon.ico" />
+    <EmbeddedResource Include="Resources\sqlite3.dll.x64.gz" />
+    <EmbeddedResource Include="Resources\sqlite3.dll.x86.gz" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Editors\ItemListEditor.xaml">
@@ -284,7 +302,7 @@
     <Resource Include="Resources\text_block.png" />
     <Resource Include="Resources\tv.png" />
     <Resource Include="Resources\view_detailed.png" />
-    <SplashScreen Include="SplashScreen.png" />
+    <None Include="SplashScreen.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DirectoryFileSourcePlugin\DirectoryFileSourcePlugin.csproj">
@@ -325,11 +343,39 @@
     </ProjectReference>
   </ItemGroup>
   <Target Name="AfterBuild">
-    <Copy Condition="'$(Platform)'=='x86'" SourceFiles="..\..\MediaInfo\x86\MediaInfo.dll" DestinationFolder="$(OutputPath)" />
-    <Copy Condition="'$(Platform)'=='x86'" SourceFiles="..\..\sqlite\x86\sqlite3.dll" DestinationFolder="$(OutputPath)" />
-    <Copy Condition="'$(Platform)'=='x64'" SourceFiles="..\..\MediaInfo\x64\MediaInfo.dll" DestinationFolder="$(OutputPath)" />
-    <Copy Condition="'$(Platform)'=='x64'" SourceFiles="..\..\sqlite\x64\sqlite3.dll" DestinationFolder="$(OutputPath)" />
   </Target>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
   </ItemGroup>
