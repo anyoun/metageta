@@ -48,7 +48,7 @@ public class DataMapper : IDataMapper {
 
     private DbConnection Connection {
         get {
-            var conn = (DbConnection) Thread.GetData(s_ConnectionSlot);
+            var conn = (DbConnection)Thread.GetData(s_ConnectionSlot);
             if (conn == null) {
                 conn = new SQLiteConnection();
                 conn.ConnectionString = string.Format("Data Source={0}", m_FileName);
@@ -80,7 +80,7 @@ public class DataMapper : IDataMapper {
         long version = 0;
         using (DbCommand cmd = Connection.CreateCommand()) {
             cmd.CommandText = "PRAGMA user_version";
-            version = (long) cmd.ExecuteScalar();
+            version = (long)cmd.ExecuteScalar();
         }
 
         log.InfoFormat("Found user_version \"{0}\".", version);
@@ -150,7 +150,35 @@ public class DataMapper : IDataMapper {
             version = 2;
             log.Info("OK");
         }
-        if (version > 2) {
+        if (version == 2) {
+            log.Info("Version 2 found, upgrading to version 3 and deleting all files and tags...");
+            string createTablesSql =
+                @"
+                DROP INDEX [ixTag];
+                DROP TABLE [Tag];
+                DELETE FROM [File];
+
+                CREATE TABLE [Tag](
+                    [TagID] integer primary key autoincrement,
+                    [FileID] integer references [File]([FileID]), 
+                    [Name] varchar, 
+                    [Value] none,
+                    [Type] varchar
+                );
+                
+                CREATE INDEX [ixTag_FileID] ON [Tag]([FileID]);
+                CREATE INDEX [ixTag_Name] ON [Tag]([Name]);
+
+                PRAGMA user_version = 3;
+";
+            using (DbCommand cmd = Connection.CreateCommand()) {
+                cmd.CommandText = createTablesSql;
+                cmd.ExecuteNonQuery();
+            }
+            version = 3;
+            log.Info("OK");
+        }
+        if (version > 3) {
             log.FatalFormat("Unknown user_version: \"{0}\".", version);
             throw new Exception("Unknown database version.");
         }
@@ -161,7 +189,7 @@ public class DataMapper : IDataMapper {
         if (ReferenceEquals(val, DBNull.Value))
             return null;
         else
-            return (T?) val;
+            return (T?)val;
     }
 
     private static T ReadNullable<T>(DbDataReader rdr, int index) where T : class {
@@ -169,7 +197,7 @@ public class DataMapper : IDataMapper {
         if (ReferenceEquals(val, DBNull.Value))
             return null;
         else
-            return (T) val;
+            return (T)val;
     }
 
     #region "Creating"
@@ -182,7 +210,7 @@ public class DataMapper : IDataMapper {
                 cmd.AddParam(dataStore.Name);
                 cmd.AddParam(dataStore.Description);
                 cmd.AddParam(dataStore.Template.GetName());
-                dataStore.ID = (long) cmd.ExecuteScalar();
+                dataStore.ID = (long)cmd.ExecuteScalar();
             }
             foreach (IMGPluginBase plugin in dataStore.Plugins) {
                 using (DbCommand cmd = Connection.CreateCommand()) {
@@ -191,7 +219,7 @@ public class DataMapper : IDataMapper {
                     cmd.AddParam(dataStore.ID);
                     string typeName = string.Format("{0}, {1}", plugin.GetType().FullName, plugin.GetType().Assembly.GetName().Name);
                     cmd.AddParam(typeName);
-                    var id = (long) cmd.ExecuteScalar();
+                    var id = (long)cmd.ExecuteScalar();
                     dataStore.StartupPlugin(plugin, id, true);
                 }
             }
@@ -206,7 +234,7 @@ public class DataMapper : IDataMapper {
                     cmd.Transaction = tran;
                     cmd.CommandText = "INSERT INTO [File]([DatastoreID]) VALUES(?);SELECT last_insert_rowid() AS [ID]";
                     cmd.AddParam(dataStore.ID);
-                    file.ID = (long) cmd.ExecuteScalar();
+                    file.ID = (long)cmd.ExecuteScalar();
                 }
             }
             tran.Commit();
@@ -253,7 +281,7 @@ public class DataMapper : IDataMapper {
                         Type t = Type.GetType(typeName);
                         if (t == null)
                             throw new Exception(string.Format("Can't find type \"{0}\".", typeName));
-                        var plugin = (IMGPluginBase) Activator.CreateInstance(t);
+                        var plugin = (IMGPluginBase)Activator.CreateInstance(t);
                         ds.AddExistingPlugin(plugin, pluginID);
                     }
                 }
@@ -267,19 +295,31 @@ public class DataMapper : IDataMapper {
         var files = new List<MGFile>();
         using (DbCommand cmd = Connection.CreateCommand()) {
             cmd.CommandText =
-                "SELECT [File].[FileID], [Tag].[Name], [Tag].[Value] FROM [File] LEFT OUTER JOIN [Tag] on [Tag].[FileID] = [File].[FileID] WHERE [DatastoreID] = ? AND [Tag].[Value] IS NOT NULL ORDER BY [File].[FileID]";
-            cmd.AddParam(dataStore.ID);
+                @"
+SELECT 
+    [File].[FileID], 
+    [Tag].[Name], 
+    [Tag].[Value],
+    [Tag].[Type] 
+FROM [File] 
+    INNER JOIN [Tag] on [Tag].[FileID] = [File].[FileID]
+WHERE 1=1
+    AND [DatastoreID] = @DataStoreID
+    --AND [Tag].[Value] IS NOT NULL ORDER BY [File].[FileID]
+";
+            cmd.SetParam("@DataStoreID", dataStore.ID);
+            var persister = new TagCollectionPersister() {
+                KeyColumn = "FileID",
+                TagNameColumn = "Name",
+                TagValueColumn = "Value",
+                TagTypeColumn = "Type",
+            };
+            Dictionary<long, MGTagCollection> idsToTags;
             using (DbDataReader rdr = cmd.ExecuteReader()) {
-                MGFile file = null;
-                while (rdr.Read()) {
-                    long nextId = rdr.GetInt64(0);
-                    if (file == null || file.ID != nextId) {
-                        if (file != null)
-                            files.Add(file);
-                        file = new MGFile(nextId, dataStore);
-                    }
-                    file.Tags.SetValue(rdr.GetString(1), rdr.GetString(2));
-                }
+                idsToTags = persister.ReadTags<long>(rdr);
+            }
+            foreach (var pair in idsToTags) {
+                files.Add(new MGFile(pair.Key, dataStore, pair.Value));
             }
         }
         return files;
@@ -287,18 +327,9 @@ public class DataMapper : IDataMapper {
 
     public IList<Tuple<MGTag, MGFile>> GetTagOnAllFiles(MGDataStore dataStore, string tagName) {
         var files = new List<Tuple<MGTag, MGFile>>();
-        using (DbCommand cmd = Connection.CreateCommand()) {
-            cmd.CommandText =
-                "SELECT [File].[FileID], [Tag].[Value] FROM [File] LEFT OUTER JOIN [Tag] on [Tag].[FileID] = [File].[FileID] WHERE [DatastoreID] = ? AND [Tag].[Name] = ?";
-            cmd.AddParam(dataStore.ID);
-            cmd.AddParam(tagName);
-            using (DbDataReader rdr = cmd.ExecuteReader()) {
-                while (rdr.Read()) {
-                    long fileID = rdr.GetInt64(0);
-                    string tagValue = rdr.GetString(1);
-                    files.Add(new Tuple<MGTag, MGFile>(new MGTag(tagName, tagValue), new MGFile(fileID, dataStore)));
-                }
-            }
+        foreach (var file in GetFiles(dataStore)) {
+            if(file.Tags.ContainsKey(tagName))
+                files.Add(new Tuple<MGTag, MGFile>(file.Tags.GetTag(tagName), file));
         }
         return files;
     }
@@ -315,16 +346,20 @@ public class DataMapper : IDataMapper {
                 cmd.AddParam(file.ID);
                 cmd.ExecuteNonQuery();
             }
-            foreach (MGTag tag in file.Tags) {
-                using (DbCommand cmd = Connection.CreateCommand()) {
-                    cmd.Transaction = tran;
-                    cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value]) VALUES(?, ?, ?)";
-                    cmd.AddParam(file.ID);
-                    cmd.AddParam(tag.Name);
-                    cmd.AddParam(tag.Value);
-                    cmd.ExecuteNonQuery();
-                }
+
+            using (DbCommand cmd = Connection.CreateCommand()) {
+                cmd.Transaction = tran;
+                cmd.CommandText = "INSERT INTO [Tag]([FileID], [Name], [Value], [Type]) VALUES(@FileID, @Name, @Value, @Type)";
+                var persister = new TagCollectionPersister() {
+                                                                 KeyColumn = "FileID",
+                                                                 TagNameColumn = "Name",
+                                                                 TagValueColumn = "Value",
+                                                                 TagTypeColumn = "Type",
+                                                             };
+                cmd.SetParam("@FileID", file.ID);
+                persister.WriteTags(file.Tags, cmd);
             }
+
             tran.Commit();
         }
     }
@@ -410,7 +445,7 @@ public class DataMapper : IDataMapper {
             cmd.AddParam(dataStore.ID);
             cmd.AddParam(pluginID);
             cmd.AddParam(settingName);
-            return (string) cmd.ExecuteScalar();
+            return (string)cmd.ExecuteScalar();
         }
     }
 
@@ -429,7 +464,7 @@ public class DataMapper : IDataMapper {
         using (DbCommand cmd = Connection.CreateCommand()) {
             cmd.CommandText = "SELECT coalesce([Value], [DefaultValue]) FROM [GlobalSetting] WHERE [Name] = ?";
             cmd.AddParam(settingName);
-            return (string) cmd.ExecuteScalar();
+            return (string)cmd.ExecuteScalar();
         }
     }
 
@@ -470,7 +505,7 @@ public class DataMapper : IDataMapper {
                     string name = rdr.GetString(0);
                     var value = ReadNullable<string>(rdr, 1);
                     string defaultValue = rdr.GetString(2);
-                    var type = (GlobalSettingType) Enum.Parse(typeof (GlobalSettingType), rdr.GetString(3));
+                    var type = (GlobalSettingType)Enum.Parse(typeof(GlobalSettingType), rdr.GetString(3));
                     settings.Add(new GlobalSetting(name, value, defaultValue, type));
                 }
             }

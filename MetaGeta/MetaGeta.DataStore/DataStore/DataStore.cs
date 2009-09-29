@@ -230,20 +230,22 @@ namespace MetaGeta.DataStore {
         #region "DataStoreCreationArguments"
 
         public DataStoreBuilder GetCreationArguments() {
+            var fileSourceSettings = SettingInfoCollection.GetSettings((IMGPluginBase) FileSourcePlugins.Single());
             return new DataStoreBuilder {
                                             Name = Name,
                                             Description = Description,
                                             Tempate = Template,
-                                            DirectoriesToWatch = GetPluginSetting((IMGPluginBase) FileSourcePlugins.Single(), "DirectoriesToWatch"),
-                                            Extensions = GetPluginSetting((IMGPluginBase) FileSourcePlugins.Single(), "Extensions")
+                                            DirectoriesToWatch = fileSourceSettings.GetSetting("DirectoriesToWatch").GetValueAsString(),
+                                            Extensions = fileSourceSettings.GetSetting("Extensions").GetValueAsString()
                                         };
         }
 
         public void SetCreationArguments(DataStoreBuilder args) {
             Name = args.Name;
             Description = args.Description;
-            SetPluginSetting((IMGPluginBase) FileSourcePlugins.Single(), "DirectoriesToWatch", args.DirectoriesToWatch);
-            SetPluginSetting((IMGPluginBase) FileSourcePlugins.Single(), "Extensions", args.Extensions);
+            var fileSourceSettings = SettingInfoCollection.GetSettings((IMGPluginBase)FileSourcePlugins.Single());
+            fileSourceSettings.GetSetting("DirectoriesToWatch").SetValueAsString(args.DirectoriesToWatch);
+            fileSourceSettings.GetSetting("Extensions").SetValueAsString(args.Extensions);
         }
 
         #endregion
@@ -302,9 +304,9 @@ namespace MetaGeta.DataStore {
             foreach (SettingInfo setting in SettingInfoCollection.GetSettings(plugin)) {
                 if (firstRun) {
                     setting.Value = setting.Metadata.DefaultValue;
-                    SetPluginSetting(plugin, setting.SettingName, setting.GetDefaultValueAsString());
+                    m_DataMapper.WritePluginSetting(this, plugin.PluginID, setting.SettingName, setting.GetDefaultValueAsString());
                 } else
-                    setting.SetValueAsString(GetPluginSetting(plugin, setting.SettingName));
+                    setting.SetValueAsString(m_DataMapper.GetPluginSetting(this, plugin.PluginID, setting.SettingName));
             }
             plugin.SettingChanged += Plugin_SettingChanged;
 
@@ -336,13 +338,6 @@ namespace MetaGeta.DataStore {
             }
         }
 
-        private IEnumerable<MGFile> ImportQueue {
-            get {
-                if (m_ImportQueueCache == null || m_ImportQueueCache.Count == 0)
-                    m_ImportQueueCache = new ReadOnlyCollection<MGFile>(Files.Where(f => !bool.Parse(f.GetTag("ImportComplete").Coalesce("False"))).ToArray());
-                return m_ImportQueueCache;
-            }
-        }
 
         /// <summary>
         /// Starts an asynchronous refresh and import from all FileSourcePlugins.
@@ -403,8 +398,7 @@ namespace MetaGeta.DataStore {
         }
 
         private void ImportNewFile(MGFile newfile, Uri filePath) {
-            newfile.SetTag(MGFile.FileNameKey, filePath.AbsoluteUri);
-            newfile.SetTag("ImportComplete", false.ToString());
+            newfile.Tags.Set(MGFile.FileNameKey, filePath.AbsoluteUri);
 
             log.DebugFormat("Importing file: {0}....", filePath);
 
@@ -426,15 +420,7 @@ namespace MetaGeta.DataStore {
         public void Plugin_SettingChanged(object sender, PropertyChangedEventArgs e) {
             var plugin = (IMGPluginBase) sender;
             string value = SettingInfoCollection.GetSettings(plugin).GetSetting(e.PropertyName).GetValueAsString();
-            SetPluginSetting(plugin, e.PropertyName, value);
-        }
-
-        public string GetPluginSetting(IMGPluginBase plugin, string settingName) {
-            return m_DataMapper.GetPluginSetting(this, plugin.PluginID, settingName);
-        }
-
-        public void SetPluginSetting(IMGPluginBase plugin, string settingName, string settingValue) {
-            m_DataMapper.WritePluginSetting(this, plugin.PluginID, settingName, settingValue);
+            m_DataMapper.WritePluginSetting(this, plugin.PluginID, e.PropertyName, value);
         }
 
         #endregion

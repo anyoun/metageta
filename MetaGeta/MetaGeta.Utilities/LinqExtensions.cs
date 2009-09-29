@@ -133,6 +133,14 @@ namespace MetaGeta.Utilities {
             return null;
         }
 
+        public static T Coalesce<T>(this IEnumerable<T?> collection) where T : struct {
+            foreach (T? item in collection) {
+                if (item.HasValue)
+                    return item.Value;
+            }
+            return default(T);
+        }
+
         public static T Coalesce<T>(this T item, params T[] rest) where T : class {
             return item ?? Coalesce((IEnumerable<T>) rest);
         }

@@ -91,6 +91,10 @@
       <HintPath>..\..\log4net\log4net.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="nunit.framework, Version=2.5.2.9222, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\nunit\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -112,11 +116,14 @@
     <Compile Include="Database\DataMapper.cs" />
     <Compile Include="Database\IDataMapper.cs" />
     <Compile Include="Database\MockDataMapper.cs" />
+    <Compile Include="Database\TagCollectionPersistenceTest.cs" />
+    <Compile Include="Database\TagCollectionPersister.cs" />
     <Compile Include="DataStore\DataStore.cs" />
     <Compile Include="DataStore\DataStoreBuilder.cs" />
     <Compile Include="DataStore\DataStoreManager.cs" />
     <Compile Include="DataStore\IDataStoreOwner.cs" />
     <Compile Include="DataStore\ProgressStatus.cs" />
+    <Compile Include="DataStore\SQLiteDataTypeTest.cs" />
     <Compile Include="FileProgress.cs" />
     <Compile Include="GlobalSettings\GlobalSetting.cs" />
     <Compile Include="IProgressReporter.cs" />
@@ -126,6 +133,7 @@
     <Compile Include="Model\FileSet.cs" />
     <Compile Include="Model\Tag.cs" />
     <Compile Include="Model\TagCollection.cs" />
+    <Compile Include="Model\TagCollectionTest.cs" />
     <Compile Include="My Project\AssemblyInfo.cs" />
     <Compile Include="Plugins\FileInfoTaggingPlugin.cs" />
     <Compile Include="Plugins\IMGFileActionPlugin.cs" />

@@ -87,20 +87,20 @@ namespace MetaGeta.TVDBPlugin {
                 return;
             TvdbSeries series = GetSeries(seriesID.Value);
 
-            file.SetTag(TVShowDataStoreTemplate.SeriesDescription, series.Overview);
+            file.Tags.Set(TVShowDataStoreTemplate.SeriesDescription, series.Overview);
 
-            file.SetTag(TVShowDataStoreTemplate.SeriesBanner, LoadBannerToPath(series.SeriesBanners.FirstOrDefault()));
-            file.SetTag(TVShowDataStoreTemplate.SeriesPoster, LoadBannerToPath(series.PosterBanners.FirstOrDefault()));
+            file.Tags.Set(TVShowDataStoreTemplate.SeriesBanner, LoadBannerToPath(series.SeriesBanners.FirstOrDefault()));
+            file.Tags.Set(TVShowDataStoreTemplate.SeriesPoster, LoadBannerToPath(series.PosterBanners.FirstOrDefault()));
 
             TvdbEpisode exactEpisode = GetEpisode(series, file);
 
             if (exactEpisode != null) {
-                file.SetTag(TVShowDataStoreTemplate.EpisodeTitle, exactEpisode.EpisodeName);
-                file.SetTag(TVShowDataStoreTemplate.EpisodeDescription, exactEpisode.Overview);
-                file.SetTag(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id.ToString());
-                file.SetTag(TVShowDataStoreTemplate.EpisodeFirstAired, exactEpisode.FirstAired.ToUniversalTime().ToString("u"));
+                file.Tags.Set(TVShowDataStoreTemplate.EpisodeTitle, exactEpisode.EpisodeName);
+                file.Tags.Set(TVShowDataStoreTemplate.EpisodeDescription, exactEpisode.Overview);
+                file.Tags.Set(TVShowDataStoreTemplate.EpisodeID, exactEpisode.Id);
+                file.Tags.Set(TVShowDataStoreTemplate.EpisodeFirstAired, exactEpisode.FirstAired);
 
-                file.SetTag(TVShowDataStoreTemplate.EpisodeBanner, LoadBannerToPath(exactEpisode.Banner));
+                file.Tags.Set(TVShowDataStoreTemplate.EpisodeBanner, LoadBannerToPath(exactEpisode.Banner));
             }
         }
 
@@ -129,10 +129,10 @@ namespace MetaGeta.TVDBPlugin {
         }
 
         private int? GetSeriesID(MGFile file) {
-            if (file.GetTag(TVShowDataStoreTemplate.SeriesID) != null)
-                return int.Parse(file.GetTag(TVShowDataStoreTemplate.SeriesID));
+            if (file.Tags.GetInt(TVShowDataStoreTemplate.SeriesID).HasValue)
+                return file.Tags.GetInt(TVShowDataStoreTemplate.SeriesID);
 
-            string seriesName = file.GetTag(TVShowDataStoreTemplate.SeriesTitle);
+            string seriesName = file.Tags.GetString(TVShowDataStoreTemplate.SeriesTitle);
 
             if (seriesName == null)
                 return null;
@@ -161,7 +161,7 @@ namespace MetaGeta.TVDBPlugin {
                 m_SeriesNameDictionary.Add(seriesName, seriesID);
             }
             if (seriesID.HasValue) {
-                file.SetTag(TVShowDataStoreTemplate.SeriesID, seriesID.Value.ToString());
+                file.Tags.Set(TVShowDataStoreTemplate.SeriesID, seriesID.Value);
                 return seriesID.Value;
             } else
                 return null;
@@ -175,8 +175,8 @@ namespace MetaGeta.TVDBPlugin {
         }
 
         private TvdbEpisode GetEpisode(TvdbSeries series, MGFile file) {
-            int seasonNumber = int.Parse(file.GetTag(TVShowDataStoreTemplate.SeasonNumber));
-            int episodeNumber = int.Parse(file.GetTag(TVShowDataStoreTemplate.EpisodeNumber));
+            int seasonNumber = file.Tags.GetInt(TVShowDataStoreTemplate.SeasonNumber).Value;
+            int episodeNumber = file.Tags.GetInt(TVShowDataStoreTemplate.EpisodeNumber).Value;
             TvdbEpisode ep = null;
             try {
                 ep = series.Episodes.Find(episode => episode.EpisodeNumber == episodeNumber && episode.SeasonNumber == seasonNumber);

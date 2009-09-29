@@ -72,7 +72,7 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
         public ICollection<Uri> GetFilesToAdd() {
             var fileNameToFileDict = new Dictionary<string, MGFile>();
             foreach (var t in m_DataStore.GetAllTagOnFiles(MGFile.FileNameKey))
-                fileNameToFileDict[new Uri(t.First.Value).LocalPath] = t.Second;
+                fileNameToFileDict[new Uri((string)t.First.Value).LocalPath] = t.Second;
 
             var newFiles = new List<Uri>();
 

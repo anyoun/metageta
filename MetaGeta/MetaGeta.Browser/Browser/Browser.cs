@@ -48,7 +48,7 @@ namespace MetaGeta.Browser {
         }
 
         public string CurrentLocation {
-            get { return (from t in m_CurrentLocation select t.Value).JoinToString(" } "); }
+            get { return (from t in m_CurrentLocation select t.Value.ToString()).JoinToString(" } "); }
         }
 
         private string NextTagName {

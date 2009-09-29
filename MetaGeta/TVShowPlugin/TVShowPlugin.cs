@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using log4net;
@@ -28,51 +29,41 @@ using MetaGeta.DataStore;
 
 #endregion
 
-namespace MetaGeta.TVShowPlugin
-{
+namespace MetaGeta.TVShowPlugin {
     [Serializable]
-    public class EducatedGuessImporter : IMGTaggingPlugin, IMGPluginBase
-    {
+    public class EducatedGuessImporter : IMGTaggingPlugin, IMGPluginBase {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private MGDataStore m_DataStore;
 
         private long m_ID;
 
-        public long ID
-        {
+        public long ID {
             get { return m_ID; }
         }
 
         #region IMGPluginBase Members
 
-        long IMGPluginBase.PluginID
-        {
+        long IMGPluginBase.PluginID {
             get { return ID; }
         }
 
 
-        public void Startup(MGDataStore dataStore, long id)
-        {
+        public void Startup(MGDataStore dataStore, long id) {
             m_DataStore = dataStore;
         }
 
 
-        public void Shutdown()
-        {
-        }
+        public void Shutdown() {}
 
-        public string FriendlyName
-        {
+        public string FriendlyName {
             get { return "Educated Guess TV Show Importer"; }
         }
 
-        public string UniqueName
-        {
+        public string UniqueName {
             get { return "EducatedGuessTVShowImporter"; }
         }
 
-        public Version Version
-        {
+        public Version Version {
             get { return new Version(1, 0, 0, 0); }
         }
 
@@ -82,19 +73,12 @@ namespace MetaGeta.TVShowPlugin
 
         #region "From http://www.merriampark.com/ld.htm"
 
-        private int Minimum(int a, int b, int c)
-        {
+        private int Minimum(int a, int b, int c) {
             int mi = 0;
 
             mi = a;
-            if (b < mi)
-            {
-                mi = b;
-            }
-            if (c < mi)
-            {
-                mi = c;
-            }
+            if (b < mi) mi = b;
+            if (c < mi) mi = c;
 
             return mi;
         }
@@ -103,8 +87,7 @@ namespace MetaGeta.TVShowPlugin
         //*** Compute Levenshtein Distance
         //********************************
 
-        public int LD(string s, string t)
-        {
+        public int LD(string s, string t) {
             int m = 0;
             // length of t
             int n = 0;
@@ -123,43 +106,23 @@ namespace MetaGeta.TVShowPlugin
             // Step 1
             n = s.Length;
             m = t.Length;
-            if (n == 0)
-            {
-                return m;
-            }
-            if (m == 0)
-            {
-                return n;
-            }
+            if (n == 0) return m;
+            if (m == 0) return n;
             //ReDim d(0 To n, 0 To m) As Integer
             var d = new int[n + 1,m + 1];
             // matrix
             // Step 2
-            for (i = 0; i <= n; i++)
-            {
-                d[i, 0] = i;
-            }
-            for (j = 0; j <= m; j++)
-            {
-                d[0, j] = j;
-            }
+            for (i = 0; i <= n; i++) d[i, 0] = i;
+            for (j = 0; j <= m; j++) d[0, j] = j;
             // Step 3
-            for (i = 1; i <= n; i++)
-            {
+            for (i = 1; i <= n; i++) {
                 s_i = s.Substring(i, 1);
                 // Step 4
-                for (j = 1; j <= m; j++)
-                {
+                for (j = 1; j <= m; j++) {
                     t_j = t.Substring(j, 1);
                     // Step 5
-                    if (s_i == t_j)
-                    {
-                        cost = 0;
-                    }
-                    else
-                    {
-                        cost = 1;
-                    }
+                    if (s_i == t_j) cost = 0;
+                    else cost = 1;
                     // Step 6
                     d[i, j] = Minimum(d[i - 1, j] + 1, d[i, j - 1] + 1, d[i - 1, j - 1] + cost);
                 }
@@ -172,13 +135,12 @@ namespace MetaGeta.TVShowPlugin
 
         #region IMGTaggingPlugin Members
 
-        public void Process(MGFile file, ProgressStatus reporter)
-        {
+        public void Process(MGFile file, ProgressStatus reporter) {
             string s = null;
             bool gotSeriesTitle = false;
             int longestBracketedPhrase = 0;
 
-            var tags = new Dictionary<string, string>();
+            var tags = new Dictionary<string, object>();
 
             string fullPath = file.FileName;
             string fileName = Path.GetFileNameWithoutExtension(fullPath);
@@ -190,8 +152,7 @@ namespace MetaGeta.TVShowPlugin
             //recognize "ep", "episode", etc
 
             //turn all underscores, periods, etc into spaces
-            foreach (string s_loopVariable in c_StringsToConvertToSpaces)
-            {
+            foreach (string s_loopVariable in c_StringsToConvertToSpaces) {
                 s = s_loopVariable;
                 fileName = fileName.Replace(s, " ");
             }
@@ -201,21 +162,18 @@ namespace MetaGeta.TVShowPlugin
 
             //idetify CRC32
             bool IsHex = true;
-            foreach (string s_loopVariable in brcktPhrases)
-            {
+            foreach (string s_loopVariable in brcktPhrases) {
                 s = s_loopVariable;
-                if (isCRC32(ref s))
-                {
+                if (isCRC32(ref s)) {
                     tags[TVShowDataStoreTemplate.CRC32] = s;
                     brcktPhrases.Remove(s);
-                    break; // TODO: might not be correct. Was : Exit For
+                    break;
                 }
             }
 
             //idetify encoder:
             longestBracketedPhrase = getLongest(ref brcktPhrases);
-            if (!(longestBracketedPhrase == -1))
-            {
+            if (!(longestBracketedPhrase == -1)) {
                 brcktPhrases[longestBracketedPhrase] = brcktPhrases[longestBracketedPhrase].Trim(' ');
                 //info.encoder = brcktPhrases(longestStart)
                 //Debug.WriteLine("Found Encoder: " & brcktPhrases(longestBracketedPhrase))
@@ -223,18 +181,14 @@ namespace MetaGeta.TVShowPlugin
             }
 
             //now, find aliases before breaking apart into phrases
-            for (int i = 0; i <= c_AliasFrom.Length - 1; i++)
-            {
+            for (int i = 0; i <= c_AliasFrom.Length - 1; i++) {
                 //regular aliasing
-                if (!string.IsNullOrEmpty(c_AliasFrom[i]) && c_AliasFrom[i] != " " && fileName.IndexOf(c_AliasFrom[i]) != -1)
-                {
+                if (!string.IsNullOrEmpty(c_AliasFrom[i]) && c_AliasFrom[i] != " " && fileName.IndexOf(c_AliasFrom[i]) != -1) {
                     fileName = fileName.Remove(fileName.IndexOf(c_AliasFrom[i]), c_AliasFrom[i].Length);
                     tags["SeriesTitle"] = c_AliasTo[i];
                     gotSeriesTitle = true;
                     //help for shows like 24
-                }
-                else if (fileName.IndexOf(c_AliasTo[i]) != -1)
-                {
+                } else if (fileName.IndexOf(c_AliasTo[i]) != -1) {
                     fileName = fileName.Remove(fileName.IndexOf(c_AliasTo[i]), c_AliasTo[i].Length);
                     tags["SeriesTitle"] = c_AliasTo[i];
                     gotSeriesTitle = true;
@@ -249,9 +203,11 @@ namespace MetaGeta.TVShowPlugin
             processPhrases(phrases, tags, gotSeriesTitle);
 
 
-            foreach (KeyValuePair<string, string> tag in tags)
-            {
-                file.SetTag(tag.Key, tag.Value);
+            foreach (KeyValuePair<string, object> tag in tags) {
+                if (tag.Value is int)
+                    file.Tags.Set(tag.Key, (int) tag.Value);
+                else
+                    file.Tags.Set(tag.Key, (string) tag.Value);
             }
         }
 
@@ -272,15 +228,13 @@ namespace MetaGeta.TVShowPlugin
         private static readonly string[] c_IgnoredStrings = {
                                                                 "divx",
                                                                 "x264",
-                                                                "X264",
-                                                                "h264",
                                                                 "H264",
                                                                 "264",
-                                                                "hdtv",
                                                                 "HDTV",
                                                                 "1280x720",
                                                                 "720p",
-                                                                "1080p"
+                                                                "1080p",
+                                                                "oav"
                                                             };
 
         private static readonly string[] c_StringsToConvertToSpaces = {
@@ -293,8 +247,7 @@ namespace MetaGeta.TVShowPlugin
 
         #endregion
 
-        private void processPhrases(List<Phrase> phrases, Dictionary<string, string> tags, bool foundSeriesTitle)
-        {
+        private void processPhrases(List<Phrase> phrases, Dictionary<string, object> tags, bool foundSeriesTitle) {
             //Capitalization no longer matters for magic words
             string[] episodeWords = {
                                         "e",
@@ -337,28 +290,19 @@ namespace MetaGeta.TVShowPlugin
             //Dim foundSeriesTitle As Boolean = False
 
             //For x = 0 To ph.Count - 1
-            foreach (Phrase p in phrases)
-            {
-                if (p is NumberPhrase)
-                {
+            foreach (Phrase p in phrases) {
+                if (p is NumberPhrase) {
                     var np = (NumberPhrase) p;
-                    if (justFoundEpWord)
-                    {
-                        tags[TVShowDataStoreTemplate.EpisodeNumber] = np.Value.ToString();
+                    if (justFoundEpWord) {
+                        tags[TVShowDataStoreTemplate.EpisodeNumber] = np.Value;
                         foundEp = true;
-                    }
-                    else if (justFoundSeWord)
-                    {
-                        tags[TVShowDataStoreTemplate.SeasonNumber] = np.Value.ToString();
+                    } else if (justFoundSeWord) {
+                        tags[TVShowDataStoreTemplate.SeasonNumber] = np.Value;
                         foundSe = true;
-                    }
-                    else if (justFoundPaWord)
-                    {
-                        tags[TVShowDataStoreTemplate.PartNumber] = np.Value.ToString();
+                    } else if (justFoundPaWord) {
+                        tags[TVShowDataStoreTemplate.PartNumber] = np.Value;
                         foundPa = true;
-                    }
-                    else if (justFoundVerWord)
-                    {
+                    } else if (justFoundVerWord) {
                         //Ignore version for now
                         foundVer = true;
                         countOfNumbers -= 1;
@@ -372,37 +316,27 @@ namespace MetaGeta.TVShowPlugin
                     justFoundSeWord = false;
                     justFoundPaWord = false;
                     justFoundVerWord = false;
-                    if (!foundPa & countOfNumbers > 2)
-                    {
-                        tags[TVShowDataStoreTemplate.PartNumber] = np.Value.ToString();
+                    if (!foundPa & countOfNumbers > 2) {
+                        tags[TVShowDataStoreTemplate.PartNumber] = np.Value;
                         foundPa = true;
-                    }
-                    else if (!foundSe & !foundPa & countOfNumbers > 1)
-                    {
+                    } else if (!foundSe & !foundPa & countOfNumbers > 1) {
                         tags[TVShowDataStoreTemplate.SeasonNumber] = tags[TVShowDataStoreTemplate.EpisodeNumber];
                         foundSe = true;
-                        tags[TVShowDataStoreTemplate.EpisodeNumber] = np.Value.ToString();
+                        tags[TVShowDataStoreTemplate.EpisodeNumber] = np.Value;
                         foundEp = true;
-                    }
-                    else if (!foundEp & countOfNumbers == 1)
-                    {
-                        if (np.Value > 100)
-                        {
+                    } else if (!foundEp & countOfNumbers == 1) {
+                        if (np.Value > 100) {
                             //probably be season then ep number concatted
-                            tags[TVShowDataStoreTemplate.EpisodeNumber] = (np.Value%100).ToString();
+                            tags[TVShowDataStoreTemplate.EpisodeNumber] = np.Value % 100;
                             foundEp = true;
-                            tags[TVShowDataStoreTemplate.SeasonNumber] = (np.Value/100).ToString();
+                            tags[TVShowDataStoreTemplate.SeasonNumber] = np.Value / 100;
                             foundSe = true;
-                        }
-                        else
-                        {
-                            tags[TVShowDataStoreTemplate.EpisodeNumber] = np.Value.ToString();
+                        } else {
+                            tags[TVShowDataStoreTemplate.EpisodeNumber] = np.Value;
                             foundEp = true;
                         }
                     }
-                }
-                else if (p is LetterPhrase)
-                {
+                } else if (p is LetterPhrase) {
                     //Debug.Write(ph(x) & "!")
                     var lp = (LetterPhrase) p;
 
@@ -411,64 +345,47 @@ namespace MetaGeta.TVShowPlugin
                     justFoundPaWord = false;
                     justFoundVerWord = false;
 
-                    foreach (string s_loopVariable in episodeWords)
-                    {
+                    foreach (string s_loopVariable in episodeWords) {
                         s = s_loopVariable;
-                        if (string.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase))
-                        {
+                        if (string.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase)) {
                             justFoundEpWord = true;
                             gettingSeTi = false;
                             gettingEpTi = false;
                         }
                     }
-                    foreach (string s_loopVariable in seasonWords)
-                    {
+                    foreach (string s_loopVariable in seasonWords) {
                         s = s_loopVariable;
-                        if (string.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase))
-                        {
+                        if (string.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase)) {
                             justFoundSeWord = true;
                             gettingSeTi = false;
                             gettingEpTi = false;
                         }
                     }
-                    foreach (string s_loopVariable in partWords)
-                    {
+                    foreach (string s_loopVariable in partWords) {
                         s = s_loopVariable;
-                        if (string.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase))
-                        {
+                        if (string.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase)) {
                             justFoundPaWord = true;
                             gettingSeTi = false;
                             gettingEpTi = false;
                         }
                     }
-                    foreach (string s_loopVariable in versionWords)
-                    {
+                    foreach (string s_loopVariable in versionWords) {
                         s = s_loopVariable;
-                        if (string.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase))
-                        {
+                        if (string.Equals(lp.Value, s, StringComparison.CurrentCultureIgnoreCase)) {
                             justFoundVerWord = true;
                             gettingSeTi = false;
                             gettingEpTi = false;
                         }
                     }
 
-                    if (gettingSeTi)
-                    {
-                        tags[TVShowDataStoreTemplate.SeriesTitle] = tags[TVShowDataStoreTemplate.SeriesTitle] + " " + lp.Value;
-                    }
-                    else if (gettingEpTi)
-                    {
-                        tags[TVShowDataStoreTemplate.EpisodeTitle] = tags[TVShowDataStoreTemplate.EpisodeTitle] + " " + lp.Value;
-                    }
-                    else if (countOfWords == 0 & !justFoundSeWord & !justFoundEpWord & !justFoundPaWord & !justFoundVerWord)
-                    {
+                    if (gettingSeTi) tags[TVShowDataStoreTemplate.SeriesTitle] = tags[TVShowDataStoreTemplate.SeriesTitle] + " " + lp.Value;
+                    else if (gettingEpTi) tags[TVShowDataStoreTemplate.EpisodeTitle] = tags[TVShowDataStoreTemplate.EpisodeTitle] + " " + lp.Value;
+                    else if (countOfWords == 0 & !justFoundSeWord & !justFoundEpWord & !justFoundPaWord & !justFoundVerWord) {
                         //Debug.WriteLine("SeriesTitle=" & ph(x))
                         tags[TVShowDataStoreTemplate.SeriesTitle] = lp.Value;
                         foundSeriesTitle = true;
                         gettingSeTi = true;
-                    }
-                    else if (countOfWords > 0 & !justFoundSeWord & !justFoundEpWord & !justFoundPaWord & !justFoundVerWord)
-                    {
+                    } else if (countOfWords > 0 & !justFoundSeWord & !justFoundEpWord & !justFoundPaWord & !justFoundVerWord) {
                         //Debug.WriteLine("EpisodeTitle=" & ph(x))
                         tags[TVShowDataStoreTemplate.EpisodeTitle] = lp.Value;
                         gettingEpTi = true;
@@ -476,9 +393,7 @@ namespace MetaGeta.TVShowPlugin
 
                     countOfWords += 1;
                     //must be some other type - which means a break (bool to mark end of phrases)
-                }
-                else
-                {
+                } else {
                     //Debug.Write("*")
                     gettingSeTi = false;
                     gettingEpTi = false;
@@ -487,94 +402,69 @@ namespace MetaGeta.TVShowPlugin
             //stepping through ph with x
             //Debug.Write(ControlChars.NewLine)
 
-            if (foundEp & !foundSe)
-            {
+            if (foundEp & !foundSe) {
                 //Default to season = 1
-                tags[TVShowDataStoreTemplate.SeasonNumber] = 1.ToString();
+                tags[TVShowDataStoreTemplate.SeasonNumber] = 1;
             }
 
             if (foundEp & !tags.ContainsKey(TVShowDataStoreTemplate.EpisodeTitle))
-            {
                 tags[TVShowDataStoreTemplate.EpisodeTitle] = string.Format("Episode {0}", tags[TVShowDataStoreTemplate.EpisodeNumber]);
-            }
         }
 
 
-        private List<Phrase> getNumberAndWordPhrases(string input)
-        {
-            foreach (string ignoredString in c_IgnoredStrings)
-            {
-                input = input.Replace(ignoredString, string.Empty);
-            }
+        private List<Phrase> getNumberAndWordPhrases(string input) {
+            //foreach (string ignoredString in c_IgnoredStrings)
+            //{
+            //    input = input.Replace(ignoredString, string.Empty);
+            //}
 
             var phrases = new List<Phrase>();
             Phrase currPhrase = new NothingPhrase();
 
-            foreach (char ch in input)
-            {
-                if (isItLetter(ch))
-                {
-                    if (currPhrase is LetterPhrase)
-                    {
+            foreach (char ch in input) {
+                if (isItLetter(ch)) {
+                    if (currPhrase is LetterPhrase) {
                         //continuing current letter phrase
                         //Add it to the end
                         ((LetterPhrase) currPhrase).Contents.Add(ch);
-                    }
-                    else if (currPhrase is NumberPhrase)
-                    {
+                    } else if (currPhrase is NumberPhrase) {
                         //finished that number
                         phrases.Add(currPhrase);
                         //start new letter phrase
                         currPhrase = new LetterPhrase();
                         ((LetterPhrase) currPhrase).Contents.Add(ch);
-                    }
-                    else if (currPhrase is NothingPhrase)
-                    {
+                    } else if (currPhrase is NothingPhrase) {
                         //just starting a phrase
                         currPhrase = new LetterPhrase();
                         ((LetterPhrase) currPhrase).Contents.Add(ch);
                     }
-                }
-                else if (isItNumber(ch))
-                {
-                    if (currPhrase is LetterPhrase)
-                    {
+                } else if (isItNumber(ch)) {
+                    if (currPhrase is LetterPhrase) {
                         //ending current letter phrase
                         phrases.Add(currPhrase);
                         //start new number phrase
                         currPhrase = new NumberPhrase();
                         ((NumberPhrase) currPhrase).Contents.Add(ch);
-                    }
-                    else if (currPhrase is NumberPhrase)
-                    {
+                    } else if (currPhrase is NumberPhrase) {
                         //continuing that number
                         ((NumberPhrase) currPhrase).Contents.Add(ch);
-                    }
-                    else if (currPhrase is NothingPhrase)
-                    {
+                    } else if (currPhrase is NothingPhrase) {
                         //just starting a phrase
                         currPhrase = new NumberPhrase();
                         ((NumberPhrase) currPhrase).Contents.Add(ch);
                     }
 
                     //must be a phrase delimiter or just a space...
-                }
-                else
-                {
-                    if (currPhrase is LetterPhrase)
-                    {
+                } else {
+                    if (currPhrase is LetterPhrase) {
                         //ending current letter phrase
                         phrases.Add(currPhrase);
                         currPhrase = new NothingPhrase();
-                    }
-                    else if (currPhrase is NumberPhrase)
-                    {
+                    } else if (currPhrase is NumberPhrase) {
                         //finished that number
                         phrases.Add(currPhrase);
                         currPhrase = new NothingPhrase();
-                    }
-                    else if (currPhrase is NothingPhrase)
-                    {
+                    } else if (currPhrase is NothingPhrase) {
                         //just starting a phrase
                     }
 
@@ -591,28 +481,22 @@ namespace MetaGeta.TVShowPlugin
             var sb = new StringBuilder();
             sb.Append(input);
             sb.Append(" -> ");
-            foreach (Phrase p in phrases)
-            {
-                if (p is NumberPhrase)
-                {
-                    sb.Append(((NumberPhrase) p).Value + "#");
-                }
-                if (p is LetterPhrase)
-                {
-                    sb.Append(((LetterPhrase) p).Value + "!");
-                }
-                if (p is NothingPhrase)
-                {
-                    sb.Append("*");
-                }
+            foreach (Phrase p in phrases) {
+                if (p is NumberPhrase) sb.Append(((NumberPhrase) p).Value + "#");
+                if (p is LetterPhrase) sb.Append(((LetterPhrase) p).Value + "!");
+                if (p is NothingPhrase) sb.Append("*");
             }
             log.DebugFormat(sb.ToString());
+
+            phrases.RemoveAll(p => p is LetterPhrase
+                                   && c_IgnoredStrings.Any(s => string.Equals(((LetterPhrase) p).Value,
+                                                                              s,
+                                                                              StringComparison.InvariantCultureIgnoreCase)));
 
             return phrases;
         }
 
-        private List<string> getBracketedPhrases(ref string input)
-        {
+        private List<string> getBracketedPhrases(ref string input) {
             //***will also remove stuff in brackets***
             //find anything in square brackets and put them into a temp array
             //then find the one with the most letters, and that's the encoder
@@ -625,31 +509,21 @@ namespace MetaGeta.TVShowPlugin
             var brcktPhrases = new List<string>();
             string s = null;
 
-            for (y = 0; y <= 19; y++)
-            {
-                intBrackets[y] = -1;
-            }
+            for (y = 0; y <= 19; y++) intBrackets[y] = -1;
 
-            do
-            {
+            do {
                 //Debug.WriteLine(CStr(x))
                 intBrackets[x] = input.IndexOf("[", intBrackets[x - 2] + 1);
-                if (intBrackets[x] < 0)
-                {
+                if (intBrackets[x] < 0) {
                     intBrackets[x] = 0;
                     break; // TODO: might not be correct. Was : Exit Do
-                }
-                else
-                {
+                } else {
                     intBrackets[x + 1] = input.IndexOf("]", intBrackets[x]);
-                    if (intBrackets[x + 1] == -1)
-                    {
+                    if (intBrackets[x + 1] == -1) {
                         intBrackets[x] = 0;
                         intBrackets[x + 1] = 0;
                         break; // TODO: might not be correct. Was : Exit Do
-                    }
-                    else
-                    {
+                    } else {
                         intBrackets[x + 1] = intBrackets[x + 1] - intBrackets[x] - 1;
                         x = x + 2;
                     }
@@ -657,18 +531,10 @@ namespace MetaGeta.TVShowPlugin
             } while (true);
 
             //put things btw brackets into the array of strings
-            if (!(x == 2))
-            {
-                for (y = 2; y <= x - 2; y += 2)
-                {
-                    for (z = 0; z <= 50; z++)
-                    {
-                        tChars[z] = ' ';
-                    }
-                    for (z = intBrackets[y] + 1; z <= intBrackets[y + 1] + intBrackets[y]; z++)
-                    {
-                        tChars[z - intBrackets[y] - 1] = input[z];
-                    }
+            if (!(x == 2)) {
+                for (y = 2; y <= x - 2; y += 2) {
+                    for (z = 0; z <= 50; z++) tChars[z] = ' ';
+                    for (z = intBrackets[y] + 1; z <= intBrackets[y + 1] + intBrackets[y]; z++) tChars[z - intBrackets[y] - 1] = input[z];
                     //MsgBox(strTemp & Chr(13) & tChars)
                     //tChars(49) = tChars(0)
                     //brcktPhrases(y / 2 - 1) = tChars
@@ -677,8 +543,7 @@ namespace MetaGeta.TVShowPlugin
                     s = s.TrimEnd(' ');
                     brcktPhrases.Add(s);
                 }
-                for (y = x - 2; y >= 2; y += -2)
-                {
+                for (y = x - 2; y >= 2; y += -2) {
                     input = input.Remove(intBrackets[y], intBrackets[y + 1] + 2);
                     input = input.Insert(intBrackets[y], "-");
                 }
@@ -691,16 +556,13 @@ namespace MetaGeta.TVShowPlugin
             return new List<string>();
         }
 
-        private int getLongest(ref List<string> myArray)
-        {
+        private int getLongest(ref List<string> myArray) {
             int longestStart = -1;
             int longestLen = 0;
             int y = 0;
 
-            for (y = 0; y <= myArray.Count - 1; y++)
-            {
-                if (myArray[y].Length > longestLen)
-                {
+            for (y = 0; y <= myArray.Count - 1; y++) {
+                if (myArray[y].Length > longestLen) {
                     longestLen = myArray[y].Length;
                     longestStart = y;
                 }
@@ -709,10 +571,8 @@ namespace MetaGeta.TVShowPlugin
             return longestStart;
         }
 
-        private bool isItHex(char theChar)
-        {
-            switch (theChar)
-            {
+        private bool isItHex(char theChar) {
+            switch (theChar) {
                 case '1':
                 case '2':
                 case '3':
@@ -741,38 +601,20 @@ namespace MetaGeta.TVShowPlugin
             }
         }
 
-        private bool isCRC32(ref string phrase)
-        {
-            if (phrase.Length != 8)
-            {
-                return false;
-            }
+        private bool isCRC32(ref string phrase) {
+            if (phrase.Length != 8) return false;
             int i = 0;
-            for (i = 0; i <= phrase.Length - 1; i++)
-            {
-                if (!isItHex(phrase[i]))
-                {
-                    return false;
-                }
-            }
+            for (i = 0; i <= phrase.Length - 1; i++) if (!isItHex(phrase[i])) return false;
             return true;
         }
 
-        private bool isItNumber(char thechar)
-        {
-            if (char.IsDigit(thechar))
-            {
-                return true;
-            }
+        private bool isItNumber(char thechar) {
+            if (char.IsDigit(thechar)) return true;
             return false;
         }
 
-        private bool isItLetter(char thechar)
-        {
-            if (char.IsLetter(thechar) | thechar == '\'')
-            {
-                return true;
-            }
+        private bool isItLetter(char thechar) {
+            if (char.IsLetter(thechar) | thechar == '\'') return true;
             return false;
         }
 
@@ -780,17 +622,14 @@ namespace MetaGeta.TVShowPlugin
 
         #region Nested type: LetterPhrase
 
-        private class LetterPhrase : Phrase
-        {
+        private class LetterPhrase : Phrase {
             private readonly List<char> mContents = new List<char>();
 
-            public string Value
-            {
+            public string Value {
                 get { return new string(mContents.ToArray()); }
             }
 
-            public List<char> Contents
-            {
+            public List<char> Contents {
                 get { return mContents; }
             }
         }
@@ -799,8 +638,7 @@ namespace MetaGeta.TVShowPlugin
 
         #region Nested type: NothingPhrase
 
-        private class NothingPhrase : Phrase
-        {
+        private class NothingPhrase : Phrase {
             //no contents
         }
 
@@ -808,28 +646,18 @@ namespace MetaGeta.TVShowPlugin
 
         #region Nested type: NumberPhrase
 
-        private class NumberPhrase : Phrase
-        {
+        private class NumberPhrase : Phrase {
             private readonly List<char> mContents = new List<char>();
 
-            public int Value
-            {
-                get
-                {
+            public int Value {
+                get {
                     int x = 0;
-                    if (int.TryParse(new string(mContents.ToArray()), out x))
-                    {
-                        return x;
-                    }
-                    else
-                    {
-                        return 0;
-                    }
+                    if (int.TryParse(new string(mContents.ToArray()), out x)) return x;
+                    else return 0;
                 }
             }
 
-            public List<char> Contents
-            {
+            public List<char> Contents {
                 get { return mContents; }
             }
         }
@@ -838,8 +666,7 @@ namespace MetaGeta.TVShowPlugin
 
         #region Nested type: Phrase
 
-        private class Phrase
-        {
+        private class Phrase {
             //nothing here
         }
 

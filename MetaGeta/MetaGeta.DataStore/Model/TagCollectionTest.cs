@@ -1,4 +1,4 @@
-// Copyright 2009 Will Thomas
+﻿// Copyright 2009 Will Thomas
 // 
 // This file is part of MetaGeta.
 // 
@@ -18,26 +18,24 @@
 #region
 
 using System;
-using System.Globalization;
-using System.Windows.Data;
-using MetaGeta.DataStore;
+using NUnit.Framework;
 
 #endregion
 
-namespace MetaGeta.GUI {
-    [ValueConversion(typeof (MGFile), typeof (string), ParameterType = typeof (string))]
-    public class MGFileConverter : IValueConverter {
-        #region IValueConverter Members
-
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            var file = (MGFile) value;
-            return file.Tags.GetObject((string) parameter);
+namespace MetaGeta.DataStore.Model {
+    [TestFixture]
+    public class TagCollectionTest : AssertionHelper {
+        [Test]
+        public void Basic() {
+            var tags = new MGTagCollection();
+            tags.Add("foo", 123);
+            tags.Add("foo", 456);
+            tags.Add("bar", "asdf");
+            tags.Add("bar", "qwer");
+            Assert.That(() => tags.Add("foo", "789"), Throws.TypeOf<ArgumentException>());
+            Assert.That(() => tags.Add("bar", 123), Throws.TypeOf<ArgumentException>());
+            tags.Add("foo", 987);
+            tags.Add("bar", "poiu");
         }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            throw new NotImplementedException();
-        }
-
-        #endregion
     }
 }

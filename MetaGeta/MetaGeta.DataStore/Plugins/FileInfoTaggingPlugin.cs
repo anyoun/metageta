@@ -62,9 +62,9 @@ namespace MetaGeta.DataStore {
 
         public void Process(MGFile file, ProgressStatus reporter) {
             var fileInfo = new FileInfo(file.FileName);
-            file.SetTag("LastWriteTime", fileInfo.LastWriteTime.ToString());
-            file.SetTag("Extension", fileInfo.Extension);
-            file.SetTag("FileSizeBytes", fileInfo.Length.ToString());
+            file.Tags.Set("LastWriteTime", fileInfo.LastWriteTime);
+            file.Tags.Set("Extension", fileInfo.Extension);
+            file.Tags.Set("FileSizeBytes", fileInfo.Length);
         }
 
         #endregion

@@ -77,29 +77,29 @@ namespace MetaGeta.MediaInfoPlugin {
         public void Process(MGFile file, ProgressStatus reporter) {
             FileMetadata fileInfo = m_MediaInfo.ReadFile(file.FileName);
 
-            file.SetTag(TVShowDataStoreTemplate.Format, fileInfo.Format);
+            file.Tags.Set(TVShowDataStoreTemplate.Format, fileInfo.Format);
 
             if (fileInfo.AudioStreams.Any()) {
                 AudioStreamInfo audio = fileInfo.AudioStreams.First();
-                file.SetTag(TVShowDataStoreTemplate.AudioCodec, audio.CodecString);
+                file.Tags.Set(TVShowDataStoreTemplate.AudioCodec, audio.CodecString);
             }
 
             if (fileInfo.VideoStreams.Any()) {
                 VideoStreamInfo video = fileInfo.VideoStreams.First();
-                file.SetTag(TVShowDataStoreTemplate.VideoCodec, video.CodecString);
-                file.SetTag(TVShowDataStoreTemplate.VideoCodecProfile, video.CodecProfile);
-                file.SetTag(TVShowDataStoreTemplate.Resolution, string.Format("{0}x{1}", video.WidthPx, video.HeightPx));
-                file.SetTag(TVShowDataStoreTemplate.VideoWidthPx, video.WidthPx.ToString());
-                file.SetTag(TVShowDataStoreTemplate.VideoHeightPx, video.HeightPx.ToString());
-                file.SetTag(TVShowDataStoreTemplate.PlayTime, video.PlayTime.ToString());
-                file.SetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio, video.DisplayAspectRatio.ToString());
-                file.SetTag(TVShowDataStoreTemplate.FrameCount, video.FrameCount.ToString());
-                file.SetTag(TVShowDataStoreTemplate.FrameRate, video.FrameRate.ToString());
+                file.Tags.Set(TVShowDataStoreTemplate.VideoCodec, video.CodecString);
+                file.Tags.Set(TVShowDataStoreTemplate.VideoCodecProfile, video.CodecProfile);
+                file.Tags.Set(TVShowDataStoreTemplate.Resolution, string.Format("{0}x{1}", video.WidthPx, video.HeightPx));
+                file.Tags.Set(TVShowDataStoreTemplate.VideoWidthPx, video.WidthPx);
+                file.Tags.Set(TVShowDataStoreTemplate.VideoHeightPx, video.HeightPx);
+                file.Tags.Set(TVShowDataStoreTemplate.PlayTime, video.PlayTime);
+                file.Tags.Set(TVShowDataStoreTemplate.VideoDisplayAspectRatio, video.DisplayAspectRatio);
+                file.Tags.Set(TVShowDataStoreTemplate.FrameCount, video.FrameCount);
+                file.Tags.Set(TVShowDataStoreTemplate.FrameRate, video.FrameRate);
             }
 
-            file.SetTag(TVShowDataStoreTemplate.iPod5GCompatible, fileInfo.IsCompatible(DeviceType.iPod5G).ToString());
-            file.SetTag(TVShowDataStoreTemplate.iPodClassicCompatible, fileInfo.IsCompatible(DeviceType.iPodClassic).ToString());
-            file.SetTag(TVShowDataStoreTemplate.iPhoneCompatible, fileInfo.IsCompatible(DeviceType.iPhone).ToString());
+            file.Tags.Set(TVShowDataStoreTemplate.iPod5GCompatible, fileInfo.IsCompatible(DeviceType.iPod5G));
+            file.Tags.Set(TVShowDataStoreTemplate.iPodClassicCompatible, fileInfo.IsCompatible(DeviceType.iPodClassic));
+            file.Tags.Set(TVShowDataStoreTemplate.iPhoneCompatible, fileInfo.IsCompatible(DeviceType.iPhone));
         }
 
         #endregion

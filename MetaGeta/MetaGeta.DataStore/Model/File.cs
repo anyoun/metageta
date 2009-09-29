@@ -27,31 +27,33 @@ namespace MetaGeta.DataStore {
     public class MGFile : IEquatable<MGFile> {
         private readonly MGDataStore m_DataStore;
 
-        private readonly MGTagCollection m_Tags = new MGTagCollection();
-        private long m_ID = -1;
+        private readonly MGTagCollection m_Tags;
+        private long m_Id = -1;
 
         internal MGFile(MGDataStore datastore) {
+            m_Tags = new MGTagCollection();
             m_DataStore = datastore;
         }
 
-        internal MGFile(long id, MGDataStore datastore) {
+        internal MGFile(long id, MGDataStore datastore, MGTagCollection tags) {
+            m_Tags = tags;
             m_DataStore = datastore;
-            m_ID = id;
+            m_Id = id;
         }
 
         public MGFile() : this(null) {}
 
         public long ID {
-            get { return m_ID; }
+            get { return m_Id; }
             set {
-                if (m_ID != value)
-                    m_ID = value;
+                if (m_Id != value)
+                    m_Id = value;
             }
         }
 
         public string FileName {
             get {
-                string fn = GetTag(FileNameKey);
+                string fn = Tags.GetString(FileNameKey);
                 if (fn == null)
                     throw new Exception("Can't find filename for file.");
                 return new Uri(fn).LocalPath;
@@ -81,14 +83,6 @@ namespace MetaGeta.DataStore {
         }
 
         #endregion
-
-        public string GetTag(string tagName) {
-            return m_Tags.GetValue(tagName);
-        }
-
-        public void SetTag(string tagName, string tagValue) {
-            m_Tags.SetValue(tagName, tagValue);
-        }
     }
 }
 

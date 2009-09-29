@@ -61,7 +61,7 @@ namespace TranscodePlugin {
         }
 
 
-        public void Shutdown() {}
+        public void Shutdown() { }
 
         #endregion
 
@@ -75,33 +75,33 @@ namespace TranscodePlugin {
             if (action != c_WriteTagsAction)
                 throw new ArgumentException();
 
-            if (file.GetTag(TVShowDataStoreTemplate.Format) != "MPEG-4") {
+            if (file.Tags.GetString(TVShowDataStoreTemplate.Format) != "MPEG-4") {
                 progress.StatusMessage = "Not MPEG-4";
                 return;
             }
 
-            WriteAtomicParsleyTag(file.FileName, "TVShowName", file.GetTag(TVShowDataStoreTemplate.SeriesTitle));
+            WriteAtomicParsleyTag(file.FileName, "TVShowName", file.Tags.GetString(TVShowDataStoreTemplate.SeriesTitle));
             progress.ProgressPct = 0.1;
-            WriteAtomicParsleyTag(file.FileName, "album", file.GetTag(TVShowDataStoreTemplate.SeriesTitle));
+            WriteAtomicParsleyTag(file.FileName, "album", file.Tags.GetString(TVShowDataStoreTemplate.SeriesTitle));
             progress.ProgressPct += 0.1;
-            WriteAtomicParsleyTag(file.FileName, "year", file.GetTag(TVShowDataStoreTemplate.EpisodeFirstAired));
+            WriteAtomicParsleyTag(file.FileName, "year", file.Tags.GetString(TVShowDataStoreTemplate.EpisodeFirstAired));
             progress.ProgressPct += 0.1;
-            WriteAtomicParsleyTag(file.FileName, "TVSeasonNum", file.GetTag(TVShowDataStoreTemplate.SeasonNumber));
+            WriteAtomicParsleyTag(file.FileName, "TVSeasonNum", file.Tags.GetString(TVShowDataStoreTemplate.SeasonNumber));
             progress.ProgressPct += 0.1;
-            WriteAtomicParsleyTag(file.FileName, "TVEpisode", file.GetTag(TVShowDataStoreTemplate.EpisodeID));
+            WriteAtomicParsleyTag(file.FileName, "TVEpisode", file.Tags.GetString(TVShowDataStoreTemplate.EpisodeID));
             progress.ProgressPct += 0.1;
-            WriteAtomicParsleyTag(file.FileName, "TVEpisodeNum", file.GetTag(TVShowDataStoreTemplate.EpisodeNumber));
+            WriteAtomicParsleyTag(file.FileName, "TVEpisodeNum", file.Tags.GetString(TVShowDataStoreTemplate.EpisodeNumber));
             progress.ProgressPct += 0.1;
-            WriteAtomicParsleyTag(file.FileName, "description", file.GetTag(TVShowDataStoreTemplate.EpisodeDescription));
-            if (file.GetTag(TVShowDataStoreTemplate.EpisodeBanner) != null)
-                WriteAtomicParsleyTag(file.FileName, "artwork", file.GetTag(TVShowDataStoreTemplate.EpisodeBanner));
+            WriteAtomicParsleyTag(file.FileName, "description", file.Tags.GetString(TVShowDataStoreTemplate.EpisodeDescription));
+            if (file.Tags.GetString(TVShowDataStoreTemplate.EpisodeBanner) != null)
+                WriteAtomicParsleyTag(file.FileName, "artwork", file.Tags.GetString(TVShowDataStoreTemplate.EpisodeBanner));
             progress.ProgressPct += 0.1;
             WriteAtomicParsleyTag(file.FileName, "stik", "TV Show");
             progress.ProgressPct += 0.1;
             WriteAtomicParsleyTag(file.FileName, "genre", "TV Shows");
             progress.ProgressPct += 0.1;
 
-            WriteAtomicParsleyTag(file.FileName, "title", file.Tags[TVShowDataStoreTemplate.EpisodeTitle].Value);
+            WriteAtomicParsleyTag(file.FileName, "title", file.Tags.GetString(TVShowDataStoreTemplate.EpisodeTitle));
             //WriteAtomicParsleyTag(file.FileName, "title", String.Format( _
             //  "{0} - s{1}e{2} - {3}", _
             //  file.GetTag(TVShowDataStoreTemplate.SeriesTitle), _

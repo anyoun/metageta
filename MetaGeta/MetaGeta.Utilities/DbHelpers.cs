@@ -31,6 +31,25 @@ namespace MetaGeta.Utilities {
             cmd.Parameters.Add(param);
         }
 
+        public static void AddParam(this DbCommand cmd, string name, DbType type) {
+            DbParameter param = cmd.CreateParameter();
+            param.ParameterName = name;
+            param.DbType = type;
+            cmd.Parameters.Add(param);
+        }
+
+        public static void SetParam(this DbCommand cmd, string name, object value) {
+            DbParameter param;
+            if (!cmd.Parameters.Contains(name)) {
+                param = cmd.CreateParameter();
+                param.ParameterName = name;
+                cmd.Parameters.Add(param);
+            } else {
+                param = cmd.Parameters[name];
+            }
+            param.Value = value;
+        }
+
         public static T Get<T>(this IDataReader rdr, int index) where T : class {
             return rdr.IsDBNull(index) ? null : (T)rdr[index];
         }

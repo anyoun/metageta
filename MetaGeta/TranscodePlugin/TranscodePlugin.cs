@@ -72,8 +72,6 @@ namespace TranscodePlugin {
             m_DataStore = dataStore;
             m_ID = id;
             LoadPresetsFromXml();
-
-            m_DataStore.SetPluginSetting(this, "", "");
         }
 
 
@@ -181,8 +179,8 @@ namespace TranscodePlugin {
             p.StartInfo.RedirectStandardError = true;
             p.StartInfo.RedirectStandardOutput = true;
 
-            object totalFrames = int.Parse(file.GetTag(TVShowDataStoreTemplate.FrameCount));
-            var statusParser = new EncoderStatusParser(preset.Encoder, (int) totalFrames, progress);
+            int totalFrames = file.Tags.GetInt(TVShowDataStoreTemplate.FrameCount).Value;
+            var statusParser = new EncoderStatusParser(preset.Encoder, totalFrames, progress);
             p.OutputDataReceived += statusParser.OutputHandler;
             p.ErrorDataReceived += statusParser.OutputHandler;
 
@@ -214,16 +212,16 @@ namespace TranscodePlugin {
             cmd = cmd.Replace("%max-video-bitrate%", (1500 * 1024).ToString());
             cmd = cmd.Replace("%audio-bitrate%", (128 * 1024).ToString());
 
-            int width = int.Parse(file.GetTag(TVShowDataStoreTemplate.VideoWidthPx));
-            int height = int.Parse(file.GetTag(TVShowDataStoreTemplate.VideoHeightPx));
-            double aspect = double.Parse(file.GetTag(TVShowDataStoreTemplate.VideoDisplayAspectRatio));
+            int width = file.Tags.GetInt(TVShowDataStoreTemplate.VideoWidthPx).Value;
+            int height = file.Tags.GetInt(TVShowDataStoreTemplate.VideoHeightPx).Value;
+            double aspect = file.Tags.GetDouble(TVShowDataStoreTemplate.VideoDisplayAspectRatio).Value;
 
             var size = new Size(width, height);
             Size s = CalculateDimensions(ref size, preset, aspect);
             cmd = cmd.Replace("%width%", s.Width.ToString());
             cmd = cmd.Replace("%height%", s.Height.ToString());
 
-            cmd = cmd.Replace("%fps%", CalculateFrameRate(double.Parse(file.GetTag(TVShowDataStoreTemplate.FrameRate))).ToString());
+            cmd = cmd.Replace("%fps%", CalculateFrameRate(file.Tags.GetDouble(TVShowDataStoreTemplate.FrameRate).Value).ToString());
 
             return cmd;
         }

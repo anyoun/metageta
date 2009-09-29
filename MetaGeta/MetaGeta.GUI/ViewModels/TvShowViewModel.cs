@@ -70,43 +70,43 @@ namespace MetaGeta.GUI {
         private ObservableCollection<TvSeries> CreateRuntimeData() {
             var results = new ObservableCollection<TvSeries>();
             IOrderedEnumerable<IGrouping<string, MGFile>> seriesList = from f in m_DataStore.Files
-                                                                       group f by f.GetTag(TVShowDataStoreTemplate.SeriesTitle)
+                                                                       group f by f.Tags.GetString(TVShowDataStoreTemplate.SeriesTitle)
                                                                        into asdf
                                                                            orderby asdf.Key
                                                                            select asdf;
 
             foreach (IGrouping<string, MGFile> seriesGroup in seriesList) {
                 var series = new TvSeries(seriesGroup.Key);
-                series.SeriesBannerPath = seriesGroup.Select(f => f.GetTag(TVShowDataStoreTemplate.SeriesBanner)).Coalesce();
-                series.SeriesPosterPath = seriesGroup.Select(f => f.GetTag(TVShowDataStoreTemplate.SeriesPoster)).Coalesce();
+                series.SeriesBannerPath = seriesGroup.Select(f => f.Tags.GetString(TVShowDataStoreTemplate.SeriesBanner)).Coalesce();
+                series.SeriesPosterPath = seriesGroup.Select(f => f.Tags.GetString(TVShowDataStoreTemplate.SeriesPoster)).Coalesce();
 
                 var episodeGroups = from f in seriesGroup
                                     group f by
                                         new {
-                                                EpisodeNumber = f.GetTag(TVShowDataStoreTemplate.EpisodeNumber),
-                                                SeasonNumber = f.GetTag(TVShowDataStoreTemplate.SeasonNumber)
+                                                EpisodeNumber = f.Tags.GetInt(TVShowDataStoreTemplate.EpisodeNumber),
+                                                SeasonNumber = f.Tags.GetInt(TVShowDataStoreTemplate.SeasonNumber)
                                             }
                                     into grp
                                         select new {
                                                        grp.Key.SeasonNumber,
                                                        grp.Key.EpisodeNumber,
                                                        Episodes = grp,
-                                                       FirstAired = grp.Select(file => file.GetTag(TVShowDataStoreTemplate.EpisodeFirstAired)).Coalesce(),
-                                                       Length = grp.Select(file => file.GetTag(TVShowDataStoreTemplate.PlayTime)).Coalesce(),
-                                                       Title = grp.Select(file => file.GetTag(TVShowDataStoreTemplate.EpisodeTitle)).Coalesce(),
-                                                       Ipod = grp.Any(file => Boolean.Parse(file.GetTag(TVShowDataStoreTemplate.iPodClassicCompatible))),
-                                                       Iphone = grp.Any(file => Boolean.Parse(file.GetTag(TVShowDataStoreTemplate.iPhoneCompatible))),
+                                                       FirstAired = grp.Select(file => file.Tags.GetDateTime(TVShowDataStoreTemplate.EpisodeFirstAired)).Coalesce(),
+                                                       Length = grp.Select(file => file.Tags.GetTimeSpan(TVShowDataStoreTemplate.PlayTime)).Coalesce(),
+                                                       Title = grp.Select(file => file.Tags.GetString(TVShowDataStoreTemplate.EpisodeTitle)).Coalesce(),
+                                                       Ipod = grp.Any(file => true == file.Tags.GetBool(TVShowDataStoreTemplate.iPodClassicCompatible)),
+                                                       Iphone = grp.Any(file => true == file.Tags.GetBool(TVShowDataStoreTemplate.iPhoneCompatible)),
                                                        Computer = grp.Any()
                                                    };
 
                 IEnumerable<TvEpisode> episodes = from ep in episodeGroups
-                                                  select new TvEpisode(series, ep.SeasonNumber, ep.EpisodeNumber, ep.Title) {
-                                                                                                                                AirDateString = ep.FirstAired,
-                                                                                                                                LengthString = ep.Length,
-                                                                                                                                HasComputerVersion = ep.Computer,
-                                                                                                                                HasIphoneVersion = ep.Iphone,
-                                                                                                                                HasIpodVersion = ep.Ipod
-                                                                                                                            };
+                                                  select new TvEpisode(series, ep.SeasonNumber.Value, ep.EpisodeNumber.Value, ep.Title) {
+                                                                                                                                            AirDate = ep.FirstAired,
+                                                                                                                                            Length = ep.Length,
+                                                                                                                                            HasComputerVersion = ep.Computer,
+                                                                                                                                            HasIphoneVersion = ep.Iphone,
+                                                                                                                                            HasIpodVersion = ep.Ipod
+                                                                                                                                        };
                 episodes = from ep in episodes orderby ep.SeasonNumber , ep.EpisodeNumber select ep;
 
                 series.Episodes.AddRange(episodes);
@@ -187,20 +187,12 @@ namespace MetaGeta.GUI {
         private readonly int m_SeasonNumber;
         private readonly TvSeries m_Series;
         private readonly string m_Title;
-        private DateTime m_AirDate;
+        private DateTimeOffset m_AirDate;
         private bool m_HasComputerVersion;
 
         private bool m_HasIphoneVersion;
         private bool m_HasIpodVersion;
         private TimeSpan m_Length;
-
-        public TvEpisode(TvSeries series, string seasonNumber, string episodeNumber, string title)
-            : this(series, 1, 1, title) {
-            if (!int.TryParse(seasonNumber, out m_SeasonNumber))
-                m_SeasonNumber = 0;
-            if (!int.TryParse(episodeNumber, out m_EpisodeNumber))
-                m_EpisodeNumber = 0;
-        }
 
         public TvEpisode(TvSeries series, int seasonNumber, int episodeNumber, string title) {
             m_Series = series;
@@ -225,30 +217,14 @@ namespace MetaGeta.GUI {
             get { return m_Title; }
         }
 
-        public DateTime AirDate {
+        public DateTimeOffset AirDate {
             get { return m_AirDate; }
             set { m_AirDate = value; }
-        }
-
-        public string AirDateString {
-            get { return m_AirDate.ToString(); }
-            set {
-                if (value != null)
-                    m_AirDate = DateTime.ParseExact(value, "u", CultureInfo.CurrentCulture);
-            }
         }
 
         public TimeSpan Length {
             get { return m_Length; }
             set { m_Length = value; }
-        }
-
-        public string LengthString {
-            get { return m_Length.ToString(); }
-            set {
-                if (value != null)
-                    m_Length = TimeSpan.Parse(value);
-            }
         }
 
         public string LongName {

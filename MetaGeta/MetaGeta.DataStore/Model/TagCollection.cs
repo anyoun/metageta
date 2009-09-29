@@ -20,60 +20,119 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using MetaGeta.Utilities;
 
 #endregion
 
 namespace MetaGeta.DataStore {
-    [Serializable]
-    public class MGTagCollection : IEnumerable<MGTag> {
-        private readonly Dictionary<string, MGTag> m_Items = new Dictionary<string, MGTag>();
+    public class MGTagCollection {
+        private readonly Dictionary<string, LinkedList<MGTag>> m_Items = new Dictionary<string, LinkedList<MGTag>>();
 
-        public MGTagCollection() {}
+        public MGTagCollection() { }
 
-        public MGTagCollection(IEnumerable<MGTag> tags) {
-            foreach (MGTag tag in tags)
-                m_Items.Add(tag.Name, tag);
+        public bool ContainsKey(string tagName) {
+            LinkedList<MGTag> tagList = null;
+            return m_Items.TryGetValue(tagName, out tagList) && tagList.Any();
         }
 
-        public MGTag this[string tagName] {
-            get {
-                MGTag tag = null;
-                if (m_Items.TryGetValue(tagName, out tag))
-                    return tag;
-                else
-                    return null;
+        private T GetValue<T>(string tagName) where T : class {
+            return GetValues<T>(tagName).FirstOrDefault();
+        }
+        private T? GetValueNullable<T>(string tagName) where T : struct {
+            var values = GetValues<T>(tagName);
+            return values.Any() ? (T?)values.First() : null;
+        }
+
+        private IEnumerable<T> GetValues<T>(string tagName) {
+            LinkedList<MGTag> tagList = null;
+            if (!m_Items.TryGetValue(tagName, out tagList)) return new T[0];
+
+            if (typeof(T) != typeof(object)) {
+                var requestType = MGTag.GetTagType(typeof(T));
+                var tagType = tagList.Agree(t => t.Type);
+                if (requestType != tagType)
+                    throw new Exception(string.Format("Tag {0} is of type {1}, not {2}.", tagName, tagType, requestType));
             }
+            return from t in tagList select (T)t.Value;
         }
 
-        #region IEnumerable<MGTag> Members
-
-        public IEnumerator<MGTag> GetEnumerator() {
-            return m_Items.Values.GetEnumerator();
+        public void Remove(string tagName) {
+            m_Items.Remove(tagName);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator1();
+        private void SetValue(string tagName, object value) {
+            Remove(tagName);
+            AddValue(tagName, value);
+        }
+        private void AddValue(string tagName, object value) {
+            var requestType = MGTag.GetTagType(value);
+            if (requestType == MGTagType.NoType)
+                throw new ArgumentException("Invalid type. Expected a bool, string, long, double, DateTimeOffset, TimeSpan, or byte[].", "value");
+
+            LinkedList<MGTag> tagList = null;
+
+            if (!m_Items.TryGetValue(tagName, out tagList)) {
+                tagList = new LinkedList<MGTag>();
+                m_Items.Add(tagName, tagList);
+            } else {
+                var tagType = tagList.Agree(t => t.Type);
+                if (tagType != requestType)
+                    throw new ArgumentException(string.Format("Tag {0} is of type {1}, not {2}.", tagName, tagType, requestType), "value");
+            }
+            tagList.AddLast(new MGTag(tagName, value, requestType));
         }
 
-        #endregion
-
-        public string GetValue(string tagName) {
-            MGTag tag = null;
-            if (m_Items.TryGetValue(tagName, out tag))
-                return tag.Value;
+        public MGTag GetTag(string tagName) {
+            LinkedList<MGTag> tagList = null;
+            if (m_Items.TryGetValue(tagName, out tagList))
+                return tagList.First();
             else
                 return null;
         }
 
-        public void SetValue(string tagName, string value) {
-            if (value == null)
-                m_Items.Remove(tagName);
-            else
-                m_Items[tagName] = new MGTag(tagName, value);
-        }
+        #region Typed getters and setters
+        public bool? GetBool(string tagName) { return GetValueNullable<bool>(tagName); }
+        public string GetString(string tagName) { return GetValue<string>(tagName); }
+        public int? GetInt(string tagName) { return (int?)GetValueNullable<long>(tagName); }
+        public long? GetLong(string tagName) { return GetValueNullable<long>(tagName); }
+        public double? GetDouble(string tagName) { return GetValueNullable<double>(tagName); }
+        public DateTimeOffset? GetDateTime(string tagName) { return GetValueNullable<DateTimeOffset>(tagName); }
+        public TimeSpan? GetTimeSpan(string tagName) { return GetValueNullable<TimeSpan>(tagName); }
+        public byte[] GetBlob(string tagName) { return GetValue<byte[]>(tagName); }
+        public object GetObject(string tagName) { return GetValue<object>(tagName); }
 
-        public IEnumerator GetEnumerator1() {
-            return GetEnumerator();
+        public void Set(string tagName, bool value) { SetValue(tagName, value); }
+        public void Set(string tagName, string value) { SetValue(tagName, value); }
+        public void Set(string tagName, int value) { SetValue(tagName, (long)value); }
+        public void Set(string tagName, long value) { SetValue(tagName, value); }
+        public void Set(string tagName, double value) { SetValue(tagName, value); }
+        public void Set(string tagName, DateTimeOffset value) { SetValue(tagName, value); }
+        public void Set(string tagName, TimeSpan value) { SetValue(tagName, value); }
+        public void Set(string tagName, byte[] value) { SetValue(tagName, value); }
+        public void SetObject(string tagName, object value) { SetValue(tagName, value); }
+
+        public void Add(string tagName, bool value) { AddValue(tagName, value); }
+        public void Add(string tagName, string value) { AddValue(tagName, value); }
+        public void Add(string tagName, int value) { AddValue(tagName, (long)value); }
+        public void Add(string tagName, long value) { AddValue(tagName, value); }
+        public void Add(string tagName, double value) { AddValue(tagName, value); }
+        public void Add(string tagName, DateTimeOffset value) { AddValue(tagName, value); }
+        public void Add(string tagName, TimeSpan value) { AddValue(tagName, value); }
+        public void Add(string tagName, byte[] value) { AddValue(tagName, value); }
+        #endregion
+
+        #region Iterators
+        public IEnumerable<MGTag> All {
+            get {
+                foreach (var pair in m_Items) {
+                    foreach (var item in pair.Value) {
+                        yield return item;
+                    }
+                }
+            }
         }
+        #endregion
     }
 }
