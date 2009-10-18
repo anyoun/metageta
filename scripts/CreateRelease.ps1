@@ -22,28 +22,20 @@ if(test-path hkcu:\Software\7-Zip) {
 	throw "No 7zip!"
 }
 
-$extrafiles = @( "log4net.xml", "TvdbLib.xml", "System.Data.SQLite.xml" )
-
 $timestamp = (get-date).ToString("yyyyMMdd")
 
 pushd ..
 
-create-directory "output"
-$x86Dir = recreate-directory "output\MetaGeta.$timestamp.x86"
-$x64Dir = recreate-directory "output\MetaGeta.$timestamp.x64"
+[void](create-directory "output")
+$dir = recreate-directory "output\MetaGeta.$timestamp"
 
-msbuild MetaGeta\MetaGeta.sln /v:q /t:Rebuild "/p:Configuration=Release;Platform=x86;OutDir=$x86Dir;OutputPath=$x86Dir"
-msbuild MetaGeta\MetaGeta.sln /v:q /t:Rebuild "/p:Configuration=Release;Platform=x64;OutDir=$x64Dir;OutputPath=$x64Dir"
+msbuild MetaGeta\MetaGeta.sln /v:q /t:Rebuild "/p:Configuration=Release" "/p:Platform=Any CPU" "/p:OutDir=$dir;OutputPath=$dir"
 
-pushd $x86Dir
-	$extrafiles | rm
-popd
-pushd $x64Dir
-	$extrafiles | rm
+pushd $dir
+	rm *.xml
+	rm *.pdb
 popd
 
-
-& $7zipPath a -mx9 -mmt "output\MetaGeta.$timestamp.x86.7z" "$x86Dir"
-& $7zipPath a -mx9 -mmt "output\MetaGeta.$timestamp.x64.7z" "$x64Dir"
+& $7zipPath a -mx9 -mmt "output\MetaGeta.$timestamp.7z" "$dir"
 
 popd
