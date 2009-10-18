@@ -100,6 +100,7 @@ namespace MetaGeta.GUI {
                                                    };
 
                 IEnumerable<TvEpisode> episodes = from ep in episodeGroups
+                                                  where ep.SeasonNumber.HasValue && ep.EpisodeNumber.HasValue
                                                   select new TvEpisode(series, ep.SeasonNumber.Value, ep.EpisodeNumber.Value, ep.Title) {
                                                                                                                                             AirDate = ep.FirstAired,
                                                                                                                                             Length = ep.Length,

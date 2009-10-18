@@ -175,8 +175,14 @@ namespace MetaGeta.TVDBPlugin {
         }
 
         private TvdbEpisode GetEpisode(TvdbSeries series, MGFile file) {
-            int seasonNumber = file.Tags.GetInt(TVShowDataStoreTemplate.SeasonNumber).Value;
-            int episodeNumber = file.Tags.GetInt(TVShowDataStoreTemplate.EpisodeNumber).Value;
+            int? seasonNumber = file.Tags.GetInt(TVShowDataStoreTemplate.SeasonNumber);
+            int? episodeNumber = file.Tags.GetInt(TVShowDataStoreTemplate.EpisodeNumber);
+
+            if (!seasonNumber.HasValue || !episodeNumber.HasValue) {
+                log.DebugFormat("Missing season or episode number for \"{0}\".", file.FileName);
+                return null;
+            }
+
             TvdbEpisode ep = null;
             try {
                 ep = series.Episodes.Find(episode => episode.EpisodeNumber == episodeNumber && episode.SeasonNumber == seasonNumber);
