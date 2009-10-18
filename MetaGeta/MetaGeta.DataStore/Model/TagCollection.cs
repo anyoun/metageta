@@ -64,7 +64,8 @@ namespace MetaGeta.DataStore {
 
         private void SetValue(string tagName, object value) {
             Remove(tagName);
-            AddValue(tagName, value);
+            if (value != null)
+                AddValue(tagName, value);
         }
         private void AddValue(string tagName, object value) {
             var requestType = MGTag.GetTagType(value);
