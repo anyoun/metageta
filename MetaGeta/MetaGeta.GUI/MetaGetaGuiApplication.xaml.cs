@@ -17,6 +17,7 @@
 
 #region
 
+using System.Runtime.InteropServices;
 using System.Windows;
 using log4net.Config;
 using System;
@@ -43,12 +44,12 @@ namespace MetaGeta.GUI {
         private static void ExtractUnmanagedDlls() {
             if (Is64BitProcess) {
                 log.Debug("MetaGeta is running in 64-bit mode.");
-                ExtractGzipResourceToFile("MetaGeta.GUI.Resources.MediaInfo.dll.x64.gz", "MediaInfo.dll");
-                ExtractGzipResourceToFile("MetaGeta.GUI.Resources.sqlite3.dll.x64.gz", "sqlite3.dll");
+                LoadUnmanagedDll(@"lib-x64\MediaInfo.dll");
+                LoadUnmanagedDll(@"lib-x64\sqlite3.dll");
             } else {
                 log.Debug("MetaGeta is running in 32-bit mode.");
-                ExtractGzipResourceToFile("MetaGeta.GUI.Resources.MediaInfo.dll.x86.gz", "MediaInfo.dll");
-                ExtractGzipResourceToFile("MetaGeta.GUI.Resources.sqlite3.dll.x86.gz", "sqlite3.dll");
+                LoadUnmanagedDll(@"lib-x86\MediaInfo.dll");
+                LoadUnmanagedDll(@"lib-x86\sqlite3.dll");
             }
         }
 
@@ -56,33 +57,15 @@ namespace MetaGeta.GUI {
             get { return IntPtr.Size == 8; }
         }
 
-        private static void ExtractGzipResourceToFile(string resourceName, string fileName) {
-            if (File.Exists(fileName)) {
-                log.DebugFormat("Not extracting {0} since it already exists.", fileName);
-                return;
-            }
 
-            log.DebugFormat("Extracting {0}...", fileName);
+        [DllImport("kernel32", SetLastError = true)]
+        static extern IntPtr LoadLibrary(string lpFileName);
 
-            using (var memoryStream = Assembly.GetEntryAssembly().GetManifestResourceStream(resourceName)) {
-                if (memoryStream == null) {
-                    log.FatalFormat("Couldn't file resource {0}.", resourceName);
-                    log.DebugFormat("Resource list: {1}", Assembly.GetEntryAssembly().GetManifestResourceNames().JoinToCsv());
-                }
-                using (var decompressedStream = new GZipStream(memoryStream, CompressionMode.Decompress))
-                using (var fs = File.Open(fileName, FileMode.CreateNew, FileAccess.Write))
-                    CopyStream(decompressedStream, fs);
-            }
-
-            log.Debug("OK");
+        private static void LoadUnmanagedDll(string path) {
+            IntPtr ptr = LoadLibrary(path);
+            if (ptr == IntPtr.Zero)
+                throw new Exception(string.Format("Couldn't load library \"{0}\".", path),
+                                    Marshal.GetExceptionForHR(Marshal.GetLastWin32Error()));
         }
-
-        private static void CopyStream(Stream input, Stream output) {
-            byte[] buffer = new byte[0x1000];
-            int read;
-            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
-                output.Write(buffer, 0, read);
-        }
-
     }
 }
