@@ -39,6 +39,10 @@ namespace MetaGeta.DataStore.Database {
             tags.Add("bar", "True");
 
             tags.Add("baz", DateTimeOffset.Now);
+            tags.Add("baz2", DateTimeOffset.MinValue);
+            tags.Add("baz3", DateTimeOffset.MaxValue);
+            tags.Add("baz4", new DateTimeOffset(1300, 4, 14, 2, 5, 48, TimeSpan.Zero));
+            tags.Add("baz5", new DateTimeOffset(2135, 6, 1, 17, 0, 10, TimeSpan.Zero));
             tags.Add("blee", 123.456);
             tags.Add("bar", "poiu");
             tags.Add("foo", 456);

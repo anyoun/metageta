@@ -63,7 +63,7 @@ namespace MetaGeta.DataStore.Database {
                         tags.Add(name, BitConverter.ToDouble(value, 0));
                         break;
                     case MGTagType.DateTime:
-                        tags.Add(name, DateTimeOffset.FromFileTime(BitConverter.ToInt64(value, 0)));
+                        tags.Add(name, new DateTimeOffset(BitConverter.ToInt64(value, 0), TimeZoneInfo.Utc.BaseUtcOffset));
                         break;
                     case MGTagType.TimeSpan:
                         tags.Add(name, TimeSpan.FromTicks(BitConverter.ToInt64(value, 0)));
@@ -106,7 +106,7 @@ namespace MetaGeta.DataStore.Database {
                         break;
 
                     case MGTagType.DateTime:
-                        value = BitConverter.GetBytes(((DateTimeOffset) tag.Value).ToFileTime());
+                        value = BitConverter.GetBytes(((DateTimeOffset) tag.Value).UtcTicks);
                         break;
 
                     case MGTagType.Boolean:
