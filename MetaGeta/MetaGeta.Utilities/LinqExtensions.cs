@@ -63,6 +63,15 @@ namespace MetaGeta.Utilities {
             return bdr.ToString();
         }
 
+        public static string JoinToString<T>(this IEnumerable<T> list) {
+            return list.JoinToString(string.Empty);
+        }
+        public static string JoinToString<T>(this IEnumerable<T> list, Func<T, string> selector) {
+            return list.JoinToString(selector, string.Empty);
+        }
+        public static string JoinToString<T>(this IEnumerable<T> list, string separator) {
+            return list.JoinToString(o => o.ToString(), separator);
+        }
         public static string JoinToString<T>(this IEnumerable<T> list, Func<T, string> selector, string separator) {
             return list.Select(selector).JoinToString(separator);
         }
@@ -82,7 +91,7 @@ namespace MetaGeta.Utilities {
         }
 
         public static IEnumerable<T> SingleToEnumerable<T>(this T item) {
-            return new[] {item};
+            return new[] { item };
         }
 
         public static bool IsDefined<T>(this MemberInfo info) where T : Attribute {
@@ -90,7 +99,7 @@ namespace MetaGeta.Utilities {
         }
 
         public static bool IsDefined<T>(this MemberInfo info, bool inherit) where T : Attribute {
-            return info.IsDefined(typeof (T), inherit);
+            return info.IsDefined(typeof(T), inherit);
         }
 
         public static T GetCustomAttribute<T>(this MemberInfo info) where T : Attribute {
@@ -98,7 +107,7 @@ namespace MetaGeta.Utilities {
         }
 
         public static T GetCustomAttribute<T>(this MemberInfo info, bool inherit) where T : Attribute {
-            return info.GetCustomAttributes(typeof (T), inherit).Cast<T>().Single();
+            return info.GetCustomAttributes(typeof(T), inherit).Cast<T>().Single();
         }
 
         public static IEnumerable<Tuple<T, U, int>> IndexInnerJoin<T, U>(this IEnumerable<T> left, IEnumerable<U> right) {
@@ -142,7 +151,55 @@ namespace MetaGeta.Utilities {
         }
 
         public static T Coalesce<T>(this T item, params T[] rest) where T : class {
-            return item ?? Coalesce((IEnumerable<T>) rest);
+            return item ?? Coalesce((IEnumerable<T>)rest);
+        }
+
+        public static int IndexOfMax<T>(this IList<T> items, Func<T, int> resultSelector) {
+            int indexOfMax = -1;
+            int largestMetric = 0;
+
+            for (int i = 0; i < items.Count; i++) {
+                int metric = resultSelector(items[i]);
+                if (metric > largestMetric) {
+                    largestMetric = metric;
+                    indexOfMax = i;
+                }
+            }
+
+            return indexOfMax;
+        }
+
+        public static T MaxItem<T>(this IEnumerable<T> items, Func<T, int> resultSelector) {
+            T maxItem = default(T);
+            int largestMetric = 0;
+
+            foreach (T item in items) {
+                int metric = resultSelector(item);
+                if (metric > largestMetric) {
+                    largestMetric = metric;
+                    maxItem = item;
+                }
+            }
+
+            return maxItem;
+        }
+
+        public static IEnumerable<T> SkipBothEndsWhile<T>(this IEnumerable<T> items, Predicate<T> condition) {
+            var arr = items.ToArray();
+            int startIndex = 0, endIndex = 0;
+            for (int i = 0; i < arr.Length; i++) {
+                startIndex = 0;
+                if (!condition(arr[i]))
+                    break;
+            }
+            for (int i = arr.Length - 1; i >= 0; i--) {
+                endIndex = i;
+                if (!condition(arr[i]))
+                    break;
+            }
+            for (int i = startIndex; i <= endIndex; i++) {
+                yield return arr[i];
+            }
         }
     }
 }
