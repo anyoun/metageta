@@ -43,14 +43,14 @@ namespace TranscodePlugin {
         private string m_MencoderLocation;
         private string m_TranscodePresetName;
 
-        public TranscodePlugin() {}
+        public TranscodePlugin() { }
 
         #region "IMGPlugin"
 
         #region IMGFileActionPlugin Members
 
         public IEnumerable<string> GetActions() {
-            return new string[] {ConvertActionName};
+            return new string[] { ConvertActionName };
         }
 
 
@@ -75,7 +75,7 @@ namespace TranscodePlugin {
         }
 
 
-        public void Shutdown() {}
+        public void Shutdown() { }
 
         public string FriendlyName {
             get { return "TranscodePlugin"; }
@@ -106,12 +106,12 @@ namespace TranscodePlugin {
         private void LoadPresetsFromXml() {
             m_Presets.AddRange(from p in Presets.Elements()
                                select new Preset() {
-                                                       Name = (string) p.Attribute("Name"),
-                                                       Encoder = (string) p.Attribute("Encoder"),
-                                                       MaxWidth = int.Parse((string) p.Attribute("MaxWidth")),
-                                                       MaxHeight = int.Parse((string) p.Attribute("MaxHeight")),
-                                                       CommandLine = p.Value
-                                                   });
+                                   Name = (string)p.Attribute("Name"),
+                                   Encoder = (string)p.Attribute("Encoder"),
+                                   MaxWidth = int.Parse((string)p.Attribute("MaxWidth")),
+                                   MaxHeight = int.Parse((string)p.Attribute("MaxHeight")),
+                                   CommandLine = p.Value
+                               });
         }
 
         private string GetEncoderPath(string encoder) {
@@ -135,7 +135,7 @@ namespace TranscodePlugin {
             }
         }
 
-        [Settings("mencoder Location", "%TOOLS%\\mplayer\\mencoder.exe", SettingType.File, "Programs")]
+        [Settings("mencoder Location", "mencoder.exe", SettingType.File, "Programs")]
         public string MencoderLocation {
             get { return m_MencoderLocation; }
             set {
@@ -147,7 +147,7 @@ namespace TranscodePlugin {
             }
         }
 
-        [Settings("FFmpeg Location", "%TOOLS%\\ffmpeg\\ffmpeg.exe", SettingType.File, "Programs")]
+        [Settings("FFmpeg Location", "ffmpeg.exe", SettingType.File, "Programs")]
         public string FfmpegLocation {
             get { return m_FfmpegLocation; }
             set {
@@ -239,12 +239,12 @@ namespace TranscodePlugin {
             }
 
             if (s.Width > preset.MaxWidth || s.Height > preset.MaxHeight) {
-                if (aspectRatio > (double) preset.MaxWidth / preset.MaxHeight) {
-                    s.Height = (int) ((double) preset.MaxWidth / aspectRatio);
+                if (aspectRatio > (double)preset.MaxWidth / preset.MaxHeight) {
+                    s.Height = (int)((double)preset.MaxWidth / aspectRatio);
                     s.Width = preset.MaxWidth;
                 } else {
                     s.Height = preset.MaxHeight;
-                    s.Width = (int) ((double) preset.MaxHeight * aspectRatio);
+                    s.Width = (int)((double)preset.MaxHeight * aspectRatio);
                 }
             }
 
@@ -255,22 +255,22 @@ namespace TranscodePlugin {
         }
 
         private static FrameRate CalculateFrameRate(double rate) {
-            if (rate == 119.88)
-                return new FrameRate(120000, 1001);
-            else if (rate == 60)
-                return new FrameRate(60);
-            else if (rate == 59.94)
-                return new FrameRate(60000, 1001);
-            else if (rate == 29.97 || rate == 29)
-                return new FrameRate(30000, 1001);
-            else if (rate == 25)
-                return new FrameRate(25);
-            else if (rate == 23.976)
-                return new FrameRate(24000, 1001);
-            else if (rate == 7.992)
-                return new FrameRate(8000, 1001);
-            else
-                throw new Exception(string.Format("Unknown frame rate: {0}.", rate));
+            //29.976 is 29.9759998321533 as a double and 29.97 is 29.9699993133545 as a double.
+            //So make sure not to compare things exactly unless we really want to.
+
+            if (IsCloseEnough(rate, 119.88)) return new FrameRate(120000, 1001);
+            else if (IsCloseEnough(rate, 60)) return new FrameRate(60);
+            else if (IsCloseEnough(rate, 59.94)) return new FrameRate(60000, 1001);
+            else if (IsCloseEnough(rate, 29.97)) return new FrameRate(30000, 1001);
+            else if (rate == 29 || rate == 30 /*Exactly 29 or 30 for poorly encoded video*/ ) return new FrameRate(30000, 1001);
+            else if (IsCloseEnough(rate, 25)) return new FrameRate(25);
+            else if (IsCloseEnough(rate, 23.976)) return new FrameRate(24000, 1001);
+            else if (IsCloseEnough(rate, 7.992)) return new FrameRate(8000, 1001);
+            else throw new Exception(string.Format("Unknown frame rate: {0}.", rate));
+        }
+
+        private static bool IsCloseEnough(double x, double y) {
+            return Math.Abs(x - y) < .01;
         }
 
         #region Nested type: FrameRate
@@ -285,7 +285,7 @@ namespace TranscodePlugin {
             }
 
             public FrameRate(double numerator) {
-                Numerator = (decimal) numerator;
+                Numerator = (decimal)numerator;
                 Denominator = 1;
             }
 
@@ -390,7 +390,7 @@ namespace TranscodePlugin {
         }
 
         public TimeSpan TimeRemaining {
-            get { return EncodingFps == 0 ? TimeSpan.MaxValue : new TimeSpan(0, 0, (int) ((m_TotalFrames - m_PositionFrames) / EncodingFps)); }
+            get { return EncodingFps == 0 ? TimeSpan.MaxValue : new TimeSpan(0, 0, (int)((m_TotalFrames - m_PositionFrames) / EncodingFps)); }
         }
 
         public double EncodingFps {

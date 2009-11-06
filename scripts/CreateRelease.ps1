@@ -34,6 +34,8 @@ msbuild MetaGeta\MetaGeta.sln /v:q /t:Rebuild "/p:Configuration=Release" "/p:Pla
 pushd $dir
 	rm *.xml
 	rm *.pdb
+	copy ..\tools\AtomicParsley\AtomicParsley.exe .
+	copy ..\tools\ffmpeg\ffmpeg.exe .
 popd
 
 & $7zipPath a -mx9 -mmt "output\MetaGeta.$timestamp.7z" "$dir"
