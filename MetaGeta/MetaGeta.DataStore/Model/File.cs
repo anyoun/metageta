@@ -53,10 +53,15 @@ namespace MetaGeta.DataStore {
 
         public string FileName {
             get {
+                return FileNameUri.LocalPath;
+            }
+        }
+        public Uri FileNameUri {
+            get {
                 string fn = Tags.GetString(FileNameKey);
                 if (fn == null)
                     throw new Exception("Can't find filename for file.");
-                return new Uri(fn).LocalPath;
+                return new Uri(fn);
             }
         }
 

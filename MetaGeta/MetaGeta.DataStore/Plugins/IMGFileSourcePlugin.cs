@@ -24,6 +24,6 @@ using System.Collections.Generic;
 
 namespace MetaGeta.DataStore {
     public interface IMGFileSourcePlugin {
-        ICollection<Uri> GetFilesToAdd();
+        void Refresh(out ICollection<Uri> addedFiles, out ICollection<Uri> removedFiles);
     }
 }

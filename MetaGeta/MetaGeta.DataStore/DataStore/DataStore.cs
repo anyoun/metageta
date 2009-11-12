@@ -368,14 +368,22 @@ namespace MetaGeta.DataStore {
 
                 SetImportStatus("Listing files...", 0);
 
-                //Get list of files
-                Uri[] newPaths = (from fs in FileSourcePlugins
-                                  from path in fs.GetFilesToAdd()
-                                  select path).ToArray();
-                MGFile[] files = (newPaths.Select(p => new MGFile(this))).ToArray();
+                var addedFiles = new List<Uri>();
+                var removedFiles = new List<Uri>();
+                foreach (var fs in FileSourcePlugins) {
+                    ICollection<Uri> added, removed;
+                    fs.Refresh(out added, out removed);
+                    addedFiles.AddRange(added);
+                    removedFiles.AddRange(removed);
+                }
+
+                var filesToRemove = Files.Where(f => removedFiles.Contains(f.FileNameUri));
+                m_DataMapper.RemoveFiles(filesToRemove, this);
+
+                MGFile[] files = (addedFiles.Select(p => new MGFile(this))).ToArray();
                 m_DataMapper.WriteNewFiles(files, this);
 
-                foreach (Tuple<MGFile, Uri, int> fileAndPath in files.IndexInnerJoin(newPaths)) {
+                foreach (Tuple<MGFile, Uri, int> fileAndPath in files.IndexInnerJoin(addedFiles)) {
                     MGFile newfile = fileAndPath.First;
                     Uri filePath = fileAndPath.Second;
                     int index = fileAndPath.Third;

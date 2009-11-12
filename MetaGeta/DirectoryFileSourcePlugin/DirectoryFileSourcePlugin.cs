@@ -69,7 +69,7 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
 
         #region IMGFileSourcePlugin Members
 
-        public ICollection<Uri> GetFilesToAdd() {
+        public void Refresh(out ICollection<Uri> addedFiles, out ICollection<Uri> removedFiles) {
             var fileNameToFileDict = new Dictionary<string, MGFile>();
             foreach (var t in m_DataStore.GetAllTagOnFiles(MGFile.FileNameKey))
                 fileNameToFileDict[new Uri((string)t.First.Value).LocalPath] = t.Second;
@@ -78,8 +78,8 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
 
             foreach (FileInfo fi in GetAllFilesInWatchedDirectories()) {
                 MGFile mgFile = null;
-                if (fileNameToFileDict.TryGetValue(fi.FullName, out mgFile)) {
-                    //Already exits
+                if (fileNameToFileDict.Remove(fi.FullName)) {
+                    //Already exits, remove it from the dictionary
                     log.DebugFormat("File \"{0}\" already exists.", fi.FullName);
                 } else {
                     //New files
@@ -88,7 +88,13 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
                 }
             }
 
-            return newFiles;
+            var deletedFiles = new List<Uri>();
+            foreach (var item in fileNameToFileDict) {
+                deletedFiles.Add(new Uri(item.Key));
+            }
+
+            addedFiles = newFiles;
+            removedFiles = deletedFiles;
         }
 
         #endregion
@@ -126,7 +132,7 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
             var files = new List<FileInfo>();
             foreach (string d in DirectoriesToWatch)
                 files.AddRange(new DirectoryInfo(d).GetFiles("*", SearchOption.AllDirectories));
-            files.RemoveAll(f => !(   extensionsLookup.Contains(Path.GetExtension(f.FullName))
+            files.RemoveAll(f => !(extensionsLookup.Contains(Path.GetExtension(f.FullName))
                                    || extensionsLookup.Contains(Path.GetExtension(f.FullName).TrimStart('.'))
                                   ));
             return files;
