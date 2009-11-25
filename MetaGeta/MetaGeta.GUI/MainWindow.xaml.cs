@@ -25,6 +25,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using log4net;
 using MetaGeta.DataStore;
+using MetaGeta.GUI.Services;
+using MetaGeta.GUI.ViewModels;
 
 #endregion
 
@@ -32,47 +34,22 @@ namespace MetaGeta.GUI {
     public partial class MainWindow {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private DataStoreManager m_DataStoreManager;
-        private NavigationTabManager m_Navigation;
-
         public MainWindow() {
-            m_DataStoreManager = new DataStoreManager(false);
-            m_Navigation = new NavigationTabManager(m_DataStoreManager);
-
             InitializeComponent();
-
             PresentationTraceSources.SetTraceLevel(this, PresentationTraceLevel.High);
-
-            DataContext = m_Navigation;
-        }
-
-        private void MainWindow_Closing(object sender, EventArgs e) {
-            m_DataStoreManager.Shutdown();
-        }
-
-        private void btnNew_Click(Object sender, RoutedEventArgs e) {
-            var win = new NewDataStoreWindow();
-            PresentationTraceSources.SetTraceLevel(win, PresentationTraceLevel.High);
-            win.Owner = this;
-            bool? dr = win.ShowDialog();
-            if (dr.HasValue && dr.Value) {
-                DataStoreBuilder args = win.DataStoreCreationArguments;
-                MGDataStore ds = m_DataStoreManager.NewDataStore(args.Name, args.Tempate);
-                ds.SetCreationArguments(args);
-            }
         }
 
         private void lbDataStores_PreviewMouseDown(Object sender, MouseButtonEventArgs e) {
-            var originalItem = (DependencyObject) e.OriginalSource;
+            var originalItem = (DependencyObject)e.OriginalSource;
             DependencyObject nextTreeViewItem = lbDataStores;
             DependencyObject lastTreeViewItem = lbDataStores;
             while (nextTreeViewItem != null && nextTreeViewItem is ItemsControl) {
                 lastTreeViewItem = nextTreeViewItem;
-                nextTreeViewItem = (ItemsControl) ItemsControl.ContainerFromElement((ItemsControl) lastTreeViewItem, originalItem);
+                nextTreeViewItem = (ItemsControl)ItemsControl.ContainerFromElement((ItemsControl)lastTreeViewItem, originalItem);
             }
 
             if (lastTreeViewItem != null) {
-                if (((FrameworkElement) lastTreeViewItem).DataContext is NavigationTabGroupBase)
+                if (((FrameworkElement)lastTreeViewItem).DataContext is NavigationTabGroupBase)
                     e.Handled = true;
                 else
                     e.Handled = false;

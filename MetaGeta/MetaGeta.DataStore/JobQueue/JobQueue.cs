@@ -27,7 +27,14 @@ using log4net;
 #endregion
 
 namespace MetaGeta.DataStore {
-    public class JobQueue : IDisposable, INotifyPropertyChanged {
+
+    public interface IJobQueue : IDisposable, INotifyPropertyChanged {
+        IEnumerable<Job> ActionItems { get; }
+        void EnqueueAction(string action, MGDataStore dataStore, MGFile file);
+        void WaitForQueueToEmpty();
+    }
+
+    public class JobQueue : IJobQueue {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly Queue<Job> m_ActionWaitingQueue = new Queue<Job>();
 
@@ -37,11 +44,9 @@ namespace MetaGeta.DataStore {
         private readonly ManualResetEvent m_QueueThreadIsSleeping = new ManualResetEvent(false);
         private readonly ManualResetEvent m_StopProcessingActions = new ManualResetEvent(false);
 
-        public JobQueue(bool designMode) {
-            if (!designMode) {
-                m_ProcessActionThread = new Thread(ProcessActionQueueThread);
-                m_ProcessActionThread.Start();
-            }
+        public JobQueue() {
+            m_ProcessActionThread = new Thread(ProcessActionQueueThread);
+            m_ProcessActionThread.Start();
         }
 
         public IEnumerable<Job> ActionItems {
@@ -161,5 +166,13 @@ namespace MetaGeta.DataStore {
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
+
+    public class MockJobQueue : IJobQueue {
+        public IEnumerable<Job> ActionItems { get { return new Job[] { }; } }
+        public void EnqueueAction(string action, MGDataStore dataStore, MGFile file) { }
+        public void WaitForQueueToEmpty() { }
+        public void Dispose() { }
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

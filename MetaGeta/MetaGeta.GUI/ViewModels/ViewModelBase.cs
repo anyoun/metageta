@@ -1,4 +1,4 @@
-// Copyright 2009 Will Thomas
+﻿// Copyright 2009 Will Thomas
 // 
 // This file is part of MetaGeta.
 // 
@@ -15,30 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with MetaGeta. If not, see <http://www.gnu.org/licenses/>.
 
-#region
-
 using System;
-using log4net.Config;
-using MetaGeta.DataStore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.ComponentModel;
 
-#endregion
+namespace MetaGeta.GUI.ViewModels {
+    public abstract class ViewModelBase : INotifyPropertyChanged {
 
-namespace MetaGetaCLI {
-    internal static class Program {
-        public static void Main(string[] args) {
-            //XmlConfigurator.Configure();
+        public event PropertyChangedEventHandler PropertyChanged;
 
-            //var dsm = new DataStoreManager(false);
-
-            //foreach (MGDataStore ds in dsm.DataStores) {
-            //    Console.WriteLine("Refreshing {0}...", ds.Name);
-            //    ds.BeginRefresh();
-            //}
-
-            //dsm.WaitForQueueToEmpty();
-
-            //Console.WriteLine("Done.");
-            //dsm.Shutdown();
+        protected void OnPropertyChanged(string name) {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
         }
     }
 }

@@ -25,6 +25,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using MetaGeta.Utilities;
+using Ninject.Core;
+using MetaGeta.GUI.Services;
 
 #endregion
 
@@ -37,11 +39,26 @@ namespace MetaGeta.GUI {
 
         protected override void OnStartup(StartupEventArgs e) {
             base.OnStartup(e);
+
             XmlConfigurator.Configure();
-            ExtractUnmanagedDlls();
+            LoadUnmanagedDlls();
+            MetaGetaServiceLocator.InitializeRunTime();
+
+            var window = new MetaGetaServiceLocator().MainWindow;
+            window.DataContext = new MetaGetaServiceLocator().MainWindowViewModel;
+            this.MainWindow = window;
+            window.Show();
         }
 
-        private static void ExtractUnmanagedDlls() {
+        protected override void OnExit(ExitEventArgs e) {
+            base.OnExit(e);
+
+            new MetaGetaServiceLocator().DataStoreManager.Shutdown();
+        }
+
+        #region Unmanaged DLLs
+
+        private static void LoadUnmanagedDlls() {
             if (Is64BitProcess) {
                 log.Debug("MetaGeta is running in 64-bit mode.");
                 LoadUnmanagedDll(@"lib-x64\MediaInfo.dll");
@@ -57,15 +74,21 @@ namespace MetaGeta.GUI {
             get { return IntPtr.Size == 8; }
         }
 
-
         [DllImport("kernel32", SetLastError = true)]
         static extern IntPtr LoadLibrary(string lpFileName);
 
         private static void LoadUnmanagedDll(string path) {
+            log.DebugFormat("Loading \"{0}\"...", path);
             IntPtr ptr = LoadLibrary(path);
-            if (ptr == IntPtr.Zero)
-                throw new Exception(string.Format("Couldn't load library \"{0}\".", path),
-                                    Marshal.GetExceptionForHR(Marshal.GetLastWin32Error()));
+            if (ptr == IntPtr.Zero) {
+                var ex = Marshal.GetExceptionForHR(Marshal.GetLastWin32Error());
+                log.FatalFormat("Couldn't load library \"{0}\": {1}", path, ex);
+                throw new Exception(string.Format("Couldn't load library \"{0}\".", path), ex);
+            } else {
+                log.DebugFormat("Loaded \"{0}\".", path);
+            }
         }
+
+        #endregion
     }
 }

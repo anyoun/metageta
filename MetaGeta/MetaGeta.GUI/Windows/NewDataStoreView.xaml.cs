@@ -18,27 +18,15 @@
 #region
 
 using System;
-using log4net.Config;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Forms;
 using MetaGeta.DataStore;
 
 #endregion
 
-namespace MetaGetaCLI {
-    internal static class Program {
-        public static void Main(string[] args) {
-            //XmlConfigurator.Configure();
-
-            //var dsm = new DataStoreManager(false);
-
-            //foreach (MGDataStore ds in dsm.DataStores) {
-            //    Console.WriteLine("Refreshing {0}...", ds.Name);
-            //    ds.BeginRefresh();
-            //}
-
-            //dsm.WaitForQueueToEmpty();
-
-            //Console.WriteLine("Done.");
-            //dsm.Shutdown();
-        }
+namespace MetaGeta.GUI {
+    public partial class NewDataStoreView {
+        public NewDataStoreView() { }
     }
 }

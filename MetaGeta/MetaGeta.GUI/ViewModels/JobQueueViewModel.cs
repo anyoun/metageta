@@ -33,7 +33,7 @@ namespace MetaGeta.GUI {
             m_DataStoreManager = dataStoreManager;
         }
 
-        public JobQueue JobQueue {
+        public IJobQueue JobQueue {
             get { return m_DataStoreManager.JobQueue; }
         }
 

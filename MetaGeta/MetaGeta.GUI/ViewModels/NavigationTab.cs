@@ -19,23 +19,18 @@
 
 using System.ComponentModel;
 using System.Windows.Media;
+using Ninject.Core;
+using MetaGeta.GUI.ViewModels;
+using MetaGeta.GUI.Services;
 
 #endregion
 
 namespace MetaGeta.GUI {
-    public abstract class NavigationTab : INotifyPropertyChanged {
+    public abstract class NavigationTab : ViewModelBase {
         public abstract ImageSource Icon { get; }
         public abstract string Caption { get; }
 
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        protected void OnPropertyChanged(string name) {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-        }
+        [Inject]
+        public IDialogService DialogService { protected get; set; }
     }
 }

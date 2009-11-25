@@ -3,7 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:toolkit="clr-namespace:Microsoft.Windows.Controls;assembly=WPFToolkit"
     xmlns:Primitives="clr-namespace:Microsoft.Windows.Controls.Primitives;assembly=WPFToolkit"
-    StartupUri="MainWindow.xaml">
+    xmlns:GUI="clr-namespace:MetaGeta.GUI"
+    xmlns:ViewModels="clr-namespace:MetaGeta.GUI.ViewModels">
     <Application.Resources>
         
         <!-- Generic brushes -->
@@ -125,6 +126,10 @@
             </Setter.Value>
         </Setter>
         </Style>
+
+        <DataTemplate DataType="{x:Type ViewModels:NewDataStoreWindowViewModel}">
+            <GUI:NewDataStoreView/>
+        </DataTemplate>
 
     </Application.Resources>
 </Application>

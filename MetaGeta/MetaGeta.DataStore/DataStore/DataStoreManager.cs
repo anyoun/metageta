@@ -23,6 +23,7 @@ using System.Reflection;
 using log4net;
 using MetaGeta.DataStore.Database;
 using MetaGeta.Utilities;
+using Ninject.Core;
 
 #endregion
 
@@ -32,24 +33,20 @@ namespace MetaGeta.DataStore {
         private readonly IDataMapper m_DataMapper;
         private readonly ObservableCollection<MGDataStore> m_DataStores = new ObservableCollection<MGDataStore>();
 
-        private readonly JobQueue m_JobQueue;
+        private readonly IJobQueue m_JobQueue;
 
-        public DataStoreManager(bool designMode) {
+        [Inject]
+        public DataStoreManager(DataMapper dataMapper, IJobQueue jobQueue) {
             log.InfoFormat("DataStoreManager ctor");
-
-            if (!designMode)
-                m_DataMapper = new DataMapper("metageta.db3");
-            else
-                m_DataMapper = new MockDataMapper();
-
-            m_JobQueue = new JobQueue(designMode);
+            m_DataMapper = dataMapper;
+            m_JobQueue = jobQueue;
 
             m_DataMapper.Initialize();
             m_DataStores.AddRange(m_DataMapper.GetDataStores(this));
             OnDataStoresChanged();
         }
 
-        public JobQueue JobQueue {
+        public IJobQueue JobQueue {
             get { return m_JobQueue; }
         }
 

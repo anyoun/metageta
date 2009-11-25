@@ -25,29 +25,35 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
+using Ninject.Core;
+using MetaGeta.GUI.Services;
 
 #endregion
 
-namespace MetaGeta.GUI {
-    public class NavigationTabManager : INotifyPropertyChanged {
+namespace MetaGeta.GUI.ViewModels {
+    public class MainWindowViewModel : ViewModelBase {
         private static readonly BitmapImage s_ConfigureImage = new BitmapImage(new Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/configure.png"));
         private readonly DataStoreManager m_DataStoreManager;
 
         private readonly NamedNavigationTabGroup m_MetaGetaTabGroup;
         private readonly ObservableCollection<NavigationTabGroupBase> m_TabGroups = new ObservableCollection<NavigationTabGroupBase>();
 
-        public NavigationTabManager(DataStoreManager dataStoreManager) : this() {
+        [Inject]
+        public MainWindowViewModel(DataStoreManager dataStoreManager) {
+            m_MetaGetaTabGroup = new NamedNavigationTabGroup("MetaGeta");
+            m_MetaGetaTabGroup.Children.Add(new NullViewModel("Settings", s_ConfigureImage));
+            m_TabGroups.Add(m_MetaGetaTabGroup);
+
             m_DataStoreManager = dataStoreManager;
             m_DataStoreManager.DataStores.CollectionChanged += DataStoresChanged;
             m_MetaGetaTabGroup.Children.Add(new JobQueueViewModel(dataStoreManager));
             AddTabGroups(dataStoreManager.DataStores);
+
+            m_NewDataStoreCommand = new RelayCommand(NewDataStoreCommand_Execute);
         }
 
-        private NavigationTabManager() {
-            m_MetaGetaTabGroup = new NamedNavigationTabGroup("MetaGeta");
-            m_MetaGetaTabGroup.Children.Add(new NullViewModel("Settings", s_ConfigureImage));
-            m_TabGroups.Add(m_MetaGetaTabGroup);
-        }
+        [Inject]
+        public IDialogService DialogService { get; set; }
 
         public ObservableCollection<NavigationTabGroupBase> Tabs {
             get { return m_TabGroups; }
@@ -114,15 +120,19 @@ namespace MetaGeta.GUI {
             OnPropertyChanged("Tabs");
         }
 
-        private void OnPropertyChanged(string name) {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-        }
+        #region Actions
 
-        #region Nested type: DesignTimeNavigationTabManager
+        private readonly RelayCommand m_NewDataStoreCommand;
 
-        public class DesignTimeNavigationTabManager : NavigationTabManager {
-            public DesignTimeNavigationTabManager() : base(new DataStoreManager(true)) {}
+        public RelayCommand NewDataStoreCommand { get { return m_NewDataStoreCommand; } }
+        private void NewDataStoreCommand_Execute() {
+            var vm = new NewDataStoreWindowViewModel();
+            bool? dr = DialogService.ShowDialog(vm, DialogType.Modal, DialogButtons.OkCancel);
+            if (dr.HasValue && dr.Value) {
+                DataStoreBuilder args = vm.DataStoreCreationArguments;
+                MGDataStore ds = m_DataStoreManager.NewDataStore(args.Name, args.Tempate);
+                ds.SetCreationArguments(args);
+            }
         }
 
         #endregion

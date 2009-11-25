@@ -99,6 +99,9 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Ninject.Core">
+      <HintPath>..\..\ninject\Ninject.Core.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -154,6 +157,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Services\DialogService.cs" />
+    <Compile Include="Services\IDialogService.cs" />
+    <Compile Include="Services\MetaGetaServiceLocator.cs" />
     <Compile Include="ViewModels\DataStoreConfigurationViewModel.cs" />
     <Compile Include="ViewModels\FilePropertiesViewModel.cs" />
     <Compile Include="ViewModels\GridViewModel.cs" />
@@ -161,9 +167,11 @@
     <Compile Include="ViewModels\JobQueueViewModel.cs" />
     <Compile Include="ViewModels\NavigationTab.cs" />
     <Compile Include="ViewModels\NavigationTabGroup.cs" />
-    <Compile Include="ViewModels\NavigationTabManager.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\NewDataStoreWindowViewModel.cs" />
     <Compile Include="ViewModels\NullViewModel.cs" />
     <Compile Include="ViewModels\TvShowViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\DataStoreConfigurationView.xaml.cs">
       <DependentUpon>DataStoreConfigurationView.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -192,12 +200,15 @@
       <DependentUpon>TvShowView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Windows\DialogBox.xaml.cs">
+      <DependentUpon>DialogBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\GlobalSettingsEditor.xaml.cs">
       <DependentUpon>GlobalSettingsEditor.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Windows\NewDataStoreWindow.xaml.cs">
-      <DependentUpon>NewDataStoreWindow.xaml</DependentUpon>
+    <Compile Include="Windows\NewDataStoreView.xaml.cs">
+      <DependentUpon>NewDataStoreView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -275,13 +286,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Windows\DialogBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\GlobalSettingsEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Windows\NewDataStoreWindow.xaml">
+    <Page Include="Windows\NewDataStoreView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <Generator>MSBuild:Compile</Generator>
@@ -424,7 +439,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

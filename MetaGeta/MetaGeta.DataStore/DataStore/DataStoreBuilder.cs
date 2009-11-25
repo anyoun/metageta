@@ -34,7 +34,7 @@ namespace MetaGeta.DataStore {
 
         public DataStoreBuilder() {
             m_Name = "TV Shows";
-            m_DirectoriesToWatch = "F:\\ipod\\";
+            m_DirectoriesToWatch = "E:\\ipod\\";
             m_Extensions = "mp4;avi;mkv";
         }
 
