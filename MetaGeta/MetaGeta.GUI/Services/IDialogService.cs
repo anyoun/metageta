@@ -20,10 +20,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MetaGeta.GUI.ViewModels;
+using System.ComponentModel;
+using System.Windows.Input;
 
 namespace MetaGeta.GUI.Services {
     public interface IDialogService {
-        bool? ShowDialog(ViewModelBase viewModel, DialogType type, DialogButtons buttons);
+        bool? ShowDialog(IDialogViewModel viewModel, DialogType type, DialogButtons buttons);
     }
 
     public enum DialogType {
@@ -32,5 +34,10 @@ namespace MetaGeta.GUI.Services {
 
     public enum DialogButtons {
         Ok, OkCancel, Close
+    }
+
+    public interface IDialogViewModel : INotifyPropertyChanged {
+        ICommand OkCommand { get; }
+        ICommand CancelCommand { get; }
     }
 }

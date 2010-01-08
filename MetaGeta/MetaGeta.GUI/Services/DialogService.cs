@@ -33,7 +33,7 @@ namespace MetaGeta.GUI.Services {
             m_ParentWindow = parentWindow;
         }
 
-        public bool? ShowDialog(ViewModelBase viewModel, DialogType type, DialogButtons buttons) {
+        public bool? ShowDialog(IDialogViewModel viewModel, DialogType type, DialogButtons buttons) {
             var window = new DialogBox();
             window.Owner = m_ParentWindow;
             window.DataContext = viewModel;
@@ -52,7 +52,7 @@ namespace MetaGeta.GUI.Services {
         [Inject]
         public MockDialogService(Window parentWindow) { }
 
-        public bool? ShowDialog(ViewModelBase viewModel, DialogType type, DialogButtons buttons) {
+        public bool? ShowDialog(IDialogViewModel viewModel, DialogType type, DialogButtons buttons) {
             return true;
         }
     }

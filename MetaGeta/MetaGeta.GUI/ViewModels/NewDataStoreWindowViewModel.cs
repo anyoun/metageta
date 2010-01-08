@@ -27,13 +27,15 @@ using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
 using Ninject.Core;
 using System.Windows.Forms;
+using MetaGeta.GUI.Services;
+using System.Windows.Input;
 
 #endregion
 
 namespace MetaGeta.GUI.ViewModels {
-    public class NewDataStoreWindowViewModel : ViewModelBase {
+    public class NewDataStoreWindowViewModel : ViewModelBase, IDialogViewModel {
         private readonly DataStoreBuilder m_Arguments;
-        private readonly RelayCommand m_NewDirectoryCommand;
+        private readonly RelayCommand m_NewDirectoryCommand, m_OkCommand, m_CancelCommand;
 
         public NewDataStoreWindowViewModel() : this(new DataStoreBuilder()) { }
 
@@ -41,13 +43,15 @@ namespace MetaGeta.GUI.ViewModels {
             m_Arguments = arguments;
 
             m_NewDirectoryCommand = new RelayCommand(NewDirectoryCommand_Execute);
+            m_OkCommand = new RelayCommand(delegate { }, () => IsOkEnabled);
+            m_CancelCommand = new RelayCommand(delegate { }, () => true);
         }
 
         public DataStoreBuilder DataStoreCreationArguments { get { return m_Arguments; } }
         public TemplateFinder TemplateFinder { get { return new TemplateFinder(); } }
         public bool IsOkEnabled { get { return m_Arguments.IsValid; } }
 
-        public RelayCommand NewDirectoryCommand { get { return m_NewDirectoryCommand; } }
+        public ICommand NewDirectoryCommand { get { return m_NewDirectoryCommand; } }
         private void NewDirectoryCommand_Execute() {
             var fbd = new FolderBrowserDialog();
             fbd.ShowNewFolderButton = true;
@@ -58,5 +62,8 @@ namespace MetaGeta.GUI.ViewModels {
                 m_Arguments.DirectoriesToWatch += fbd.SelectedPath;
             }
         }
+
+        public ICommand OkCommand { get { return m_OkCommand; } }
+        public ICommand CancelCommand { get { return m_CancelCommand; } }
     }
 }

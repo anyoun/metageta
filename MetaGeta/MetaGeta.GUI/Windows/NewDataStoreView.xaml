@@ -41,6 +41,7 @@
         <TextBlock x:Name="blkTemplate" Margin="0,0,9.065,108.88" Text="Template:" TextWrapping="Wrap" d:LayoutOverrides="HorizontalAlignment, Height" HorizontalAlignment="Right" Width="Auto" VerticalAlignment="Bottom" />
 
         <ComboBox x:Name="cmbTemplate" IsSynchronizedWithCurrentItem="True" 
+                  IsEditable="False" IsReadOnly="True"
                   ItemsSource="{Binding Path=TemplateFinder.AvailableTemplates, Mode=Default}" 
                   Margin="8,0,8,105.88" Grid.Column="1" d:LayoutOverrides="Height" 
                   SelectedItem="{Binding Path=DataStoreCreationArguments.Tempate, Mode=Default}" VerticalAlignment="Bottom"/>

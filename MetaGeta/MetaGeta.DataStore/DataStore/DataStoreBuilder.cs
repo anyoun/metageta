@@ -36,6 +36,7 @@ namespace MetaGeta.DataStore {
             m_Name = "TV Shows";
             m_DirectoriesToWatch = "E:\\ipod\\";
             m_Extensions = "mp4;avi;mkv";
+            m_Template = new TemplateFinder().AvailableTemplates.First();
         }
 
         public string Name {

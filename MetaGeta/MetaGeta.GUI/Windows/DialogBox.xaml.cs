@@ -36,5 +36,15 @@ namespace MetaGeta.GUI.Windows {
                     throw new ArgumentOutOfRangeException("buttons");
             }
         }
+
+        private void btnCancel_Click(object sender, RoutedEventArgs e) {
+            this.DialogResult = false;
+            this.Close();
+        }
+
+        private void btnOK_Click(object sender, RoutedEventArgs e) {
+            this.DialogResult = true;
+            this.Close();
+        }
     }
 }

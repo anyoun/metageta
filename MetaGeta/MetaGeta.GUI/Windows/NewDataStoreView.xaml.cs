@@ -27,6 +27,8 @@ using MetaGeta.DataStore;
 
 namespace MetaGeta.GUI {
     public partial class NewDataStoreView {
-        public NewDataStoreView() { }
+        public NewDataStoreView() {
+            InitializeComponent();
+        }
     }
 }
