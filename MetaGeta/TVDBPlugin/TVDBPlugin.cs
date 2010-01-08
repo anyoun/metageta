@@ -40,39 +40,43 @@ namespace MetaGeta.TVDBPlugin {
         private MGDataStore m_DataStore;
 
         private long m_ID;
-        private TvdbHandler m_tvdbHandler;
+        private TvdbHandler m_tvdbHandler = null;
+        private DateTimeOffset m_LastUpdateTime;
 
-        public long ID {
-            get { return m_ID; }
-        }
 
         #region IMGPluginBase Members
 
         public void Startup(MGDataStore dataStore, long id) {
             m_DataStore = dataStore;
+        }
+
+        private void LazyInitialization() {
+            //Initialize once per instance here, not Startup() to avoid slowing down application startup.
+            if (m_tvdbHandler != null)
+                return;
+
             m_tvdbHandler = new TvdbHandler(new XmlCacheProvider("C:\\temp\\tvdbcache"), "BC8024C516DFDA3B");
             m_tvdbHandler.InitCache();
+
+            if (DateTimeOffset.Now - m_LastUpdateTime > TimeSpan.FromDays(1)) {
+                log.InfoFormat("Updating all series since it's been {0} since the last update.", DateTimeOffset.Now - m_LastUpdateTime);
+                m_tvdbHandler.UpdateAllSeries(TvdbHandler.Interval.automatic, true);
+                LastUpdateTime = DateTimeOffset.Now;
+                log.DebugFormat("Update OK.");
+            } else {
+                log.InfoFormat("Not updating since it's only been {0} since the last update.", DateTimeOffset.Now - m_LastUpdateTime);
+            }
         }
 
         public void Shutdown() {
             m_tvdbHandler.CloseCache();
         }
 
-        long IMGPluginBase.PluginID {
-            get { return ID; }
-        }
-
-        public string FriendlyName {
-            get { return "The TVDB Plugin"; }
-        }
-
-        public string UniqueName {
-            get { return "TVDBPlugin"; }
-        }
-
-        public Version Version {
-            get { return new Version(1, 0, 0, 0); }
-        }
+        public long ID { get { return m_ID; } }
+        long IMGPluginBase.PluginID { get { return ID; } }
+        public string FriendlyName { get { return "The TVDB Plugin"; } }
+        public string UniqueName { get { return "TVDBPlugin"; } }
+        public Version Version { get { return new Version(1, 0, 0, 0); } }
 
         public event PropertyChangedEventHandler SettingChanged;
 
@@ -81,6 +85,8 @@ namespace MetaGeta.TVDBPlugin {
         #region IMGTaggingPlugin Members
 
         public void Process(MGFile file, ProgressStatus reporter) {
+            LazyInitialization();
+
             //prompt user for series name lookups??
             int? seriesID = GetSeriesID(file);
             if (seriesID == null)
@@ -105,6 +111,34 @@ namespace MetaGeta.TVDBPlugin {
         }
 
         #endregion
+
+        private const string c_DefaultDate = "0001-01-01T00:00:00.0000000+00:00";
+        [Settings("Last Update Time", c_DefaultDate, SettingType.ShortText, "Updates")]
+        public string LastUpdateTimeString {
+            get { return m_LastUpdateTime.ToString("o"); }
+            set {
+                if (value != LastUpdateTimeString) {
+                    m_LastUpdateTime = DateTimeOffset.ParseExact(value ?? c_DefaultDate, "o", null, System.Globalization.DateTimeStyles.RoundtripKind);
+                    if (SettingChanged != null) {
+                        SettingChanged(this, new PropertyChangedEventArgs("LastUpdateTimeString"));
+                        SettingChanged(this, new PropertyChangedEventArgs("LastUpdateTime"));
+                    }
+                }
+            }
+        }
+
+        public DateTimeOffset LastUpdateTime {
+            get { return m_LastUpdateTime; }
+            set {
+                if (value != m_LastUpdateTime) {
+                    m_LastUpdateTime = value;
+                    if (SettingChanged != null) {
+                        SettingChanged(this, new PropertyChangedEventArgs("LastUpdateTimeString"));
+                        SettingChanged(this, new PropertyChangedEventArgs("LastUpdateTime"));
+                    }
+                }
+            }
+        }
 
         private string LoadBannerToPath(TvdbBanner banner) {
             if (banner == null)

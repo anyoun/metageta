@@ -38,8 +38,8 @@ namespace MetaGeta.DataStore {
             m_Category = category;
 
             if (defaultValue.GetType().IsArray) {
-                MethodInfo mi = typeof (Array).GetMethods().Where(x => x.Name == "AsReadOnly").Single();
-                m_DefaultValue = mi.MakeGenericMethod(defaultValue.GetType().GetElementType()).Invoke(null, new[] {defaultValue});
+                MethodInfo mi = typeof(Array).GetMethods().Where(x => x.Name == "AsReadOnly").Single();
+                m_DefaultValue = mi.MakeGenericMethod(defaultValue.GetType().GetElementType()).Invoke(null, new[] { defaultValue });
             } else
                 m_DefaultValue = defaultValue;
         }
@@ -72,6 +72,7 @@ namespace MetaGeta.DataStore {
         DirectoryList,
         File,
         FileList,
-        ExtensionList
+        ExtensionList,
+        Date
     }
 }

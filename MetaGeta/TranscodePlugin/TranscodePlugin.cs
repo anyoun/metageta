@@ -378,7 +378,7 @@ namespace TranscodePlugin {
         }
 
         public double PercentDone {
-            get { return m_PositionFrames / m_TotalFrames; }
+            get { return (double)m_PositionFrames / m_TotalFrames; }
         }
 
         public double EstimatedBitrate {

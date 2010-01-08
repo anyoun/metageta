@@ -79,6 +79,7 @@ namespace MetaGeta.TVShowPlugin {
             Expect("[QWERT-ASDF]_A_Name_-_Sub_Name_-_04_[12345678]", "A Name - Sub Name", 1, 4, null);
             Expect("[Groupname]_Series_Name_-_08[Eng-Rus][1280x720][12345678]", "Series Name", 1, 8, null);
             Expect("[Groupname]_Series_Name_-_09(1280x720)[ABCDEF78]", "Series Name", 1, 9, null);
+            Expect("Battlestar Galactica-s1e1.mp4.iphone", "Battlestar Galactica (2003)", 1, 1, null);
         }
     }
 }

@@ -80,19 +80,22 @@ namespace MetaGeta.DataStore {
                 case SettingType.ShortText:
                 case SettingType.File:
                 case SettingType.LongText:
-
                     return (string) val;
+
                 case SettingType.ExtensionList:
                 case SettingType.DirectoryList:
                 case SettingType.FileList:
-
                     return ((ReadOnlyCollection<string>) val).JoinToString(";");
+
                 case SettingType.Int:
-
                     return ((int) val).ToString("D");
-                case SettingType.Float:
 
+                case SettingType.Float:
                     return ((double) val).ToString("R");
+
+                case SettingType.Date:
+                    return ((DateTimeOffset) val).ToString("o");
+
                 default:
                     throw new Exception(string.Format("Unknown setting type: {0}.", Metadata.Type));
             }
@@ -105,22 +108,26 @@ namespace MetaGeta.DataStore {
                 case SettingType.File:
                 case SettingType.LongText:
                     Value = s;
-
                     break;
+
                 case SettingType.ExtensionList:
                 case SettingType.DirectoryList:
                 case SettingType.FileList:
                     Value = new ReadOnlyCollection<string>(s.Split(';'));
-
                     break;
+
                 case SettingType.Int:
                     Value = int.Parse(s);
-
                     break;
+
                 case SettingType.Float:
                     Value = double.Parse(s);
-
                     break;
+
+                case SettingType.Date:
+                    Value = DateTimeOffset.ParseExact(s, "o", null, System.Globalization.DateTimeStyles.RoundtripKind);
+                    break;
+
                 default:
                     throw new Exception(string.Format("Unknown setting type: {0}.", Metadata.Type));
             }
