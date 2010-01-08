@@ -27,9 +27,10 @@ using MetaGeta.DataStore;
 
 namespace MetaGeta.GUI.Editors {
     public partial class SettingsEditor {
-        public static DependencyProperty SettingsProperty = DependencyProperty.Register("Settings", typeof (SettingInfoCollection), typeof (SettingsEditor));
+        public static DependencyProperty SettingsProperty = DependencyProperty.Register("Settings", typeof(SettingInfoCollection), typeof(SettingsEditor));
 
-        public SettingsEditor() : base() {
+        public SettingsEditor()
+            : base() {
             InitializeComponent();
 
             // Insert code required on object creation below this point.
@@ -77,23 +78,26 @@ namespace MetaGeta.GUI {
                 case SettingType.ShortText:
                 case SettingType.File:
                 case SettingType.LongText:
-
                     return StringTemplate;
+
                 case SettingType.ExtensionList:
-
                     return ExtensionListTemplate;
+
                 case SettingType.DirectoryList:
-
                     return DirectoryListTemplate;
+
                 case SettingType.FileList:
-
                     return FileListTemplate;
+
                 case SettingType.Int:
-
                     return StringTemplate;
+
                 case SettingType.Float:
-
                     return StringTemplate;
+
+                case SettingType.Date:
+                    return StringTemplate;
+
                 default:
                     throw new Exception(string.Format("Unknown setting type: {0}.", ((SettingInfo) item).Metadata.Type));
             }
