@@ -69,7 +69,8 @@ namespace MetaGeta.TVDBPlugin {
         }
 
         public void Shutdown() {
-            m_tvdbHandler.CloseCache();
+            if (m_tvdbHandler != null)
+                m_tvdbHandler.CloseCache();
         }
 
         public long ID { get { return m_ID; } }
