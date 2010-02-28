@@ -25,7 +25,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using MetaGeta.Utilities;
-using Ninject.Core;
+using Ninject;
+using Ninject.Modules;
 using MetaGeta.GUI.Services;
 
 #endregion

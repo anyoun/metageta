@@ -18,6 +18,7 @@
 #region
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
@@ -116,10 +117,8 @@ namespace MetaGeta.GUI {
         }
 
         public void ShowProperties(IList<MGFile> param) {
-            //Dim win As New FilePropertiesView(param.First())
-            //PresentationTraceSources.SetTraceLevel(win, PresentationTraceLevel.High)
-            //win.Owner = Window.GetWindow(Me)
-            //win.ShowDialog()
+            var win = new FilePropertiesViewModel(param.First());
+            DialogService.ShowDialog(win, Services.DialogType.NonModal, Services.DialogButtons.Close);
         }
 
         #endregion

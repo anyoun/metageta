@@ -19,7 +19,7 @@
 
 using System.ComponentModel;
 using System.Windows.Media;
-using Ninject.Core;
+using Ninject;
 using MetaGeta.GUI.ViewModels;
 using MetaGeta.GUI.Services;
 

@@ -23,7 +23,7 @@ using System.Reflection;
 using log4net;
 using MetaGeta.DataStore.Database;
 using MetaGeta.Utilities;
-using Ninject.Core;
+using Ninject;
 
 #endregion
 

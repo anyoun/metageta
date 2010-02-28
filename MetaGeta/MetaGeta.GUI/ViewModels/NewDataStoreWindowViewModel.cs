@@ -25,7 +25,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
-using Ninject.Core;
+using Ninject;
 using System.Windows.Forms;
 using MetaGeta.GUI.Services;
 using System.Windows.Input;

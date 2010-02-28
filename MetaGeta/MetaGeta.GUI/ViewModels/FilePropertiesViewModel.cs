@@ -14,6 +14,31 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with MetaGeta. If not, see <http://www.gnu.org/licenses/>.
+
+#region
+
+using MetaGeta.GUI.ViewModels;
+using MetaGeta.DataStore;
+using MetaGeta.GUI.Services;
+using System.Windows.Input;
+using System.Collections.Generic;
+
+#endregion
+
 namespace MetaGeta.GUI {
-    public class FilePropertiesViewModel {}
+    public class FilePropertiesViewModel : ViewModelBase, IDialogViewModel {
+        private readonly MGFile m_File;
+        private readonly ICommand m_OkCommand, m_CancelCommand;
+
+        public FilePropertiesViewModel(MGFile mGFile) {
+            m_File = mGFile;
+            m_OkCommand = new RelayCommand(delegate { }, () => true);
+            m_CancelCommand = new RelayCommand(delegate { }, () => false);
+        }
+
+        public IEnumerable<MGTag> Tags { get { return m_File.Tags.All; } }
+
+        public ICommand OkCommand { get { return m_OkCommand; } }
+        public ICommand CancelCommand { get { return m_CancelCommand; } }
+    }
 }

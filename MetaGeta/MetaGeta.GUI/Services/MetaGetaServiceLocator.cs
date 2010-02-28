@@ -19,12 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Ninject.Core;
+using Ninject;
 using MetaGeta.GUI.ViewModels;
 using System.Windows;
 using MetaGeta.DataStore;
 using MetaGeta.DataStore.Database;
-using Ninject.Core.Behavior;
+using Ninject.Modules;
 
 namespace MetaGeta.GUI.Services {
     public class MetaGetaServiceLocator {
@@ -42,7 +42,7 @@ namespace MetaGeta.GUI.Services {
         private static void LazyInitialize() {
             lock (m_KernelLock) {
                 if (m_Kernel == null)
-                    m_Kernel = new StandardKernel(new DesignTimeModule());
+                    m_Kernel = new StandardKernel(new NinjectSettings(), new DesignTimeModule());
             }
         }
 
@@ -52,27 +52,27 @@ namespace MetaGeta.GUI.Services {
         public DataStoreManager DataStoreManager { get { LazyInitialize(); return m_Kernel.Get<DataStoreManager>(); } }
     }
 
-    public class RunTimeModule : StandardModule {
+    public class RunTimeModule : NinjectModule {
         public override void Load() {
-            Bind<DataMapper>().To<DataMapper>().Using<SingletonBehavior>();
-            Bind<IJobQueue>().To<JobQueue>().Using<SingletonBehavior>();
-            Bind<DataStoreManager>().To<DataStoreManager>().Using<SingletonBehavior>();
+            Bind<DataMapper>().To<DataMapper>().InSingletonScope();
+            Bind<IJobQueue>().To<JobQueue>().InSingletonScope();
+            Bind<DataStoreManager>().To<DataStoreManager>().InSingletonScope();
 
-            Bind<Window>().To<MainWindow>().Using<SingletonBehavior>();
-            Bind<IDialogService>().To<DialogService>().Using<SingletonBehavior>();
-            Bind<MainWindowViewModel>().To<MainWindowViewModel>().Using<SingletonBehavior>();
+            Bind<Window>().To<MainWindow>().InSingletonScope();
+            Bind<IDialogService>().To<DialogService>().InSingletonScope();
+            Bind<MainWindowViewModel>().To<MainWindowViewModel>().InSingletonScope();
         }
     }
 
-    public class DesignTimeModule : StandardModule {
+    public class DesignTimeModule : NinjectModule {
         public override void Load() {
-            Bind<DataMapper>().To<MockDataMapper>().Using<SingletonBehavior>();
-            Bind<IJobQueue>().To<MockJobQueue>().Using<SingletonBehavior>();
-            Bind<DataStoreManager>().To<DataStoreManager>().Using<SingletonBehavior>();
+            Bind<DataMapper>().To<MockDataMapper>().InSingletonScope();
+            Bind<IJobQueue>().To<MockJobQueue>().InSingletonScope();
+            Bind<DataStoreManager>().To<DataStoreManager>().InSingletonScope();
 
-            Bind<Window>().ToConstant<MainWindow>(null);
-            Bind<IDialogService>().To<MockDialogService>().Using<SingletonBehavior>();
-            Bind<MainWindowViewModel>().To<MainWindowViewModel>().Using<SingletonBehavior>();
+            Bind<Window>().ToConstant(null);
+            Bind<IDialogService>().To<MockDialogService>().InSingletonScope();
+            Bind<MainWindowViewModel>().To<MainWindowViewModel>().InSingletonScope();
         }
     }
 }
