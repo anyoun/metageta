@@ -69,7 +69,8 @@ namespace MetaGeta.TVDBPlugin {
         }
 
         public void Shutdown() {
-            m_tvdbHandler.CloseCache();
+            if (m_tvdbHandler != null)
+                m_tvdbHandler.CloseCache();
         }
 
         public long ID { get { return m_ID; } }
@@ -141,7 +142,7 @@ namespace MetaGeta.TVDBPlugin {
         }
 
         private string LoadBannerToPath(TvdbBanner banner) {
-            if (banner == null)
+            if (banner == null || string.IsNullOrEmpty(banner.BannerPath))
                 return null;
 
             string imageLocalPath = Path.Combine(m_DataStore.GetImageDirectory(), banner.Id.ToString());
