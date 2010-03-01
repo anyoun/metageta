@@ -155,7 +155,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\DataStoreConfigurationViewModel.cs" />
-    <Compile Include="ViewModels\FilePropertiesViewModel.cs" />
     <Compile Include="ViewModels\GridViewModel.cs" />
     <Compile Include="ViewModels\ImportStatusViewModel.cs" />
     <Compile Include="ViewModels\JobQueueViewModel.cs" />
@@ -166,10 +165,6 @@
     <Compile Include="ViewModels\TvShowViewModel.cs" />
     <Compile Include="Views\DataStoreConfigurationView.xaml.cs">
       <DependentUpon>DataStoreConfigurationView.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Views\FilePropertiesView.xaml.cs">
-      <DependentUpon>FilePropertiesView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Views\GridView.xaml.cs">
@@ -234,12 +229,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\DataStoreConfigurationView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\FilePropertiesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <Generator>MSBuild:Compile</Generator>

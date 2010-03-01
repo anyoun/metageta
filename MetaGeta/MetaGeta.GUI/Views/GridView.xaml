@@ -21,10 +21,6 @@
             <MenuItem Name="miRemoveFile" Header="Remove"
                       Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=DataContext.RemoveFileCommand}"          
                       CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
-            <Separator />
-            <MenuItem Name="miShowProperties" Header="Properties"
-                      Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=DataContext.ShowPropertiesCommand}"          
-                      CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
         </ContextMenu>
 
         <Style TargetType="{x:Type toolkit:DataGridRow}" BasedOn="{StaticResource DataGridRowAreoStyle}">
@@ -33,12 +29,35 @@
 
     </UserControl.Resources>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
         <toolkit:DataGrid AutoGenerateColumns="False" Margin="0" x:Name="DataGrid1" 
                           ItemsSource="{Binding Path=Files}" IsSynchronizedWithCurrentItem="True" 
                           HeadersVisibility="Column" IsReadOnly="True" CanUserResizeRows="False" GridLinesVisibility="None"
 					      d:GenerateSampleData="True" IsTextSearchEnabled="True"
                           SelectionMode="Extended" SelectionUnit="FullRow"
                           SelectedCellsChanged="DataGrid1_SelectedCellsChanged" 
+                          Grid.Column="0"
 					      />
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+        <toolkit:DataGrid AutoGenerateColumns="False"
+                          ItemsSource="{Binding Path=SelectedFile.Tags.All}"
+                          HeadersVisibility="Column" IsReadOnly="True" CanUserResizeRows="False" GridLinesVisibility="None"
+                          Grid.Column="2"
+                          >
+            <toolkit:DataGrid.Columns>
+                <toolkit:DataGridTextColumn Binding="{Binding Path=Name}" Header="Name" Width="150"/>
+                <toolkit:DataGridTextColumn Binding="{Binding Path=Value}" Header="Value" Width="300">
+                    <toolkit:DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                        </Style>
+                    </toolkit:DataGridTextColumn.ElementStyle>
+                </toolkit:DataGridTextColumn>
+            </toolkit:DataGrid.Columns>
+        </toolkit:DataGrid>
     </Grid>
 </UserControl>

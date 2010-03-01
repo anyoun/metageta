@@ -25,6 +25,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
 using TranscodePlugin;
+using System.Linq;
 
 #endregion
 
@@ -42,7 +43,6 @@ namespace MetaGeta.GUI {
             m_ConvertToIphoneCommand = new RelayCommand<IList<MGFile>>(ConvertToIphone, IsNonEmpty, () => SelectedFiles);
             m_WriteMp4TagsCommand = new RelayCommand<IList<MGFile>>(WriteMp4Tags, IsNonEmpty, () => SelectedFiles);
             m_RemoveFileCommand = new RelayCommand<IList<MGFile>>(RemoveFile, IsNonEmpty, () => SelectedFiles);
-            m_ShowPropertiesCommand = new RelayCommand<IList<MGFile>>(ShowProperties, IsExactlyOne, () => SelectedFiles);
         }
 
         public string[] ColumnNames {
@@ -59,9 +59,12 @@ namespace MetaGeta.GUI {
                 if (!ReferenceEquals(m_SelectedFiles, value)) {
                     m_SelectedFiles = value;
                     OnPropertyChanged("SelectedFiles");
+                    OnPropertyChanged("SelectedFile");
                 }
             }
         }
+
+        public MGFile SelectedFile { get { return m_SelectedFiles.Count != 1 ? null : m_SelectedFiles.First(); } }
 
         public override string Caption {
             get { return "Grid"; }
@@ -73,13 +76,12 @@ namespace MetaGeta.GUI {
 
         #region "Commands"
 
-        #region "Properties"
-
         private readonly RelayCommand<IList<MGFile>> m_ConvertToIphoneCommand;
         private readonly RelayCommand<IList<MGFile>> m_RemoveFileCommand;
-        private readonly RelayCommand<IList<MGFile>> m_ShowPropertiesCommand;
 
         private readonly RelayCommand<IList<MGFile>> m_WriteMp4TagsCommand;
+
+        #region "Properties"
 
         public ICommand ConvertToIphoneCommand {
             get { return m_ConvertToIphoneCommand; }
@@ -91,10 +93,6 @@ namespace MetaGeta.GUI {
 
         public ICommand RemoveFileCommand {
             get { return m_RemoveFileCommand; }
-        }
-
-        public ICommand ShowPropertiesCommand {
-            get { return m_ShowPropertiesCommand; }
         }
 
         #endregion
