@@ -40,7 +40,6 @@ $dir = recreate-directory "output\MetaGeta.$timestamp"
 pushd $dir
 	rm *.xml
 	rm *.pdb
-	copy ..\..\tools\AtomicParsley\AtomicParsley.exe .
 	copy ..\..\tools\ffmpeg\ffmpeg.exe .
 popd
 
