@@ -198,8 +198,7 @@ namespace TranscodePlugin {
                 log.ErrorFormat("Encoding failed- output file doesn't exist: \"{0}\".", outputPath.LocalPath);
             else {
                 MGFile newFile = m_DataStore.AddNewFile(outputPath);
-                //Will also enqueue an import
-                m_DataStore.DoAction(newFile, Mp4TagWriterPlugin.c_WriteTagsAction);
+                Mp4TagWriterPlugin.WriteMp4TvShowTags(newFile);
             }
         }
 
