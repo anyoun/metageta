@@ -107,8 +107,12 @@
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="taglib-sharp">
+      <HintPath>..\..\taglib-sharp\Libraries\taglib-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppleTvTag.cs" />
     <Compile Include="Mp4TagWriterPlugin.cs" />
     <Compile Include="My Project\AssemblyInfo.cs" />
     <Compile Include="TranscodePlugin.cs" />
