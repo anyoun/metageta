@@ -83,6 +83,10 @@ namespace TranscodePlugin {
                 return;
             }
 
+            WriteMp4TvShowTags(file);
+        }
+
+        internal static void WriteMp4TvShowTags(MGFile file) {
             var f = TagLib.File.Create(file.FileName);
             var tags = new AppleTvTag(f);
 
