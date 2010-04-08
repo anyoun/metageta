@@ -337,6 +337,11 @@ namespace TranscodePlugin {
             -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30 -threads 4
             -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 ""%output%""
         </Preset>
+        <Preset Name=""iPod-5G"" Encoder=""ffmpeg"" MaxWidth=""320"" MaxHeight=""240"">
+            -i ""%input%"" -r %fps% -vcodec libx264 -b 500000 -s %width%x%height%
+            -coder 0 -bf 0 -flags2 -wpred-dct8x8 -level 13 -threads 4
+            -maxrate 768000 -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 ""%output%""
+        </Preset>
     </TranscodingPresets>
 ");
 
