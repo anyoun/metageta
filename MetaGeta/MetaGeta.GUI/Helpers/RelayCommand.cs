@@ -26,13 +26,10 @@ namespace MetaGeta.GUI {
     public class RelayCommand<T> : ICommand {
         private readonly Predicate<T> m_CanExecute;
         private readonly Action<T> m_Execute;
-
         private readonly Func<T> m_GetParameter;
 
-        public RelayCommand(Action<T> execute) : this(execute, null) {}
-
-        public RelayCommand(Action<T> execute, Predicate<T> canExecute) : this(execute, canExecute, null) {}
-
+        public RelayCommand(Action<T> execute) : this(execute, null) { }
+        public RelayCommand(Action<T> execute, Predicate<T> canExecute) : this(execute, canExecute, null) { }
         public RelayCommand(Action<T> execute, Predicate<T> canExecute, Func<T> getParameter) {
             m_Execute = execute;
             m_CanExecute = canExecute;
@@ -42,7 +39,7 @@ namespace MetaGeta.GUI {
         #region ICommand Members
 
         public bool CanExecute(object parameter) {
-            parameter = parameter == null ? parameter : m_GetParameter();
+            parameter = m_GetParameter == null ? parameter : m_GetParameter();
             return m_CanExecute == null ? true : m_CanExecute((T) parameter);
         }
 
@@ -52,7 +49,7 @@ namespace MetaGeta.GUI {
         }
 
         public void Execute(object parameter) {
-            parameter = parameter == null ? parameter : m_GetParameter();
+            parameter = m_GetParameter == null ? parameter : m_GetParameter();
             m_Execute((T) parameter);
         }
 
@@ -65,7 +62,7 @@ namespace MetaGeta.GUI {
         private readonly Func<bool> m_CanExecute;
         private readonly Action m_Execute;
 
-        public RelayCommand(Action execute) : this(execute, null) {}
+        public RelayCommand(Action execute) : this(execute, null) { }
 
         public RelayCommand(Action execute, Func<bool> canExecute) {
             m_Execute = execute;

@@ -23,7 +23,10 @@ using System.Collections.Generic;
 
 namespace MetaGeta.DataStore {
     public interface IMGFileActionPlugin {
-        IEnumerable<string> GetActions();
-        void DoAction(string action, MGFile file, ProgressStatus progress);
+        IList<IAction> GetActions();
+    }
+    public interface IAction {
+        string Label { get; }
+        void Execute(MGFile file, ProgressStatus progress);
     }
 }

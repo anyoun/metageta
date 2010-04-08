@@ -26,6 +26,7 @@ using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
 using TranscodePlugin;
 using System.Linq;
+using MetaGeta.Utilities;
 
 #endregion
 
@@ -40,9 +41,11 @@ namespace MetaGeta.GUI {
             m_DataStore = dataStore;
             m_DataStore.PropertyChanged += DataStorePropertyChanged;
 
-            m_ConvertToIphoneCommand = new RelayCommand<IList<MGFile>>(ConvertToIphone, IsNonEmpty, () => SelectedFiles);
-            m_WriteMp4TagsCommand = new RelayCommand<IList<MGFile>>(WriteMp4Tags, IsNonEmpty, () => SelectedFiles);
-            m_RemoveFileCommand = new RelayCommand<IList<MGFile>>(RemoveFile, IsNonEmpty, () => SelectedFiles);
+            m_ActionCommands.Add(new FileContextMenuCommand("Remove", new RelayCommand<IList<MGFile>>(RemoveFile, IsNonEmpty, () => SelectedFiles)));
+            foreach (var action in m_DataStore.GetActions()) {
+                m_ActionCommands.Add(new FileContextMenuCommand(action.Label,
+                    new RelayCommand<IList<MGFile>>(fs => fs.ForEach(f => m_DataStore.DoAction(f, action)), IsNonEmpty, () => SelectedFiles)));
+            }
         }
 
         public string[] ColumnNames {
@@ -76,48 +79,15 @@ namespace MetaGeta.GUI {
 
         #region "Commands"
 
-        private readonly RelayCommand<IList<MGFile>> m_ConvertToIphoneCommand;
         private readonly RelayCommand<IList<MGFile>> m_RemoveFileCommand;
+        private readonly List<FileContextMenuCommand> m_ActionCommands = new List<FileContextMenuCommand>();
 
-        private readonly RelayCommand<IList<MGFile>> m_WriteMp4TagsCommand;
-
-        #region "Properties"
-
-        public ICommand ConvertToIphoneCommand {
-            get { return m_ConvertToIphoneCommand; }
-        }
-
-        public ICommand WriteMp4TagsCommand {
-            get { return m_WriteMp4TagsCommand; }
-        }
-
-        public ICommand RemoveFileCommand {
-            get { return m_RemoveFileCommand; }
-        }
-
-        #endregion
+        public IList<FileContextMenuCommand> Commands { get { return m_ActionCommands; } }
 
         #region "Execute"
 
-        public void ConvertToIphone(IList<MGFile> param) {
-            foreach (MGFile f in param)
-                m_DataStore.DoAction(f, TranscodePlugin.TranscodePlugin.ConvertActionName);
-        }
-
-        public void WriteMp4Tags(IList<MGFile> param) {
-            foreach (MGFile f in param)
-                m_DataStore.DoAction(f, Mp4TagWriterPlugin.c_WriteTagsAction);
-        }
-
         public void RemoveFile(IList<MGFile> param) {
             m_DataStore.RemoveFiles(param);
-        }
-
-        public void ShowProperties(IList<MGFile> param) {
-            //Dim win As New FilePropertiesView(param.First())
-            //PresentationTraceSources.SetTraceLevel(win, PresentationTraceLevel.High)
-            //win.Owner = Window.GetWindow(Me)
-            //win.ShowDialog()
         }
 
         #endregion
@@ -140,5 +110,16 @@ namespace MetaGeta.GUI {
             if (e.PropertyName == "Files")
                 OnPropertyChanged("Files");
         }
+    }
+
+    public class FileContextMenuCommand {
+        private readonly string m_Label;
+        private readonly ICommand m_Command;
+        public FileContextMenuCommand(string label, ICommand command) {
+            m_Label = label;
+            m_Command = command;
+        }
+        public string Label { get { return m_Label; } }
+        public ICommand Command { get { return m_Command; } }
     }
 }

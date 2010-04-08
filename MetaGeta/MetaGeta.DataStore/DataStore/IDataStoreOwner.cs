@@ -17,6 +17,6 @@
 namespace MetaGeta.DataStore {
     public interface IDataStoreOwner {
         void DeleteDataStore(MGDataStore dataStore);
-        void EnqueueAction(string action, MGDataStore dataStore, MGFile file);
+        void EnqueueAction(IAction action, MGDataStore dataStore, MGFile file);
     }
 }

@@ -7,7 +7,7 @@
         <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
 
         <DataTemplate x:Key="ActionItem-Action">
-            <TextBlock Text="{Binding Path=Action}"/>
+            <TextBlock Text="{Binding Path=Action.Label}"/>
         </DataTemplate>
         <DataTemplate x:Key="ActionItem-File">
             <TextBlock Text="{Binding Path=File.FileName}"/>

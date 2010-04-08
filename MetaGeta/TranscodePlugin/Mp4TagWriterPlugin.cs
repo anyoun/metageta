@@ -42,21 +42,10 @@ namespace TranscodePlugin {
 
         #region "IMGPluginBase"
 
-        public string FriendlyName {
-            get { return "MPEG-4 Tag Writer Plugin"; }
-        }
-
-        public string UniqueName {
-            get { return "Mp4TagWriterPlugin"; }
-        }
-
-        public Version Version {
-            get { return new Version(1, 0, 0, 0); }
-        }
-
-        public long PluginID {
-            get { return m_Id; }
-        }
+        public string FriendlyName { get { return "MPEG-4 Tag Writer Plugin"; } }
+        public string UniqueName { get { return "Mp4TagWriterPlugin"; } }
+        public Version Version { get { return new Version(1, 0, 0, 0); } }
+        public long PluginID { get { return m_Id; } }
 
         public void Startup(MGDataStore dataStore, long id) {
             m_DataStore = dataStore;
@@ -70,20 +59,21 @@ namespace TranscodePlugin {
 
         #region IMGFileActionPlugin Members
 
-        public IEnumerable<string> GetActions() {
-            return c_WriteTagsAction.SingleToEnumerable();
+        public IList<IAction> GetActions() {
+            return new[] { (IAction) new WriteTagsAction() };
         }
 
-        public void DoAction(string action, MGFile file, ProgressStatus progress) {
-            if (action != c_WriteTagsAction)
-                throw new ArgumentException();
+        private class WriteTagsAction : IAction {
+            public string Label { get { return "Write MP4 Tags"; } }
 
-            if (file.Tags.GetString(TVShowDataStoreTemplate.Format) != "MPEG-4") {
-                progress.StatusMessage = "Not MPEG-4";
-                return;
+            public void Execute(MGFile file, ProgressStatus progress) {
+                if (file.Tags.GetString(TVShowDataStoreTemplate.Format) != "MPEG-4") {
+                    progress.StatusMessage = "Not MPEG-4";
+                    return;
+                }
+
+                WriteMp4TvShowTags(file);
             }
-
-            WriteMp4TvShowTags(file);
         }
 
         internal static void WriteMp4TvShowTags(MGFile file) {

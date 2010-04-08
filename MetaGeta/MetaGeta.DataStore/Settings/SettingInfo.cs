@@ -157,7 +157,7 @@ namespace MetaGeta.DataStore {
         }
 
         IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator1();
+            return GetEnumerator();
         }
 
         #endregion
@@ -172,10 +172,6 @@ namespace MetaGeta.DataStore {
                                              select new SettingInfo(plugin, p, p.GetCustomAttribute<SettingsAttribute>());
 
             return new SettingInfoCollection(plugin, infos);
-        }
-
-        public IEnumerator GetEnumerator1() {
-            return GetEnumerator();
         }
     }
 }

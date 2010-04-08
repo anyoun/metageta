@@ -49,8 +49,24 @@ namespace TranscodePlugin {
 
         #region IMGFileActionPlugin Members
 
-        public IEnumerable<string> GetActions() {
-            return new string[] { ConvertActionName };
+        public IList<IAction> GetActions() {
+            return (from p in m_Presets
+                    select (IAction)new TranscodeAction(this, p)).ToArray();
+        }
+
+        private class TranscodeAction : IAction {
+            private readonly TranscodePlugin m_Plugin;
+            private readonly Preset m_Preset;
+
+            public TranscodeAction(TranscodePlugin plugin, Preset preset) {
+                m_Plugin = plugin;
+                m_Preset = preset;
+            }
+
+            public string Label { get { return "Convert to " + m_Preset.Name; } }
+            public void Execute(MGFile file, ProgressStatus progress) {
+                m_Plugin.Transcode(file, progress);
+            }
         }
 
 

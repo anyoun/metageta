@@ -39,7 +39,6 @@ namespace MetaGeta.DataStore {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly List<IMGPluginBase> m_AllPlugins = new List<IMGPluginBase>();
         private readonly IDataMapper m_DataMapper;
-        private readonly Dictionary<string, IMGFileActionPlugin> m_FileActionDictionary = new Dictionary<string, IMGFileActionPlugin>();
         private readonly IDataStoreOwner m_Owner;
         private readonly ManualResetEvent m_ShutdownEvent = new ManualResetEvent(false);
         private string m_Description = "";
@@ -190,12 +189,12 @@ namespace MetaGeta.DataStore {
 
         #region "Action Plugins"
 
-        public void DoAction(MGFile file, string action) {
-            m_Owner.EnqueueAction(action, this, file);
+        public IEnumerable<IAction> GetActions() {
+            return m_AllPlugins.OfType<IMGFileActionPlugin>().SelectMany(p => p.GetActions()).ToArray();
         }
 
-        internal IMGFileActionPlugin LookupAction(string action) {
-            return m_FileActionDictionary[action];
+        public void DoAction(MGFile file, IAction action) {
+            m_Owner.EnqueueAction(action, this, file);
         }
 
         #endregion
@@ -309,14 +308,6 @@ namespace MetaGeta.DataStore {
                     setting.SetValueAsString(m_DataMapper.GetPluginSetting(this, plugin.PluginID, setting.SettingName));
             }
             plugin.SettingChanged += Plugin_SettingChanged;
-
-            if (plugin is IMGFileActionPlugin)
-                SetUpAction((IMGFileActionPlugin) plugin);
-        }
-
-        private void SetUpAction(IMGFileActionPlugin ap) {
-            foreach (string s in ap.GetActions())
-                m_FileActionDictionary.Add(s, ap);
         }
 
         #endregion

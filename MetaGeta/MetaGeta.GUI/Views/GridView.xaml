@@ -11,16 +11,13 @@
 
     <UserControl.Resources>
 
-        <ContextMenu x:Key="menuGridRow">
-            <MenuItem Name="miConvertToIphone" Header="Convert to iPhone Format"
-                      Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=DataContext.ConvertToIphoneCommand}"          
-                      CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
-            <MenuItem Name="miWriteMp4Tags" Header="Write MP4 Tags"
-                      Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=DataContext.WriteMp4TagsCommand}"          
-                      CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
-            <MenuItem Name="miRemoveFile" Header="Remove"
-                      Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=DataContext.RemoveFileCommand}"          
-                      CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=DataContext}"/>
+        <ContextMenu x:Key="menuGridRow" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=DataContext.Commands}">
+            <ContextMenu.ItemContainerStyle>
+                <Style TargetType="{x:Type MenuItem}">
+                    <Setter Property="Command" Value="{Binding Path=Command}" />
+                    <Setter Property="Header" Value="{Binding Path=Label}" />
+                </Style>
+            </ContextMenu.ItemContainerStyle>
         </ContextMenu>
 
         <Style TargetType="{x:Type toolkit:DataGridRow}" BasedOn="{StaticResource DataGridRowAreoStyle}">

@@ -16,32 +16,21 @@
 // along with MetaGeta. If not, see <http://www.gnu.org/licenses/>.
 namespace MetaGeta.DataStore {
     public class Job {
-        private readonly string m_Action;
+        private readonly IAction m_Action;
         private readonly MGDataStore m_DataStore;
         private readonly MGFile m_File;
 
         private readonly ProgressStatus m_Status = new ProgressStatus();
 
-        public Job(string action, MGDataStore dataStore, MGFile file) {
+        public Job(IAction action, MGDataStore dataStore, MGFile file) {
             m_Action = action;
             m_DataStore = dataStore;
             m_File = file;
         }
 
-        public string Action {
-            get { return m_Action; }
-        }
-
-        public MGDataStore DataStore {
-            get { return m_DataStore; }
-        }
-
-        public MGFile File {
-            get { return m_File; }
-        }
-
-        public ProgressStatus Status {
-            get { return m_Status; }
-        }
+        public IAction Action { get { return m_Action; } }
+        public MGDataStore DataStore { get { return m_DataStore; } }
+        public MGFile File { get { return m_File; } }
+        public ProgressStatus Status { get { return m_Status; } }
     }
 }

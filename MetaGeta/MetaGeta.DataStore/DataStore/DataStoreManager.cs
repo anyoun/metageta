@@ -65,7 +65,7 @@ namespace MetaGeta.DataStore {
             DataStores.Remove(dataStore);
         }
 
-        public void EnqueueAction(string action, MGDataStore dataStore, MGFile file) {
+        public void EnqueueAction(IAction action, MGDataStore dataStore, MGFile file) {
             m_JobQueue.EnqueueAction(action, dataStore, file);
         }
 

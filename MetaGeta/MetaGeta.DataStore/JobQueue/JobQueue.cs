@@ -85,7 +85,7 @@ namespace MetaGeta.DataStore {
 
         #endregion
 
-        public void EnqueueAction(string action, MGDataStore dataStore, MGFile file) {
+        public void EnqueueAction(IAction action, MGDataStore dataStore, MGFile file) {
             lock (m_ActionWaitingQueue) {
                 var item = new Job(action, dataStore, file);
                 m_ActionWaitingQueue.Enqueue(item);
@@ -125,11 +125,10 @@ namespace MetaGeta.DataStore {
                 if (nextItem == null)
                     return;
 
-                IMGFileActionPlugin action = nextItem.DataStore.LookupAction(nextItem.Action);
                 nextItem.Status.Start();
                 try {
                     log.DebugFormat("Starting action \"{0}\" for file \"{1}\"...", nextItem.Action, nextItem.File != null ? nextItem.File.FileName : "");
-                    action.DoAction(nextItem.Action, nextItem.File, nextItem.Status);
+                    nextItem.Action.Execute(nextItem.File, nextItem.Status);
                     nextItem.Status.Done(true);
                     nextItem.Status.StatusMessage = string.Empty;
                     log.DebugFormat("Action \"{0}\" for file \"{1}\" done.", nextItem.Action, nextItem.File != null ? nextItem.File.FileName : "");
