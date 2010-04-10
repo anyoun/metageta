@@ -153,7 +153,6 @@
     <Compile Include="Editors\StringListEditor.cs" />
     <Compile Include="Helpers\DesignModeDataHelper.cs" />
     <Compile Include="Helpers\MGFileConverter.cs" />
-    <Compile Include="Helpers\RelayCommand.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -165,7 +164,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\DataStoreConfigurationViewModel.cs" />
     <Compile Include="ViewModels\GridViewModel.cs" />
     <Compile Include="ViewModels\ImportStatusViewModel.cs" />
     <Compile Include="ViewModels\JobQueueViewModel.cs" />
@@ -174,10 +172,6 @@
     <Compile Include="ViewModels\NavigationTabManager.cs" />
     <Compile Include="ViewModels\NullViewModel.cs" />
     <Compile Include="ViewModels\TvShowViewModel.cs" />
-    <Compile Include="Views\DataStoreConfigurationView.xaml.cs">
-      <DependentUpon>DataStoreConfigurationView.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Views\GridView.xaml.cs">
       <DependentUpon>GridView.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -248,12 +242,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Simple Styles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\DataStoreConfigurationView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

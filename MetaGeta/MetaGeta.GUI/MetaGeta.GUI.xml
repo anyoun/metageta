@@ -95,16 +95,6 @@
             InitializeComponent
             </summary>
         </member>
-        <member name="T:MetaGeta.GUI.DataStoreConfigurationView">
-            <summary>
-            DataStoreConfigurationView
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.DataStoreConfigurationView.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
         <member name="T:MetaGeta.GUI.NewDataStoreWindow">
             <summary>
             NewDataStoreWindow

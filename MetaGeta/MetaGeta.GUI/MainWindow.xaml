@@ -63,7 +63,7 @@
             </ListBox.GroupStyle>
         </ListBox>
         <StackPanel Margin="4" VerticalAlignment="Bottom" Height="Auto" Grid.Row="1" Orientation="Horizontal" d:LayoutOverrides="Width">
-        	<Button x:Name="btnNewDataStore" Click="btnNew_Click" Style="{DynamicResource MGButton}" Margin="2" >
+        	<Button x:Name="btnNewDataStore" Style="{DynamicResource MGButton}" Margin="2" Command="{Binding AddDataStoreCommand}" >
         		<StackPanel Orientation="Horizontal" Margin="2" >
         			<Path Height="12" Width="12" Stretch="Uniform" Data="{StaticResource PlusPath}" Margin="0,0,3,0" 
         				HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -71,11 +71,11 @@
         			<TextBlock Text="Add" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
         		</StackPanel>
         	</Button>
-        	<Button x:Name="btnRemove" Style="{DynamicResource MGButton}" Margin="2" Padding="2" >
+            <Button x:Name="btnRemove" Style="{DynamicResource MGButton}" Margin="2" Padding="2" Command="{Binding RemoveDataStoreCommand}" CommandParameter="{Binding SelectedTab.Group.DataStore}">
         		<StackPanel Orientation="Horizontal"  Margin="2" >
         			<Path Height="12" Width="12" Stretch="Uniform" Data="{StaticResource MinusPath}" Margin="0,0,3,0" 
         				HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-        				Stroke="{DynamicResource WindowForegroundBrush}" />
+        				Stroke="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}, Path=Foreground}" />
         			<TextBlock Text="Remove" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
         		</StackPanel>
         	</Button>
@@ -92,9 +92,6 @@
                 <DataTemplate DataType="{x:Type GUI:JobQueueViewModel}">
                     <GUI:JobQueueView/>
                 </DataTemplate>
-                <DataTemplate DataType="{x:Type GUI:DataStoreConfigurationViewModel}">
-                    <GUI:DataStoreConfigurationView/>
-                </DataTemplate>
                 <DataTemplate DataType="{x:Type GUI:GridViewModel}">
                     <GUI:GridView/>
                 </DataTemplate>
@@ -106,9 +103,10 @@
                 </DataTemplate>
             </ContentControl.Resources>
         </ContentControl>
-		<Image Source="{Binding SelectedTab.Group.Icon}" Width="32" HorizontalAlignment="Left" Grid.Column="2" Margin="4" Height="32"/>
-		<TextBox Margin="40,8,8,8" Grid.Column="2" Text="{Binding SelectedTab.Group.DataStore.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-		 TextWrapping="NoWrap" Style="{DynamicResource MGTextBox}"
-		 Visibility="{Binding SelectedTabIsDataStore, Converter={StaticResource BooleanToVisibilityConverter}, Mode=Default}" FontSize="16" MaxLines="1"/>
+		<Image Source="{Binding SelectedTab.Group.Icon}" Width="32" HorizontalAlignment="Left" Grid.Column="2" Margin="4" Height="32"
+               Visibility="{Binding SelectedTabIsDataStore, Converter={StaticResource BooleanToVisibilityConverter}, Mode=Default}"/>
+        <TextBox Margin="40,8,8,8" Grid.Column="2" TextWrapping="NoWrap" Style="{DynamicResource MGTextBox}"
+                 Text="{Binding SelectedTab.Group.DataStore.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"                 
+                 Visibility="{Binding SelectedTabIsDataStore, Converter={StaticResource BooleanToVisibilityConverter}, Mode=Default}" FontSize="16" MaxLines="1"/>
     </Grid>
 </Window>

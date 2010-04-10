@@ -15,6 +15,7 @@
             <ContextMenu.ItemContainerStyle>
                 <Style TargetType="{x:Type MenuItem}">
                     <Setter Property="Command" Value="{Binding Path=Command}" />
+                    <Setter Property="CommandParameter" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GUI:GridView}}, Path=DataContext.SelectedFiles}" />
                     <Setter Property="Header" Value="{Binding Path=Label}" />
                 </Style>
             </ContextMenu.ItemContainerStyle>

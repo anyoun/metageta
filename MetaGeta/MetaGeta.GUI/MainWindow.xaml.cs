@@ -41,25 +41,11 @@ namespace MetaGeta.GUI {
 
             InitializeComponent();
 
-            PresentationTraceSources.SetTraceLevel(this, PresentationTraceLevel.High);
-
             DataContext = m_Navigation;
         }
 
         private void MainWindow_Closing(object sender, EventArgs e) {
-            m_DataStoreManager.Shutdown();
-        }
-
-        private void btnNew_Click(Object sender, RoutedEventArgs e) {
-            var win = new NewDataStoreWindow();
-            PresentationTraceSources.SetTraceLevel(win, PresentationTraceLevel.High);
-            win.Owner = this;
-            bool? dr = win.ShowDialog();
-            if (dr.HasValue && dr.Value) {
-                DataStoreBuilder args = win.DataStoreCreationArguments;
-                MGDataStore ds = m_DataStoreManager.NewDataStore(args.Name, args.Tempate);
-                ds.SetCreationArguments(args);
-            }
-        }       
+			m_Navigation.Cleanup();
+        }   
     }
 }

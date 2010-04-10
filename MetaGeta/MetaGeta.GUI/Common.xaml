@@ -124,7 +124,7 @@
 
                     <!-- We use Grid as a root because it is easy to add more elements to customize the button -->
                     <Grid x:Name="Grid">
-                        <Border x:Name="Border" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
+                        <Border x:Name="Border" Background="Transparent" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
 
                         <!-- Content Presenter is where the text content etc is placed by the control -->
                         <!-- The bindings are useful so that the control can be parameterized without editing the template -->
@@ -143,9 +143,7 @@
                             <Setter Property="BorderBrush" TargetName="Border" Value="{DynamicResource FocusBorderBrush}"/>
                             <Setter Property="Background" TargetName="Border" Value="{DynamicResource PressedButtonBrush}"/>
                         </Trigger>
-                        <Trigger Property="IsEnabled" Value="true"/>
                         <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Background" Value="{DynamicResource DisabledBackgroundBrush}" TargetName="Border"/>
                             <Setter Property="BorderBrush" Value="{DynamicResource DisabledBorderBrush}" TargetName="Border"/>
                             <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
                         </Trigger>
@@ -156,7 +154,6 @@
     </Style>
 
     <Style x:Key="MGTextBox" TargetType="{x:Type TextBox}">
-        <!--<Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>-->
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="AllowDrop" Value="true"/>
         <Setter Property="Template">

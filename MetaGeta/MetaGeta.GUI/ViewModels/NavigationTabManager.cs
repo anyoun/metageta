@@ -28,6 +28,8 @@ using MetaGeta.DataStore;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Messaging;
 using System.Windows.Data;
+using System.Windows.Input;
+using GalaSoft.MvvmLight.Command;
 
 #endregion
 
@@ -42,6 +44,9 @@ namespace MetaGeta.GUI {
 
 		private NavigationTab m_SelectedTab;
 
+		private readonly RelayCommand m_AddDataStoreCommand;
+		private readonly RelayCommand<MGDataStore> m_RemoveDataStoreCommand;
+
 		public NavigationTabManager(DataStoreManager dataStoreManager) {
 			MessengerInstance = new Messenger();
 
@@ -55,6 +60,15 @@ namespace MetaGeta.GUI {
 
 			m_TabView = new ListCollectionView(m_TabGroups);
 			m_TabView.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
+
+			m_AddDataStoreCommand = new RelayCommand(AddDataStoreCommand_Execute);
+			m_RemoveDataStoreCommand = new RelayCommand<MGDataStore>(RemoveDataStoreCommand_Execute, RemoveDataStoreCommand_CanExecute);
+		}
+
+		public override void Cleanup() {
+			base.Cleanup();
+
+			m_DataStoreManager.Shutdown();
 		}
 
 		public CollectionView Tabs { get { return m_TabView; } }
@@ -107,7 +121,6 @@ namespace MetaGeta.GUI {
 				foreach (var tab in m_TabGroups.Where(tab => tab.Group is DataStoreNavigationTabGroup && ReferenceEquals(((DataStoreNavigationTabGroup)tab.Group).DataStore, ds)).ToArray())
 					m_TabGroups.Remove(tab);
 		}
-
 		private void AddTabs(IEnumerable<MGDataStore> dataStores) {
 			foreach (MGDataStore ds in dataStores)
 				CreateTabGroup(ds);
@@ -116,17 +129,27 @@ namespace MetaGeta.GUI {
 		private void CreateTabGroup(MGDataStore dataStore) {
 			var grp = new DataStoreNavigationTabGroup(dataStore);
 
-			m_TabGroups.Add(new DataStoreConfigurationViewModel(grp, MessengerInstance, dataStore));
 			m_TabGroups.Add(new GridViewModel(grp, MessengerInstance, dataStore));
 			m_TabGroups.Add(new ImportStatusViewModel(grp, MessengerInstance, dataStore));
 			m_TabGroups.Add(new TvShowViewModel(grp, MessengerInstance, dataStore));
 		}
+
+		public ICommand AddDataStoreCommand { get { return m_AddDataStoreCommand; } }
+		public ICommand RemoveDataStoreCommand { get { return m_RemoveDataStoreCommand; } }
+
+		private void AddDataStoreCommand_Execute() {
+			m_DataStoreManager.NewDataStore("New Library", new TVShowDataStoreTemplate());
+		}
+		private void RemoveDataStoreCommand_Execute(MGDataStore ds) {
+			ds.Delete();
+		}
+		private bool RemoveDataStoreCommand_CanExecute(MGDataStore ds) { return ds != null; }
 	}
 
 	public class DesignTimeNavigationTabManager : NavigationTabManager {
 		public DesignTimeNavigationTabManager()
 			: base(new DataStoreManager(true)) {
-				SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab.Group is DataStoreNavigationTabGroup);
+			SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab.Group is DataStoreNavigationTabGroup);
 		}
 	}
 }

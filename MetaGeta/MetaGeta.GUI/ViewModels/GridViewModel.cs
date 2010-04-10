@@ -28,6 +28,7 @@ using TranscodePlugin;
 using System.Linq;
 using MetaGeta.Utilities;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Command;
 
 #endregion
 
@@ -43,11 +44,11 @@ namespace MetaGeta.GUI {
 			m_DataStore = dataStore;
 			m_DataStore.PropertyChanged += DataStorePropertyChanged;
 
-			m_ActionCommands.Add(new FileContextMenuCommand("Remove", new RelayCommand<IList<MGFile>>(RemoveFile, IsNonEmpty, () => SelectedFiles)));
+			m_ActionCommands.Add(new FileContextMenuCommand("Remove", new RelayCommand<IList<MGFile>>(RemoveFile, IsNonEmpty)));
 			foreach (var actionUnbound in m_DataStore.GetActions()) {
 				var action = actionUnbound;
 				m_ActionCommands.Add(new FileContextMenuCommand(action.Label,
-					new RelayCommand<IList<MGFile>>(fs => fs.ForEach(f => m_DataStore.DoAction(f, action)), IsNonEmpty, () => SelectedFiles)));
+					new RelayCommand<IList<MGFile>>(fs => fs.ForEach(f => m_DataStore.DoAction(f, action)), IsNonEmpty)));
 			}
 		}
 
@@ -70,7 +71,7 @@ namespace MetaGeta.GUI {
 			}
 		}
 
-		public MGFile SelectedFile { get { return m_SelectedFiles.Count != 1 ? null : m_SelectedFiles.First(); } }
+		public MGFile SelectedFile { get { return m_SelectedFiles == null || m_SelectedFiles.Count != 1 ? null : m_SelectedFiles.First(); } }
 
 		public override string Caption {
 			get { return "Grid"; }
