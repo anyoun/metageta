@@ -51,7 +51,7 @@ namespace TranscodePlugin {
 
         public IList<IAction> GetActions() {
             return (from p in m_Presets
-                    select (IAction)new TranscodeAction(this, p)).ToArray();
+                    select (IAction) new TranscodeAction(this, p)).ToArray();
         }
 
         private class TranscodeAction : IAction {
@@ -65,18 +65,7 @@ namespace TranscodePlugin {
 
             public string Label { get { return "Convert to " + m_Preset.Name; } }
             public void Execute(MGFile file, ProgressStatus progress) {
-                m_Plugin.Transcode(file, progress);
-            }
-        }
-
-
-        public void DoAction(string action, MGFile file, ProgressStatus progress) {
-            switch (action) {
-                case ConvertActionName:
-                    Transcode(file, progress);
-                    break;
-                default:
-                    throw new Exception("Unknown action.");
+                m_Plugin.Transcode(file, progress, m_Preset);
             }
         }
 
@@ -122,11 +111,13 @@ namespace TranscodePlugin {
         private void LoadPresetsFromXml() {
             m_Presets.AddRange(from p in Presets.Elements()
                                select new Preset() {
-                                   Name = (string)p.Attribute("Name"),
-                                   Encoder = (string)p.Attribute("Encoder"),
-                                   MaxWidth = int.Parse((string)p.Attribute("MaxWidth")),
-                                   MaxHeight = int.Parse((string)p.Attribute("MaxHeight")),
-                                   CommandLine = p.Value
+                                   Name = (string) p.Attribute("Name"),
+                                   Label = (string) p.Attribute("Label"),
+                                   Encoder = (string) p.Attribute("Encoder"),
+                                   Extension = (string) p.Attribute("Extension"),
+                                   MaxWidth = int.Parse((string) p.Attribute("MaxWidth")),
+                                   MaxHeight = int.Parse((string) p.Attribute("MaxHeight")),
+                                   CommandLine = p.Value,
                                });
         }
 
@@ -138,18 +129,6 @@ namespace TranscodePlugin {
         }
 
         #region "Settings"
-
-        [Settings("Transcode Preset Name", "iPhone-ffmpeg", SettingType.ShortText, "Preset")]
-        public string TranscodePresetName {
-            get { return m_TranscodePresetName; }
-            set {
-                if (value != m_TranscodePresetName) {
-                    m_TranscodePresetName = value;
-                    if (SettingChanged != null)
-                        SettingChanged(this, new PropertyChangedEventArgs("TranscodePresetName"));
-                }
-            }
-        }
 
         [Settings("mencoder Location", "mencoder.exe", SettingType.File, "Programs")]
         public string MencoderLocation {
@@ -179,14 +158,13 @@ namespace TranscodePlugin {
 
         #region "Transcoding"
 
-        public void Transcode(MGFile file, ProgressStatus progress) {
-            Preset preset = m_Presets.Find(pre => pre.Name == TranscodePresetName);
-            log.InfoFormat("Encoding using preset {0}...", TranscodePresetName);
+        private void Transcode(MGFile file, ProgressStatus progress, Preset preset) {
+            log.InfoFormat("Encoding using preset {0}...", preset.Name);
 
             var p = new Process();
             p.StartInfo = new ProcessStartInfo(GetEncoderPath(preset.Encoder));
 
-            var outputPath = new Uri(file.FileName + ".iphone.mp4");
+            var outputPath = new Uri(file.FileName + preset.Extension);
             p.StartInfo.Arguments = BuildCommandLine(preset, file, outputPath);
             log.InfoFormat("{0} {1}", p.StartInfo.FileName, p.StartInfo.Arguments);
             p.StartInfo.CreateNoWindow = true;
@@ -254,12 +232,12 @@ namespace TranscodePlugin {
             }
 
             if (s.Width > preset.MaxWidth || s.Height > preset.MaxHeight) {
-                if (aspectRatio > (double)preset.MaxWidth / preset.MaxHeight) {
-                    s.Height = (int)((double)preset.MaxWidth / aspectRatio);
+                if (aspectRatio > (double) preset.MaxWidth / preset.MaxHeight) {
+                    s.Height = (int) ((double) preset.MaxWidth / aspectRatio);
                     s.Width = preset.MaxWidth;
                 } else {
                     s.Height = preset.MaxHeight;
-                    s.Width = (int)((double)preset.MaxHeight * aspectRatio);
+                    s.Width = (int) ((double) preset.MaxHeight * aspectRatio);
                 }
             }
 
@@ -300,7 +278,7 @@ namespace TranscodePlugin {
             }
 
             public FrameRate(double numerator) {
-                Numerator = (decimal)numerator;
+                Numerator = (decimal) numerator;
                 Denominator = 1;
             }
 
@@ -336,24 +314,30 @@ namespace TranscodePlugin {
             XElement.Parse(
                 @"
     <TranscodingPresets>
-        <Preset Name=""iPod-mencoder"" Encoder=""mencoder"" MaxWidth=""480"" MaxHeight=""320"">
+        <Preset Name=""iPhone-mencoder"" Label=""iPhone/iPod Touch (mencoder)"" Extension="".iphone.mp4"" Encoder=""mencoder"" MaxWidth=""480"" MaxHeight=""320"">
             ""%input%""
-            -sws 9 -of lavf -lavfopts format=mp4 -vf scale=%width%:%height%,dsize=%width%:%height%,harddup -endpos %duration-seconds%
-            -ovc x264 -x264encopts bitrate=%video-bitrate%:vbv_maxrate=%max-video-bitrate%:vbv_bufsize=2000:nocabac:me=umh:subq=6:frameref=6:trellis=1:level_idc=30:global_header:threads=4
+            -sws 9 -of lavf -lavfopts format=mp4 -vf scale=%width%:%height%,dsize=%width%:%height%,harddup
+            -ovc x264 -x264encopts bitrate=%video-bitrate%:vbv_maxrate=%max-video-bitrate%:vbv_bufsize=3000:nocabac:me=umh:subq=6:frameref=6:trellis=1:level_idc=30:global_header:threads=4
             -oac faac -faacopts mpeg=4:object=2:br=%audio-bitrate%:raw -channels 2 -srate 48000 -o ""%output%""
         </Preset>
-        <Preset Name=""iPhone-ffmpeg"" Encoder=""ffmpeg"" MaxWidth=""480"" MaxHeight=""320"">
+        <Preset Name=""iPhone-mencoder-30s"" Label=""iPhone/iPod Touch sample (mencoder)"" Extension="".iphone.mp4"" Encoder=""mencoder"" MaxWidth=""480"" MaxHeight=""320"">
+            ""%input%""
+            -sws 9 -of lavf -lavfopts format=mp4 -vf scale=%width%:%height%,dsize=%width%:%height%,harddup -endpos 30
+            -ovc x264 -x264encopts bitrate=%video-bitrate%:vbv_maxrate=%max-video-bitrate%:vbv_bufsize=3000:nocabac:me=umh:subq=6:frameref=6:trellis=1:level_idc=30:global_header:threads=4
+            -oac faac -faacopts mpeg=4:object=2:br=%audio-bitrate%:raw -channels 2 -srate 48000 -o ""%output%""
+        </Preset>
+        <Preset Name=""iPhone-ffmpeg"" Label=""iPhone/iPod Touch (ffmpeg)"" Extension="".iphone.mp4"" Encoder=""ffmpeg"" MaxWidth=""480"" MaxHeight=""320"">
             -i ""%input%"" -r %fps% -vcodec libx264 -b %video-bitrate% -s %width%x%height%
             -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30 -threads 4
             -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 ""%output%""
         </Preset>
-        <Preset Name=""iPhone-ffmpeg-30s"" Encoder=""ffmpeg"" MaxWidth=""480"" MaxHeight=""320"">
+        <Preset Name=""iPhone-ffmpeg-30s"" Label=""iPhone/iPod Touch sample (ffmpeg)"" Extension="".iphone.mp4"" Encoder=""ffmpeg"" MaxWidth=""480"" MaxHeight=""320"">
             -t 30 -ss 0 
             -i ""%input%"" -r %fps% -vcodec libx264 -b %video-bitrate% -s %width%x%height%
             -coder 0 -bf 0 -refs 1 -flags2 -wpred-dct8x8 -level 30 -threads 4
             -maxrate %max-video-bitrate% -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 ""%output%""
         </Preset>
-        <Preset Name=""iPod-5G"" Encoder=""ffmpeg"" MaxWidth=""320"" MaxHeight=""240"">
+        <Preset Name=""iPod-5G"" Label=""iPod 5G (ffmpeg)"" Extension="".ipod5g.mp4"" Encoder=""ffmpeg"" MaxWidth=""320"" MaxHeight=""240"">
             -i ""%input%"" -r %fps% -vcodec libx264 -b 500000 -s %width%x%height%
             -coder 0 -bf 0 -flags2 -wpred-dct8x8 -level 13 -threads 4
             -maxrate 768000 -bufsize 3000000 -ab %audio-bitrate% -acodec libfaac -ac 2 ""%output%""
@@ -398,7 +382,7 @@ namespace TranscodePlugin {
         }
 
         public double PercentDone {
-            get { return (double)m_PositionFrames / m_TotalFrames; }
+            get { return (double) m_PositionFrames / m_TotalFrames; }
         }
 
         public double EstimatedBitrate {
@@ -410,7 +394,7 @@ namespace TranscodePlugin {
         }
 
         public TimeSpan TimeRemaining {
-            get { return EncodingFps == 0 ? TimeSpan.MaxValue : new TimeSpan(0, 0, (int)((m_TotalFrames - m_PositionFrames) / EncodingFps)); }
+            get { return EncodingFps == 0 ? TimeSpan.MaxValue : new TimeSpan(0, 0, (int) ((m_TotalFrames - m_PositionFrames) / EncodingFps)); }
         }
 
         public double EncodingFps {
@@ -466,8 +450,10 @@ namespace TranscodePlugin {
     internal struct Preset {
         public string CommandLine;
         public string Encoder;
+        public string Extension;
         public int MaxHeight;
         public int MaxWidth;
         public string Name;
+        public string Label;
     }
 }

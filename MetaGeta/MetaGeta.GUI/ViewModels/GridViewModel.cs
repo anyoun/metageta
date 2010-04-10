@@ -42,7 +42,8 @@ namespace MetaGeta.GUI {
             m_DataStore.PropertyChanged += DataStorePropertyChanged;
 
             m_ActionCommands.Add(new FileContextMenuCommand("Remove", new RelayCommand<IList<MGFile>>(RemoveFile, IsNonEmpty, () => SelectedFiles)));
-            foreach (var action in m_DataStore.GetActions()) {
+            foreach (var actionUnbound in m_DataStore.GetActions()) {
+                var action = actionUnbound;
                 m_ActionCommands.Add(new FileContextMenuCommand(action.Label,
                     new RelayCommand<IList<MGFile>>(fs => fs.ForEach(f => m_DataStore.DoAction(f, action)), IsNonEmpty, () => SelectedFiles)));
             }
