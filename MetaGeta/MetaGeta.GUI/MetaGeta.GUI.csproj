@@ -62,7 +62,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x86\Debug\</OutputPath>
-    <DocumentationFile>MetaGeta.GUI.xml</DocumentationFile>
+    <DocumentationFile>bin\x86\Debug\MetaGeta.GUI.XML</DocumentationFile>
     <NoWarn>42314, 1595</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -70,7 +70,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x86\Release\</OutputPath>
-    <DocumentationFile>MetaGeta.GUI.xml</DocumentationFile>
+    <DocumentationFile>bin\x86\Release\MetaGeta.GUI.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>42314</NoWarn>
     <PlatformTarget>x86</PlatformTarget>
@@ -80,7 +80,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x64\Debug\</OutputPath>
-    <DocumentationFile>MetaGeta.GUI.xml</DocumentationFile>
+    <DocumentationFile>bin\x64\Debug\MetaGeta.GUI.XML</DocumentationFile>
     <NoWarn>42314</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -88,7 +88,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\x64\Release\</OutputPath>
-    <DocumentationFile>MetaGeta.GUI.xml</DocumentationFile>
+    <DocumentationFile>bin\x64\Release\MetaGeta.GUI.XML</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>42314</NoWarn>
     <PlatformTarget>x64</PlatformTarget>
