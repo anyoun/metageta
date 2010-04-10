@@ -23,6 +23,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
+using GalaSoft.MvvmLight.Messaging;
 
 #endregion
 
@@ -33,7 +34,7 @@ namespace MetaGeta.GUI {
 
         private readonly RelayCommand m_ImportCommand;
 
-        public ImportStatusViewModel(MGDataStore dataStore) {
+        public ImportStatusViewModel(NavigationTabGroupBase group, IMessenger messenger, MGDataStore dataStore) : base(group, messenger) {
             m_DataStore = dataStore;
             m_DataStore.PropertyChanged += DataStorePropertyChanged;
 
@@ -58,7 +59,7 @@ namespace MetaGeta.GUI {
 
         private void DataStorePropertyChanged(object sender, PropertyChangedEventArgs e) {
             if (e.PropertyName == "ImportStatus")
-                OnPropertyChanged("ImportStatus");
+				RaisePropertyChanged("ImportStatus");
         }
 
         private void Import() {

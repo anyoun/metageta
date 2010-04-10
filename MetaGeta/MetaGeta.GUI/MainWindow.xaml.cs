@@ -60,23 +60,6 @@ namespace MetaGeta.GUI {
                 MGDataStore ds = m_DataStoreManager.NewDataStore(args.Name, args.Tempate);
                 ds.SetCreationArguments(args);
             }
-        }
-
-        private void lbDataStores_PreviewMouseDown(Object sender, MouseButtonEventArgs e) {
-            var originalItem = (DependencyObject) e.OriginalSource;
-            DependencyObject nextTreeViewItem = lbDataStores;
-            DependencyObject lastTreeViewItem = lbDataStores;
-            while (nextTreeViewItem != null && nextTreeViewItem is ItemsControl) {
-                lastTreeViewItem = nextTreeViewItem;
-                nextTreeViewItem = (ItemsControl) ItemsControl.ContainerFromElement((ItemsControl) lastTreeViewItem, originalItem);
-            }
-
-            if (lastTreeViewItem != null) {
-                if (((FrameworkElement) lastTreeViewItem).DataContext is NavigationTabGroupBase)
-                    e.Handled = true;
-                else
-                    e.Handled = false;
-            }
-        }
+        }       
     }
 }

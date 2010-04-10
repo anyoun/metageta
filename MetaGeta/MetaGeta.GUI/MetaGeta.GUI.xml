@@ -4,82 +4,12 @@
         <name>MetaGeta.GUI</name>
     </assembly>
     <members>
-        <member name="T:MetaGeta.GUI.Editors.ItemListEditor">
-            <summary>
-            ItemListEditor
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.Editors.ItemListEditor.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.ImportStatusView">
-            <summary>
-            ImportStatusView
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.ImportStatusView.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.TvShowView">
-            <summary>
-            TvShowView
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.TvShowView.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.Editors.SettingsEditor">
-            <summary>
-            SettingsEditor
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.Editors.SettingsEditor.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.Editors.StringInputPrompt">
-            <summary>
-            StringInputPrompt
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.Editors.StringInputPrompt.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.NullView">
-            <summary>
-            NullView
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.NullView.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
         <member name="T:MetaGeta.GUI.GlobalSettingsEditor">
             <summary>
             GlobalSettingsEditor
             </summary>
         </member>
         <member name="M:MetaGeta.GUI.GlobalSettingsEditor.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.GridView">
-            <summary>
-            GridView
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.GridView.InitializeComponent">
             <summary>
             InitializeComponent
             </summary>
@@ -97,46 +27,6 @@
         <member name="M:MetaGeta.GUI.MetaGetaGuiApplication.Main">
             <summary>
             Application Entry Point.
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.MainWindow">
-            <summary>
-            MainWindow
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.MainWindow.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.NewDataStoreWindow">
-            <summary>
-            NewDataStoreWindow
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.NewDataStoreWindow.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.DataStoreConfigurationView">
-            <summary>
-            DataStoreConfigurationView
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.DataStoreConfigurationView.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:MetaGeta.GUI.FilePropertiesView">
-            <summary>
-            FilePropertiesView
-            </summary>
-        </member>
-        <member name="M:MetaGeta.GUI.FilePropertiesView.InitializeComponent">
-            <summary>
-            InitializeComponent
             </summary>
         </member>
         <member name="T:MetaGeta.GUI.Properties.Resources">
@@ -161,6 +51,106 @@
             </summary>
         </member>
         <member name="M:MetaGeta.GUI.JobQueueView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.Editors.ItemListEditor">
+            <summary>
+            ItemListEditor
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.Editors.ItemListEditor.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.NullView">
+            <summary>
+            NullView
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.NullView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.TvShowView">
+            <summary>
+            TvShowView
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.TvShowView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.GridView">
+            <summary>
+            GridView
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.GridView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.DataStoreConfigurationView">
+            <summary>
+            DataStoreConfigurationView
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.DataStoreConfigurationView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.NewDataStoreWindow">
+            <summary>
+            NewDataStoreWindow
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.NewDataStoreWindow.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.ImportStatusView">
+            <summary>
+            ImportStatusView
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.ImportStatusView.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.MainWindow">
+            <summary>
+            MainWindow
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.MainWindow.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.Editors.StringInputPrompt">
+            <summary>
+            StringInputPrompt
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.Editors.StringInputPrompt.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:MetaGeta.GUI.Editors.SettingsEditor">
+            <summary>
+            SettingsEditor
+            </summary>
+        </member>
+        <member name="M:MetaGeta.GUI.Editors.SettingsEditor.InitializeComponent">
             <summary>
             InitializeComponent
             </summary>

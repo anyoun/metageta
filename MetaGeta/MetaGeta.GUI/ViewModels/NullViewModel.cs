@@ -18,26 +18,28 @@
 #region
 
 using System.Windows.Media;
+using GalaSoft.MvvmLight.Messaging;
 
 #endregion
 
 namespace MetaGeta.GUI {
-    public class NullViewModel : NavigationTab {
-        private readonly string m_Caption;
+	public class NullViewModel : NavigationTab {
+		private readonly string m_Caption;
 
-        private readonly ImageSource m_Icon;
+		private readonly ImageSource m_Icon;
 
-        public NullViewModel(string caption, ImageSource icon) {
-            m_Caption = caption;
-            m_Icon = icon;
-        }
+		public NullViewModel(NavigationTabGroupBase group, IMessenger messenger, string caption, ImageSource icon)
+			: base(group, messenger) {
+			m_Caption = caption;
+			m_Icon = icon;
+		}
 
-        public override string Caption {
-            get { return m_Caption; }
-        }
+		public override string Caption {
+			get { return m_Caption; }
+		}
 
-        public override ImageSource Icon {
-            get { return m_Icon; }
-        }
-    }
+		public override ImageSource Icon {
+			get { return m_Icon; }
+		}
+	}
 }

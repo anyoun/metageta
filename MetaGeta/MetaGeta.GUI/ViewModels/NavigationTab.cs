@@ -19,23 +19,20 @@
 
 using System.ComponentModel;
 using System.Windows.Media;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Messaging;
 
 #endregion
 
 namespace MetaGeta.GUI {
-    public abstract class NavigationTab : INotifyPropertyChanged {
-        public abstract ImageSource Icon { get; }
-        public abstract string Caption { get; }
-
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        protected void OnPropertyChanged(string name) {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-        }
-    }
+	public abstract class NavigationTab : ViewModelBase {
+		private readonly NavigationTabGroupBase m_Group;
+		protected NavigationTab(NavigationTabGroupBase group, IMessenger messenger)
+			: base(messenger) {
+			m_Group = group;
+		}
+		public NavigationTabGroupBase Group { get { return m_Group; } }
+		public abstract ImageSource Icon { get; }
+		public abstract string Caption { get; }
+	}
 }

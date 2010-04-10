@@ -24,80 +24,82 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
+using GalaSoft.MvvmLight.Messaging;
 
 #endregion
 
 namespace MetaGeta.GUI {
-    public class DataStoreConfigurationViewModel : NavigationTab {
-        private static readonly BitmapImage s_RunImage = new BitmapImage(new Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/run.png"));
-        private readonly MGDataStore m_DataStore;
-        private readonly RelayCommand m_DeleteCommand;
+	public class DataStoreConfigurationViewModel : NavigationTab {
+		private static readonly BitmapImage s_RunImage = new BitmapImage(new Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/run.png"));
+		private readonly MGDataStore m_DataStore;
+		private readonly RelayCommand m_DeleteCommand;
 
-        private IMGPluginBase m_SelectedPlugin;
+		private IMGPluginBase m_SelectedPlugin;
 
-        public DataStoreConfigurationViewModel(MGDataStore dataStore) {
-            m_DataStore = dataStore;
-            m_DataStore.PropertyChanged += DataStore_PropertyChanged;
+		public DataStoreConfigurationViewModel(NavigationTabGroupBase group, IMessenger messenger, MGDataStore dataStore)
+			: base(group, messenger) {
+			m_DataStore = dataStore;
+			m_DataStore.PropertyChanged += DataStore_PropertyChanged;
 
-            m_DeleteCommand = new RelayCommand(Delete);
-        }
+			m_DeleteCommand = new RelayCommand(Delete);
+		}
 
 
-        public ICommand DeleteCommand {
-            get { return m_DeleteCommand; }
-        }
+		public ICommand DeleteCommand {
+			get { return m_DeleteCommand; }
+		}
 
-        public string Name {
-            get { return m_DataStore.Name; }
-            set { m_DataStore.Name = value; }
-        }
+		public string Name {
+			get { return m_DataStore.Name; }
+			set { m_DataStore.Name = value; }
+		}
 
-        public string Description {
-            get { return m_DataStore.Description; }
-            set { m_DataStore.Description = value; }
-        }
+		public string Description {
+			get { return m_DataStore.Description; }
+			set { m_DataStore.Description = value; }
+		}
 
-        public IEnumerable<IMGPluginBase> Plugins {
-            get { return m_DataStore.Plugins; }
-        }
+		public IEnumerable<IMGPluginBase> Plugins {
+			get { return m_DataStore.Plugins; }
+		}
 
-        public IMGPluginBase SelectedPlugin {
-            get { return m_SelectedPlugin; }
-            set {
-                if (!ReferenceEquals(m_SelectedPlugin, value)) {
-                    m_SelectedPlugin = value;
-                    OnPropertyChanged("SelectedPlugin");
-                    OnPropertyChanged("SelectedPluginSettings");
-                }
-            }
-        }
+		public IMGPluginBase SelectedPlugin {
+			get { return m_SelectedPlugin; }
+			set {
+				if (!ReferenceEquals(m_SelectedPlugin, value)) {
+					m_SelectedPlugin = value;
+					RaisePropertyChanged("SelectedPlugin");
+					RaisePropertyChanged("SelectedPluginSettings");
+				}
+			}
+		}
 
-        public SettingInfoCollection SelectedPluginSettings {
-            get {
-                if (SelectedPlugin == null)
-                    return null;
-                else
-                    return SettingInfoCollection.GetSettings(SelectedPlugin);
-            }
-        }
+		public SettingInfoCollection SelectedPluginSettings {
+			get {
+				if (SelectedPlugin == null)
+					return null;
+				else
+					return SettingInfoCollection.GetSettings(SelectedPlugin);
+			}
+		}
 
-        public override string Caption {
-            get { return "Configuration"; }
-        }
+		public override string Caption {
+			get { return "Configuration"; }
+		}
 
-        public override ImageSource Icon {
-            get { return s_RunImage; }
-        }
+		public override ImageSource Icon {
+			get { return s_RunImage; }
+		}
 
-        private void Delete() {
-            m_DataStore.Delete();
-        }
+		private void Delete() {
+			m_DataStore.Delete();
+		}
 
-        private void DataStore_PropertyChanged(object sender, PropertyChangedEventArgs e) {
-            if (e.PropertyName == "Name")
-                OnPropertyChanged("Name");
-            else if (e.PropertyName == "Description")
-                OnPropertyChanged("Description");
-        }
-    }
+		private void DataStore_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+			if (e.PropertyName == "Name")
+				RaisePropertyChanged("Name");
+			else if (e.PropertyName == "Description")
+				RaisePropertyChanged("Description");
+		}
+	}
 }

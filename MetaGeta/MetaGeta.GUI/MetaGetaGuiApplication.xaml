@@ -6,125 +6,126 @@
     StartupUri="MainWindow.xaml">
     <Application.Resources>
         
-        <!-- Generic brushes -->
-        <SolidColorBrush x:Key="DefaultControlBorderBrush" Color="#FF688CAF"/>
-        <SolidColorBrush x:Key="DefaultControlForegroundBrush" Color="#FF10257F"/>
-        <SolidColorBrush x:Key="TransparentBrush" Color="Transparent"/>
+    	<ResourceDictionary>
+    		<ResourceDictionary.MergedDictionaries>
+    			<ResourceDictionary Source="Simple Styles.xaml"/>
+    			<ResourceDictionary Source="DefaultSkin.xaml"/>
+                <ResourceDictionary Source="Common.xaml"/>
+    		</ResourceDictionary.MergedDictionaries>
+        
+    		<!-- Generic brushes -->
+    		<SolidColorBrush x:Key="DefaultControlBorderBrush" Color="#FF688CAF"/>
+    		<SolidColorBrush x:Key="DefaultControlForegroundBrush" Color="#FF10257F"/>
+    		<SolidColorBrush x:Key="TransparentBrush" Color="Transparent"/>
 
-        <Style x:Key="{x:Type toolkit:DataGrid}" TargetType="{x:Type toolkit:DataGrid}">
-            <Setter Property="Background" Value="{StaticResource TransparentBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource DefaultControlForegroundBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource DefaultControlBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
+    		<Style x:Key="{x:Type toolkit:DataGrid}" TargetType="{x:Type toolkit:DataGrid}">
+    			<Setter Property="Background" Value="{StaticResource TransparentBrush}"/>
+    			<Setter Property="Foreground" Value="{StaticResource DefaultControlForegroundBrush}"/>
+    			<Setter Property="BorderBrush" Value="{StaticResource DefaultControlBorderBrush}" />
+    			<Setter Property="BorderThickness" Value="1" />
+    		</Style>
 
-        <LinearGradientBrush x:Key="ListItemHoverFill" StartPoint="0,0" EndPoint="0,1">
-            <LinearGradientBrush.GradientStops>
-                <GradientStop Color="#FFF1FBFF" Offset="0"/>
-                <GradientStop Color="#FFD5F1FE" Offset="1"/>
-            </LinearGradientBrush.GradientStops>
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="ListItemSelectedFill" StartPoint="0,0" EndPoint="0,1">
-            <LinearGradientBrush.GradientStops>
-                <GradientStop Color="#FFD9F4FF" Offset="0"/>
-                <GradientStop Color="#FF9BDDFB" Offset="1"/>
-            </LinearGradientBrush.GradientStops>
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="ListItemSelectedHoverFill" StartPoint="0,0" EndPoint="0,1">
-            <LinearGradientBrush.GradientStops>
-                <GradientStop Color="#FFEAF9FF" Offset="0"/>
-                <GradientStop Color="#FFC9EDFD" Offset="1"/>
-            </LinearGradientBrush.GradientStops>
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="ListItemSelectedInactiveFill" StartPoint="0,0" EndPoint="0,1">
-            <LinearGradientBrush.GradientStops>
-                <GradientStop Color="#FFEEEDED" Offset="0"/>
-                <GradientStop Color="#FFDDDDDD" Offset="1"/>
-            </LinearGradientBrush.GradientStops>
-        </LinearGradientBrush>
+    		<LinearGradientBrush x:Key="ListItemHoverFill" StartPoint="0,0" EndPoint="0,1">
+    			<GradientStop Color="#FFF1FBFF" Offset="0"/>
+    			<GradientStop Color="#FFD5F1FE" Offset="1"/>
+    		</LinearGradientBrush>
+    		<LinearGradientBrush x:Key="ListItemSelectedFill" StartPoint="0,0" EndPoint="0,1">
+    			<GradientStop Color="#FFD9F4FF" Offset="0"/>
+    			<GradientStop Color="#FF9BDDFB" Offset="1"/>
+    		</LinearGradientBrush>
+    		<LinearGradientBrush x:Key="ListItemSelectedHoverFill" StartPoint="0,0" EndPoint="0,1">
+    			<GradientStop Color="#FFEAF9FF" Offset="0"/>
+    			<GradientStop Color="#FFC9EDFD" Offset="1"/>
+    		</LinearGradientBrush>
+    		<LinearGradientBrush x:Key="ListItemSelectedInactiveFill" StartPoint="0,0" EndPoint="0,1">
+    			<GradientStop Color="#FFEEEDED" Offset="0"/>
+    			<GradientStop Color="#FFDDDDDD" Offset="1"/>
+    		</LinearGradientBrush>
 
-        <Style x:Key="{x:Type toolkit:DataGridCell}" TargetType="{x:Type toolkit:DataGridCell}">
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Background" Value="{StaticResource TransparentBrush}" />
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="true">
-                    <Setter Property="Foreground" Value="#FF042271" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+    		<Style x:Key="{x:Type toolkit:DataGridCell}" TargetType="{x:Type toolkit:DataGridCell}">
+    			<Setter Property="BorderThickness" Value="0" />
+    			<Setter Property="Background" Value="{StaticResource TransparentBrush}" />
+    			<Style.Triggers>
+    				<Trigger Property="IsSelected" Value="true">
+    					<Setter Property="Foreground" Value="#FF042271" />
+    				</Trigger>
+    			</Style.Triggers>
+    		</Style>
 
-        <Style x:Key="ListViewItemFocusVisual">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle StrokeThickness="1" RadiusX="2" RadiusY="2" Stroke="#8E6EA6F5"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+    		<Style x:Key="ListViewItemFocusVisual">
+    			<Setter Property="Control.Template">
+    				<Setter.Value>
+    					<ControlTemplate>
+    						<Rectangle StrokeThickness="1" RadiusX="2" RadiusY="2" Stroke="#8E6EA6F5"/>
+    					</ControlTemplate>
+    				</Setter.Value>
+    			</Setter>
+    		</Style>
 
-        <Style x:Key="DataGridRowAreoStyle" TargetType="{x:Type toolkit:DataGridRow}">
-            <Setter Property="FocusVisualStyle" Value="{StaticResource ListViewItemFocusVisual}"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type toolkit:DataGridRow}">
-                    <Border BorderThickness="{TemplateBinding BorderThickness}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    Background="{TemplateBinding Background}"
-                                    CornerRadius="2"
-                                    SnapsToDevicePixels="true">
-                        <Border x:Name="InnerBorder"
-                                        CornerRadius="1" BorderThickness="1"
-                                        Background="{TemplateBinding Background}">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition MaxHeight="11"/>
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <Rectangle x:Name="UpperHighlight" Visibility="Collapsed" Fill="#75FFFFFF"/>
-                                <Primitives:DataGridCellsPresenter Grid.RowSpan="2" />
-                            </Grid>
-                        </Border>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Background" Value="{StaticResource ListItemHoverFill}"/>
-                            <Setter Property="BorderBrush" Value="#FFCCF0FF"/>
-                            <Setter TargetName="UpperHighlight" Property="Visibility" Value="Visible"/>
-                        </Trigger>
-                        <Trigger Property="IsSelected" Value="true">
-                            <Setter Property="Background" Value="{StaticResource ListItemSelectedFill}"/>
-                            <Setter Property="BorderBrush" Value="#FF98DDFB"/>
-                            <Setter TargetName="InnerBorder" Property="BorderBrush" Value="#80FFFFFF"/>
-                            <Setter TargetName="UpperHighlight" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="UpperHighlight" Property="Fill" Value="#40FFFFFF"/>
-                        </Trigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsSelected" Value="true"/>
-                                <Condition Property="Selector.IsSelectionActive" Value="false"/>
-                            </MultiTrigger.Conditions>
-                            <Setter Property="Background" Value="{StaticResource ListItemSelectedInactiveFill}"/>
-                            <Setter Property="BorderBrush" Value="#FFCFCFCF"/>
-                        </MultiTrigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsSelected" Value="true"/>
-                                <Condition Property="IsMouseOver" Value="true"/>
-                            </MultiTrigger.Conditions>
-                            <Setter Property="Background" Value="{StaticResource ListItemSelectedHoverFill}"/>
-                            <Setter Property="BorderBrush" Value="#FF98DDFB"/>
-                        </MultiTrigger>
-                        <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        </Style>
+    		<Style x:Key="DataGridRowAreoStyle" TargetType="{x:Type toolkit:DataGridRow}">
+    			<Setter Property="FocusVisualStyle" Value="{StaticResource ListViewItemFocusVisual}"/>
+    			<Setter Property="Background" Value="Transparent"/>
+    			<Setter Property="BorderThickness" Value="1"/>
+    			<Setter Property="Template">
+    				<Setter.Value>
+    					<ControlTemplate TargetType="{x:Type toolkit:DataGridRow}">
+    						<Border BorderThickness="{TemplateBinding BorderThickness}"
+    							BorderBrush="{TemplateBinding BorderBrush}"
+    							Background="{TemplateBinding Background}"
+    							CornerRadius="2"
+    							SnapsToDevicePixels="true">
+    							<Border x:Name="InnerBorder"
+    								CornerRadius="1" BorderThickness="1"
+    								Background="{TemplateBinding Background}">
+    								<Grid>
+    									<Grid.RowDefinitions>
+    										<RowDefinition MaxHeight="11"/>
+    										<RowDefinition />
+    									</Grid.RowDefinitions>
+    									<Rectangle x:Name="UpperHighlight" Visibility="Collapsed" Fill="#75FFFFFF"/>
+    									<Primitives:DataGridCellsPresenter Grid.RowSpan="2" />
+    								</Grid>
+    							</Border>
+    						</Border>
+    						<ControlTemplate.Triggers>
+    							<Trigger Property="IsMouseOver" Value="true">
+    								<Setter Property="Background" Value="{StaticResource ListItemHoverFill}"/>
+    								<Setter Property="BorderBrush" Value="#FFCCF0FF"/>
+    								<Setter TargetName="UpperHighlight" Property="Visibility" Value="Visible"/>
+    							</Trigger>
+    							<Trigger Property="IsSelected" Value="true">
+    								<Setter Property="Background" Value="{StaticResource ListItemSelectedFill}"/>
+    								<Setter Property="BorderBrush" Value="#FF98DDFB"/>
+    								<Setter TargetName="InnerBorder" Property="BorderBrush" Value="#80FFFFFF"/>
+    								<Setter TargetName="UpperHighlight" Property="Visibility" Value="Visible"/>
+    								<Setter TargetName="UpperHighlight" Property="Fill" Value="#40FFFFFF"/>
+    							</Trigger>
+    							<MultiTrigger>
+    								<MultiTrigger.Conditions>
+    									<Condition Property="IsSelected" Value="true"/>
+    									<Condition Property="Selector.IsSelectionActive" Value="false"/>
+    								</MultiTrigger.Conditions>
+    								<Setter Property="Background" Value="{StaticResource ListItemSelectedInactiveFill}"/>
+    								<Setter Property="BorderBrush" Value="#FFCFCFCF"/>
+    							</MultiTrigger>
+    							<MultiTrigger>
+    								<MultiTrigger.Conditions>
+    									<Condition Property="IsSelected" Value="true"/>
+    									<Condition Property="IsMouseOver" Value="true"/>
+    								</MultiTrigger.Conditions>
+    								<Setter Property="Background" Value="{StaticResource ListItemSelectedHoverFill}"/>
+    								<Setter Property="BorderBrush" Value="#FF98DDFB"/>
+    							</MultiTrigger>
+    							<Trigger Property="IsEnabled" Value="false">
+    								<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+    							</Trigger>
+    						</ControlTemplate.Triggers>
+    					</ControlTemplate>
+    				</Setter.Value>
+    			</Setter>
+    		</Style>
+
+    	</ResourceDictionary>
 
     </Application.Resources>
 </Application>

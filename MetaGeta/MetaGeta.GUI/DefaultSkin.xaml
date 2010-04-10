@@ -1,0 +1,16 @@
+﻿<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="White" />
+    <SolidColorBrush x:Key="WindowForegroundBrush" Color="Black" />
+
+    <SolidColorBrush x:Key="BorderBrush" Color="Gray" />
+	<SolidColorBrush x:Key="ActiveBorderBrush" Color="Black" />
+    <SolidColorBrush x:Key="FocusBorderBrush" Color="#60000000" />
+    
+    <Color x:Key="ButtonIconColor">#FF888888</Color>
+    <SolidColorBrush x:Key="ButtonIconBrush" Color="{StaticResource ButtonIconColor}"/>
+    <FontFamily x:Key="MainFont">Droid Sans</FontFamily>
+    <SolidColorBrush x:Key="PressedButtonBrush" Color="Gray"/>
+</ResourceDictionary>

@@ -25,106 +25,108 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Messaging;
+using System.Windows.Data;
 
 #endregion
 
 namespace MetaGeta.GUI {
-    public class NavigationTabManager : INotifyPropertyChanged {
-        private static readonly BitmapImage s_ConfigureImage = new BitmapImage(new Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/configure.png"));
-        private readonly DataStoreManager m_DataStoreManager;
+	public class NavigationTabManager : ViewModelBase {
+		private static readonly BitmapImage s_ConfigureImage = new BitmapImage(new Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/configure.png"));
+		private readonly DataStoreManager m_DataStoreManager;
 
-        private readonly NamedNavigationTabGroup m_MetaGetaTabGroup;
-        private readonly ObservableCollection<NavigationTabGroupBase> m_TabGroups = new ObservableCollection<NavigationTabGroupBase>();
+		private readonly NamedNavigationTabGroup m_MetaGetaTabGroup;
+		private readonly ObservableCollection<NavigationTab> m_TabGroups = new ObservableCollection<NavigationTab>();
+		private readonly ListCollectionView m_TabView;
 
-        public NavigationTabManager(DataStoreManager dataStoreManager) : this() {
-            m_DataStoreManager = dataStoreManager;
-            m_DataStoreManager.DataStores.CollectionChanged += DataStoresChanged;
-            m_MetaGetaTabGroup.Children.Add(new JobQueueViewModel(dataStoreManager));
-            AddTabGroups(dataStoreManager.DataStores);
-        }
+		private NavigationTab m_SelectedTab;
 
-        private NavigationTabManager() {
-            m_MetaGetaTabGroup = new NamedNavigationTabGroup("MetaGeta");
-            m_MetaGetaTabGroup.Children.Add(new NullViewModel("Settings", s_ConfigureImage));
-            m_TabGroups.Add(m_MetaGetaTabGroup);
-        }
+		public NavigationTabManager(DataStoreManager dataStoreManager) {
+			MessengerInstance = new Messenger();
 
-        public ObservableCollection<NavigationTabGroupBase> Tabs {
-            get { return m_TabGroups; }
-        }
+			m_MetaGetaTabGroup = new NamedNavigationTabGroup("MetaGeta");
+			m_TabGroups.Add(new NullViewModel(m_MetaGetaTabGroup, MessengerInstance, "Settings", s_ConfigureImage));
 
-        #region INotifyPropertyChanged Members
+			m_DataStoreManager = dataStoreManager;
+			m_DataStoreManager.DataStores.CollectionChanged += DataStoresChanged;
+			m_TabGroups.Add(new JobQueueViewModel(m_MetaGetaTabGroup, MessengerInstance, m_DataStoreManager));
+			AddTabs(dataStoreManager.DataStores);
 
-        public event PropertyChangedEventHandler PropertyChanged;
+			m_TabView = new ListCollectionView(m_TabGroups);
+			m_TabView.GroupDescriptions.Add(new PropertyGroupDescription("Group"));
+		}
 
-        #endregion
+		public CollectionView Tabs { get { return m_TabView; } }
+		public NavigationTab SelectedTab {
+			get { return m_SelectedTab; }
+			set {
+				if (m_SelectedTab != value) {
+					m_SelectedTab = value;
+					RaisePropertyChanged("SelectedTab");
+					RaisePropertyChanged("SelectedTabIsDataStore");
+				}
+			}
+		}
+		public bool SelectedTabIsDataStore { get { return m_SelectedTab != null && m_SelectedTab.Group is DataStoreNavigationTabGroup; } }
 
-        private void DataStoresChanged(object sender, NotifyCollectionChangedEventArgs e) {
-            switch (e.Action) {
-                case NotifyCollectionChangedAction.Reset:
-                    RemoveTabGroupForDataStore(e.OldItems.Cast<MGDataStore>());
-                    AddTabGroups(e.NewItems.Cast<MGDataStore>());
+		private void DataStoresChanged(object sender, NotifyCollectionChangedEventArgs e) {
+			switch (e.Action) {
+				case NotifyCollectionChangedAction.Reset:
+					RemoveTabs(e.OldItems.Cast<MGDataStore>());
+					AddTabs(e.NewItems.Cast<MGDataStore>());
+					break;
 
-                    break;
-                case NotifyCollectionChangedAction.Add:
-                    AddTabGroups(e.NewItems.Cast<MGDataStore>());
+				case NotifyCollectionChangedAction.Add:
+					AddTabs(e.NewItems.Cast<MGDataStore>());
+					break;
 
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    RemoveTabGroupForDataStore(e.OldItems.Cast<MGDataStore>());
-                    AddTabGroups(e.NewItems.Cast<MGDataStore>());
+				case NotifyCollectionChangedAction.Move:
+					RemoveTabs(e.OldItems.Cast<MGDataStore>());
+					AddTabs(e.NewItems.Cast<MGDataStore>());
+					break;
 
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    RemoveTabGroupForDataStore(e.OldItems.Cast<MGDataStore>());
+				case NotifyCollectionChangedAction.Remove:
+					RemoveTabs(e.OldItems.Cast<MGDataStore>());
+					break;
 
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    RemoveTabGroupForDataStore(e.OldItems.Cast<MGDataStore>());
-                    AddTabGroups(e.NewItems.Cast<MGDataStore>());
+				case NotifyCollectionChangedAction.Replace:
+					RemoveTabs(e.OldItems.Cast<MGDataStore>());
+					AddTabs(e.NewItems.Cast<MGDataStore>());
+					break;
 
-                    break;
-                default:
-                    throw new Exception();
-            }
-        }
+				default:
+					throw new Exception();
+			}
+			m_TabView.Refresh();
+			RaisePropertyChanged("Tabs");
+		}
 
-        private void RemoveTabGroupForDataStore(IEnumerable<MGDataStore> dataStores) {
-            foreach (MGDataStore ds in dataStores)
-                m_TabGroups.Remove(m_TabGroups.First(tab => tab is DataStoreNavigationTabGroup && ReferenceEquals(((DataStoreNavigationTabGroup) tab).DataStore, ds)));
-        }
+		private void RemoveTabs(IEnumerable<MGDataStore> dataStores) {
+			foreach (MGDataStore ds in dataStores)
+				foreach (var tab in m_TabGroups.Where(tab => tab.Group is DataStoreNavigationTabGroup && ReferenceEquals(((DataStoreNavigationTabGroup)tab.Group).DataStore, ds)).ToArray())
+					m_TabGroups.Remove(tab);
+		}
 
-        private void AddTabGroups(IEnumerable<MGDataStore> dataStores) {
-            foreach (MGDataStore ds in dataStores)
-                m_TabGroups.Add(CreateTabGroup(ds));
-        }
+		private void AddTabs(IEnumerable<MGDataStore> dataStores) {
+			foreach (MGDataStore ds in dataStores)
+				CreateTabGroup(ds);
+		}
 
-        private NavigationTabGroupBase CreateTabGroup(MGDataStore dataStore) {
-            var @group = new DataStoreNavigationTabGroup(dataStore);
+		private void CreateTabGroup(MGDataStore dataStore) {
+			var grp = new DataStoreNavigationTabGroup(dataStore);
 
-            @group.Children.Add(new DataStoreConfigurationViewModel(dataStore));
-            @group.Children.Add(new GridViewModel(dataStore));
-            @group.Children.Add(new ImportStatusViewModel(dataStore));
-            @group.Children.Add(new TvShowViewModel(dataStore));
+			m_TabGroups.Add(new DataStoreConfigurationViewModel(grp, MessengerInstance, dataStore));
+			m_TabGroups.Add(new GridViewModel(grp, MessengerInstance, dataStore));
+			m_TabGroups.Add(new ImportStatusViewModel(grp, MessengerInstance, dataStore));
+			m_TabGroups.Add(new TvShowViewModel(grp, MessengerInstance, dataStore));
+		}
+	}
 
-            return @group;
-        }
-
-        private void OnTabsChanged() {
-            OnPropertyChanged("Tabs");
-        }
-
-        private void OnPropertyChanged(string name) {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-        }
-
-        #region Nested type: DesignTimeNavigationTabManager
-
-        public class DesignTimeNavigationTabManager : NavigationTabManager {
-            public DesignTimeNavigationTabManager() : base(new DataStoreManager(true)) {}
-        }
-
-        #endregion
-    }
+	public class DesignTimeNavigationTabManager : NavigationTabManager {
+		public DesignTimeNavigationTabManager()
+			: base(new DataStoreManager(true)) {
+				SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab.Group is DataStoreNavigationTabGroup);
+		}
+	}
 }

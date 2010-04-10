@@ -21,28 +21,30 @@ using System;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MetaGeta.DataStore;
+using GalaSoft.MvvmLight.Messaging;
 
 #endregion
 
 namespace MetaGeta.GUI {
-    public class JobQueueViewModel : NavigationTab {
-        private static readonly BitmapImage s_ConfigureImage = new BitmapImage(new Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/text_block.png"));
-        private readonly DataStoreManager m_DataStoreManager;
+	public class JobQueueViewModel : NavigationTab {
+		private static readonly BitmapImage s_ConfigureImage = new BitmapImage(new Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/text_block.png"));
+		private readonly DataStoreManager m_DataStoreManager;
 
-        public JobQueueViewModel(DataStoreManager dataStoreManager) {
-            m_DataStoreManager = dataStoreManager;
-        }
+		public JobQueueViewModel(NavigationTabGroupBase group, IMessenger messenger, DataStoreManager dataStoreManager)
+			: base(group, messenger) {
+			m_DataStoreManager = dataStoreManager;
+		}
 
-        public JobQueue JobQueue {
-            get { return m_DataStoreManager.JobQueue; }
-        }
+		public JobQueue JobQueue {
+			get { return m_DataStoreManager.JobQueue; }
+		}
 
-        public override string Caption {
-            get { return "Jobs"; }
-        }
+		public override string Caption {
+			get { return "Jobs"; }
+		}
 
-        public override ImageSource Icon {
-            get { return s_ConfigureImage; }
-        }
-    }
+		public override ImageSource Icon {
+			get { return s_ConfigureImage; }
+		}
+	}
 }
