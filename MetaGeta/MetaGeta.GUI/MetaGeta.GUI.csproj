@@ -137,6 +137,9 @@
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\ProgressBadge.xaml.cs">
+      <DependentUpon>ProgressBadge.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MetaGetaGuiApplication.xaml.cs">
       <DependentUpon>MetaGetaGuiApplication.xaml</DependentUpon>
     </Compile>
@@ -212,6 +215,10 @@
     <Page Include="Common.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ProgressBadge.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="DefaultSkin.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -425,6 +432,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="SampleData\" />
     <Folder Include="Services\" />
   </ItemGroup>
 </Project>

@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Windows.Media;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Messaging;
+using MetaGeta.DataStore;
 
 #endregion
 
@@ -35,4 +36,18 @@ namespace MetaGeta.GUI {
 		public abstract ImageSource Icon { get; }
 		public abstract string Caption { get; }
 	}
+
+	//public class TabBadge : ViewModelBase {
+	//    private readonly int m_Count;
+	//    private readonly ProgressStatus m_Status;
+
+	//    public TabBadge(int count, ProgressStatus status) {
+	//        m_Count = count;
+	//        m_Status = status;
+	//    }
+
+	//    public int Count { get { return m_Count; } }
+	//    public double Progress { get { return m_Status.ProgressPct; } }
+	//    public bool IsRunning { get { return m_Status.IsRunning; } }
+	//}
 }

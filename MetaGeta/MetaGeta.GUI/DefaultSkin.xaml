@@ -8,6 +8,8 @@
     <SolidColorBrush x:Key="BorderBrush" Color="Gray" />
 	<SolidColorBrush x:Key="ActiveBorderBrush" Color="Black" />
     <SolidColorBrush x:Key="FocusBorderBrush" Color="#60000000" />
+	
+	<SolidColorBrush x:Key="SelectedItemBrush" Color="LightGray" />
     
     <Color x:Key="ButtonIconColor">#FF888888</Color>
     <SolidColorBrush x:Key="ButtonIconBrush" Color="{StaticResource ButtonIconColor}"/>

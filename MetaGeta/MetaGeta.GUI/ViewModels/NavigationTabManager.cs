@@ -149,7 +149,8 @@ namespace MetaGeta.GUI {
 	public class DesignTimeNavigationTabManager : NavigationTabManager {
 		public DesignTimeNavigationTabManager()
 			: base(new DataStoreManager(true)) {
-			SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab.Group is DataStoreNavigationTabGroup);
+			//SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab.Group is DataStoreNavigationTabGroup);
+			SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab is JobQueueViewModel);
 		}
 	}
 }

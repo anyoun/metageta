@@ -33,18 +33,22 @@ namespace MetaGeta.GUI {
 		public JobQueueViewModel(NavigationTabGroupBase group, IMessenger messenger, DataStoreManager dataStoreManager)
 			: base(group, messenger) {
 			m_DataStoreManager = dataStoreManager;
+			m_DataStoreManager.JobQueue.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(JobQueue_PropertyChanged);
 		}
 
-		public JobQueue JobQueue {
-			get { return m_DataStoreManager.JobQueue; }
+		void JobQueue_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
+			if (e.PropertyName == "NotDoneCount") {
+				RaisePropertyChanged("NotDoneCount");
+			} else if (e.PropertyName == "CurrentItem") {
+				RaisePropertyChanged("CurrentProgress");
+			}
 		}
 
-		public override string Caption {
-			get { return "Jobs"; }
-		}
+		public JobQueue JobQueue { get { return m_DataStoreManager.JobQueue; } }
+		public override string Caption { get { return "Jobs"; } }
+		public override ImageSource Icon { get { return s_ConfigureImage; } }
 
-		public override ImageSource Icon {
-			get { return s_ConfigureImage; }
-		}
+		public int NotDoneCount { get { return JobQueue.NotDoneCount; } }
+		public double CurrentProgress { get { return JobQueue.CurrentItem == null ? 1 : JobQueue.CurrentItem.Status.ProgressPct; } }
 	}
 }
