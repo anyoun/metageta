@@ -3,8 +3,21 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	x:Class="MetaGeta.GUI.InputDialog"
 	x:Name="Window"
-	Title="InputDialog"
-	Width="640" Height="480">
+	Title="InputDialog" ResizeMode="CanResizeWithGrip" mc:Ignorable="d"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    FocusManager.FocusedElement="{Binding ElementName=textBox1}"
+    Height="135" Width="342">
 
-	<Grid x:Name="LayoutRoot"/>
+	<Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="24*" />
+        </Grid.RowDefinitions>
+        <Label Content="Label" HorizontalAlignment="Stretch" Margin="4" Name="label1" VerticalAlignment="Stretch" Grid.RowSpan="1" />
+        <TextBox HorizontalAlignment="Stretch" Margin="4,0,4,4" Name="textBox1" VerticalAlignment="Stretch" Grid.Row="1" TabIndex="0" />
+        <Button Content="OK" Height="23" Margin="4,4,100,0" Name="btnOK" Grid.Row="2" IsDefault="True" HorizontalAlignment="Right" Width="75" Click="btnOK_Click" VerticalAlignment="Bottom" TabIndex="1" />
+        <Button Content="Cancel" Height="23" HorizontalAlignment="Right" Margin="100,4,12,0" Name="btnCancel" Width="75" Grid.Row="2" IsCancel="True" Click="btnCancel_Click" VerticalAlignment="Bottom" TabIndex="2" />
+    </Grid>
 </Window>

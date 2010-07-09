@@ -54,8 +54,8 @@ namespace MetaGeta.GUI {
 			m_ImportCommand = new RelayCommand(ImportCommand_Execute);
 			m_AddDirectoryCommand = new RelayCommand(AddDirectoryCommand_Execute);
 			m_AddExtensionCommand = new RelayCommand(AddExtensionCommand_Execute);
-			m_RemoveDirectoryCommand = new RelayCommand<string>(RemoveDirectoryCommand_Execute);
-			m_RemoveExtensionCommand = new RelayCommand<string>(RemoveExtensionCommand_Execute);
+			m_RemoveDirectoryCommand = new RelayCommand<string>(RemoveDirectoryCommand_Execute, s => s != null);
+			m_RemoveExtensionCommand = new RelayCommand<string>(RemoveExtensionCommand_Execute, s => s != null);
 		}
 
 		void m_DataStore_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) {
@@ -99,25 +99,27 @@ namespace MetaGeta.GUI {
 		public ICommand AddDirectoryCommand { get { return m_AddDirectoryCommand; } }
 		private void AddDirectoryCommand_Execute() {
 			MessengerInstance.Send(new DirectoryPromptMessage("Add Directory", "message", dir => {
-				if (dir != null) {
+				if (dir != null)
 					Directories = Directories.Cons(dir).ToArray();
-				}
 			}));
 		}
 
 		public ICommand RemoveDirectoryCommand { get { return m_RemoveDirectoryCommand; } }
 		private void RemoveDirectoryCommand_Execute(string directory) {
-			Directories = Directories.Where(s => s != directory).ToArray();
+			Directories = Directories.Except(directory).ToArray();
 		}
 
 		public ICommand AddExtensionCommand { get { return m_AddExtensionCommand; } }
 		private void AddExtensionCommand_Execute() {
-			throw new NotImplementedException();
+			MessengerInstance.Send(new InputPromptMessage("Add Extension", "Enter a new file extension:", ext => {
+				if (ext != null)
+					Extensions = Extensions.Cons(ext).ToArray();
+			}));
 		}
 
 		public ICommand RemoveExtensionCommand { get { return m_RemoveExtensionCommand; } }
 		private void RemoveExtensionCommand_Execute(string extension) {
-			Extensions = Extensions.Where(s => s != extension).ToArray();
+			Extensions = Extensions.Except(extension).ToArray();
 		}
 	}
 
@@ -125,15 +127,11 @@ namespace MetaGeta.GUI {
 		public DesignTimeImport2ViewModel()
 			: base(null, null, null) { }
 		public override IList<string> Directories {
-			get {
-				return new[] { @"c:\foo\bar\", @"c:\foo\", @"e:\bar\" };
-			}
+			get { return new[] { @"c:\foo\bar\", @"c:\foo\", @"e:\bar\" }; }
 			set { }
 		}
 		public override IList<string> Extensions {
-			get {
-				return new[] { "mp4", "avi", "mkv", "ogm" };
-			}
+			get { return new[] { "mp4", "avi", "mkv", "ogm" }; }
 			set { }
 		}
 

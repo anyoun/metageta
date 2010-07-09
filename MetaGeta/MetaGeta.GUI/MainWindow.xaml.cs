@@ -68,7 +68,12 @@ namespace MetaGeta.GUI {
 			}
 		}
 		private void ProcessInputPrompt(InputPromptMessage message) {
-			
+			var prompt = new InputDialog();
+			string text = string.Empty;
+			if (prompt.ShowDialog(message.Title, message.Message, ref text) ?? false)
+				message.Callback(text);
+			else
+				message.Callback(null);
 		}
 
 		private void MainWindow_Closing(object sender, EventArgs e) {

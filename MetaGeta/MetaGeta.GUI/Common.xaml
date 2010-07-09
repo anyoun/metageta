@@ -325,6 +325,8 @@
                             </Track.DecreaseRepeatButton>
                         </Track>
 
+                        <Rectangle Grid.Row="1" Width="1" HorizontalAlignment="Center" Fill="{TemplateBinding Foreground}" Margin="-1,0,0,0" />
+
                         <RepeatButton Grid.Row="2" x:Name="IncreaseRepeat" Style="{DynamicResource MGRepeatButton}" Command="ScrollBar.LineDownCommand">
                             <Grid>
                                 <Path x:Name="IncreaseArrow" Stroke="{TemplateBinding Foreground}" StrokeThickness="1" Data="M 0 0 L 4 4 L 8 0 Z"/>

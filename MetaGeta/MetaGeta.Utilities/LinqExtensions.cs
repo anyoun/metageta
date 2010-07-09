@@ -210,5 +210,9 @@ namespace MetaGeta.Utilities {
 				yield return arr[i];
 			}
 		}
+
+		public static IEnumerable<T> Except<T>(this IEnumerable<T> items, T item) {
+			return items.Except(item.Cons());
+		}
 	}
 }
