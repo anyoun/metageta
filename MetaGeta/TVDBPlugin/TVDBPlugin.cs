@@ -122,7 +122,6 @@ namespace MetaGeta.TVDBPlugin {
                     m_LastUpdateTime = DateTimeOffset.ParseExact(value ?? c_DefaultDate, "o", null, System.Globalization.DateTimeStyles.RoundtripKind);
                     if (SettingChanged != null) {
                         SettingChanged(this, new PropertyChangedEventArgs("LastUpdateTimeString"));
-                        SettingChanged(this, new PropertyChangedEventArgs("LastUpdateTime"));
                     }
                 }
             }
@@ -135,7 +134,6 @@ namespace MetaGeta.TVDBPlugin {
                     m_LastUpdateTime = value;
                     if (SettingChanged != null) {
                         SettingChanged(this, new PropertyChangedEventArgs("LastUpdateTimeString"));
-                        SettingChanged(this, new PropertyChangedEventArgs("LastUpdateTime"));
                     }
                 }
             }
