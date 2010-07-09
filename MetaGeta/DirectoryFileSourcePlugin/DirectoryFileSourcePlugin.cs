@@ -30,112 +30,115 @@ using MetaGeta.Utilities;
 #endregion
 
 namespace MetaGeta.DirectoryFileSourcePlugin {
-    public class DirectoryFileSourcePlugin : IMGFileSourcePlugin, IMGPluginBase {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private MGDataStore m_DataStore;
+	public class DirectoryFileSourcePlugin : IMGFileSourcePlugin, IMGPluginBase {
+		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+		private MGDataStore m_DataStore;
 
-        private ReadOnlyCollection<string> m_DirectoriesToWatch;
+		private ReadOnlyCollection<string> m_DirectoriesToWatch;
 
-        private ReadOnlyCollection<string> m_Extensions;
-        private long m_ID;
+		private ReadOnlyCollection<string> m_Extensions;
+		private long m_ID;
 
-        public long ID {
-            get { return m_ID; }
-        }
+		public long ID {
+			get { return m_ID; }
+		}
 
-        [Settings("Directories To Watch", new string[0], SettingType.DirectoryList, "Locations")]
-        public ReadOnlyCollection<string> DirectoriesToWatch {
-            get { return m_DirectoriesToWatch; }
-            set {
-                if (!ReferenceEquals(value, m_DirectoriesToWatch)) {
-                    m_DirectoriesToWatch = value;
-                    if (SettingChanged != null)
-                        SettingChanged(this, new PropertyChangedEventArgs("DirectoriesToWatch"));
-                }
-            }
-        }
+		[Settings("Directories To Watch", new string[0], SettingType.DirectoryList, "Locations")]
+		public ReadOnlyCollection<string> DirectoriesToWatch {
+			get { return m_DirectoriesToWatch; }
+			set {
+				if (!ReferenceEquals(value, m_DirectoriesToWatch)) {
+					m_DirectoriesToWatch = value;
+					if (SettingChanged != null)
+						SettingChanged(this, new PropertyChangedEventArgs("DirectoriesToWatch"));
+				}
+			}
+		}
 
-        [Settings("Extensions To Watch", new string[0], SettingType.ExtensionList, "Locations")]
-        public ReadOnlyCollection<string> Extensions {
-            get { return m_Extensions; }
-            set {
-                if (!ReferenceEquals(value, m_Extensions)) {
-                    m_Extensions = value;
-                    if (SettingChanged != null)
-                        SettingChanged(this, new PropertyChangedEventArgs("Extensions"));
-                }
-            }
-        }
+		[Settings("Extensions To Watch", new string[0], SettingType.ExtensionList, "Locations")]
+		public ReadOnlyCollection<string> Extensions {
+			get { return m_Extensions; }
+			set {
+				if (!ReferenceEquals(value, m_Extensions)) {
+					m_Extensions = value;
+					if (SettingChanged != null)
+						SettingChanged(this, new PropertyChangedEventArgs("Extensions"));
+				}
+			}
+		}
 
-        #region IMGFileSourcePlugin Members
+		#region IMGFileSourcePlugin Members
 
-        public void Refresh(out ICollection<Uri> addedFiles, out ICollection<Uri> removedFiles) {
-            var fileNameToFileDict = new Dictionary<string, MGFile>();
-            foreach (var t in m_DataStore.GetAllTagOnFiles(MGFile.FileNameKey))
-                fileNameToFileDict[new Uri((string)t.First.Value).LocalPath] = t.Second;
+		public void Refresh(out ICollection<Uri> addedFiles, out ICollection<Uri> removedFiles) {
+			var fileNameToFileDict = new Dictionary<string, MGFile>();
+			foreach (var t in m_DataStore.GetAllTagOnFiles(MGFile.FileNameKey))
+				fileNameToFileDict[new Uri((string)t.Item1.Value).LocalPath] = t.Item2;
 
-            var newFiles = new List<Uri>();
+			var newFiles = new List<Uri>();
 
-            foreach (FileInfo fi in GetAllFilesInWatchedDirectories()) {
-                MGFile mgFile = null;
-                if (fileNameToFileDict.Remove(fi.FullName)) {
-                    //Already exits, remove it from the dictionary
-                    log.DebugFormat("File \"{0}\" already exists.", fi.FullName);
-                } else {
-                    //New files
-                    log.DebugFormat("New files: \"{0}\".", fi.FullName);
-                    newFiles.Add(new Uri(fi.FullName));
-                }
-            }
+			foreach (FileInfo fi in GetAllFilesInWatchedDirectories()) {
+				MGFile mgFile = null;
+				if (fileNameToFileDict.Remove(fi.FullName)) {
+					//Already exits, remove it from the dictionary
+					log.DebugFormat("File \"{0}\" already exists.", fi.FullName);
+				} else {
+					//New files
+					log.DebugFormat("New files: \"{0}\".", fi.FullName);
+					newFiles.Add(new Uri(fi.FullName));
+				}
+			}
 
-            var deletedFiles = new List<Uri>();
-            foreach (var item in fileNameToFileDict) {
-                deletedFiles.Add(new Uri(item.Key));
-            }
+			var deletedFiles = new List<Uri>();
+			foreach (var item in fileNameToFileDict) {
+				deletedFiles.Add(new Uri(item.Key));
+			}
 
-            addedFiles = newFiles;
-            removedFiles = deletedFiles;
-        }
+			addedFiles = newFiles;
+			removedFiles = deletedFiles;
+		}
 
-        #endregion
+		#endregion
 
-        #region IMGPluginBase Members
+		#region IMGPluginBase Members
 
-        long IMGPluginBase.PluginID {
-            get { return ID; }
-        }
+		long IMGPluginBase.PluginID {
+			get { return ID; }
+		}
 
-        public string FriendlyName {
-            get { return "Directory File Source Plugin"; }
-        }
+		public string FriendlyName {
+			get { return "Directory File Source Plugin"; }
+		}
 
-        public string UniqueName {
-            get { return "DirectoryFileSourcePlugin"; }
-        }
+		public string UniqueName {
+			get { return "DirectoryFileSourcePlugin"; }
+		}
 
-        public Version Version {
-            get { return new Version(1, 0, 0, 0); }
-        }
+		public Version Version {
+			get { return new Version(1, 0, 0, 0); }
+		}
 
-        public void Startup(MGDataStore dataStore, long id) {
-            m_DataStore = dataStore;
-        }
+		public void Startup(MGDataStore dataStore, long id) {
+			m_DataStore = dataStore;
+		}
 
-        public void Shutdown() { }
+		public void Shutdown() { }
 
-        public event PropertyChangedEventHandler SettingChanged;
+		public event PropertyChangedEventHandler SettingChanged;
 
-        #endregion
+		#endregion
 
-        private ICollection<FileInfo> GetAllFilesInWatchedDirectories() {
-            var extensionsLookup = new HashSet<string>(Extensions);
-            var files = new List<FileInfo>();
-            foreach (string d in DirectoriesToWatch)
-                files.AddRange(new DirectoryInfo(d).GetFiles("*", SearchOption.AllDirectories));
-            files.RemoveAll(f => !(extensionsLookup.Contains(Path.GetExtension(f.FullName))
-                                   || extensionsLookup.Contains(Path.GetExtension(f.FullName).TrimStart('.'))
-                                  ));
-            return files;
-        }
-    }
+		private ICollection<FileInfo> GetAllFilesInWatchedDirectories() {
+			var extensionsLookup = new HashSet<string>(Extensions);
+			var files = new List<FileInfo>();
+			foreach (string d in DirectoriesToWatch) {
+				var di = new DirectoryInfo(d);
+				if (di.Exists)
+					files.AddRange(di.GetFiles("*", SearchOption.AllDirectories));
+			}
+			files.RemoveAll(f => !(extensionsLookup.Contains(Path.GetExtension(f.FullName))
+								   || extensionsLookup.Contains(Path.GetExtension(f.FullName).TrimStart('.'))
+								  ));
+			return files;
+		}
+	}
 }
