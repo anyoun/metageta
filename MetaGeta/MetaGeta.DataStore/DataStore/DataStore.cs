@@ -376,9 +376,9 @@ namespace MetaGeta.DataStore {
 				m_DataMapper.WriteNewFiles(files, this);
 
 				foreach (Tuple<MGFile, Uri, int> fileAndPath in files.IndexInnerJoin(addedFiles)) {
-					MGFile newfile = fileAndPath.First;
-					Uri filePath = fileAndPath.Second;
-					int index = fileAndPath.Third;
+					MGFile newfile = fileAndPath.Item1;
+					Uri filePath = fileAndPath.Item2;
+					int index = fileAndPath.Item3;
 					SetImportStatus(string.Format("Importing \"{0}\"", filePath.LocalPath), (int)(index * 100.0) / files.Length);
 					ImportNewFile(newfile, filePath);
 				}

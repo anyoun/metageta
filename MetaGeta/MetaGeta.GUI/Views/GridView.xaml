@@ -3,9 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-    xmlns:toolkit="clr-namespace:Microsoft.Windows.Controls;assembly=WPFToolkit"
-    xmlns:GUI="clr-namespace:MetaGeta.GUI"
-    
+    xmlns:GUI="clr-namespace:MetaGeta.GUI"    
     x:Class="MetaGeta.GUI.GridView" x:Name="myGridView"
 	d:DesignHeight="222" d:DesignWidth="278" >
 
@@ -21,7 +19,7 @@
             </ContextMenu.ItemContainerStyle>
         </ContextMenu>
 
-        <Style TargetType="{x:Type toolkit:DataGridRow}" BasedOn="{StaticResource DataGridRowAreoStyle}">
+        <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource DataGridRowAreoStyle}">
             <Setter Property="ContextMenu" Value="{StaticResource menuGridRow}" />
         </Style>
 
@@ -32,7 +30,7 @@
             <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="200"/>
         </Grid.ColumnDefinitions>
-        <toolkit:DataGrid AutoGenerateColumns="False" Margin="0" x:Name="DataGrid1" 
+        <DataGrid AutoGenerateColumns="False" Margin="0" x:Name="DataGrid1" 
                           ItemsSource="{Binding Path=Files}" IsSynchronizedWithCurrentItem="True" 
                           HeadersVisibility="Column" IsReadOnly="True" CanUserResizeRows="False" GridLinesVisibility="None"
 					      d:GenerateSampleData="True" IsTextSearchEnabled="True"
@@ -41,21 +39,21 @@
                           Grid.Column="0"
 					      />
         <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
-        <toolkit:DataGrid AutoGenerateColumns="False"
+        <DataGrid AutoGenerateColumns="False"
                           ItemsSource="{Binding Path=SelectedFile.Tags.All}"
                           HeadersVisibility="Column" IsReadOnly="True" CanUserResizeRows="False" GridLinesVisibility="None"
                           Grid.Column="2"
                           >
-            <toolkit:DataGrid.Columns>
-                <toolkit:DataGridTextColumn Binding="{Binding Path=Name}" Header="Name" Width="150"/>
-                <toolkit:DataGridTextColumn Binding="{Binding Path=Value}" Header="Value" Width="300">
-                    <toolkit:DataGridTextColumn.ElementStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Path=Name}" Header="Name" Width="150"/>
+                <DataGridTextColumn Binding="{Binding Path=Value}" Header="Value" Width="300">
+                    <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="TextWrapping" Value="Wrap"/>
                         </Style>
-                    </toolkit:DataGridTextColumn.ElementStyle>
-                </toolkit:DataGridTextColumn>
-            </toolkit:DataGrid.Columns>
-        </toolkit:DataGrid>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>

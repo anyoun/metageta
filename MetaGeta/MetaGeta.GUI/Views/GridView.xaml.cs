@@ -26,7 +26,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using log4net;
 using MetaGeta.DataStore;
-using Microsoft.Windows.Controls;
 
 #endregion
 
