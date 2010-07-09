@@ -209,29 +209,210 @@
     		</Setter.Value>
     	</Setter>
     </Style>
-	
-	<Style x:Key="MGListBoxItem" d:IsControlPart="True" TargetType="{x:Type ListBoxItem}">
-		<Setter Property="SnapsToDevicePixels" Value="true"/>
-		<Setter Property="OverridesDefaultStyle" Value="true"/>
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="{x:Type ListBoxItem}">
-					<Grid SnapsToDevicePixels="true" HorizontalAlignment="Stretch">
-						<Border x:Name="Border" Background="Transparent"
+
+    <Style x:Key="MGProgressBar" TargetType="{x:Type ProgressBar}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ProgressBar}">
+                    <Grid>
+                        <Border x:Name="PART_Track" Background="{DynamicResource ProgressBarEmptyBrush}" />
+                        <Border HorizontalAlignment="Left" x:Name="PART_Indicator" Background="{DynamicResource ProgressBarFilledBrush}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Simple Repeat Button - This is used by Simple ScrollBar for the up and down buttons -->
+    <Style x:Key="MGRepeatButton" d:IsControlPart="True" TargetType="{x:Type RepeatButton}" BasedOn="{x:Null}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource NormalBorderBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Grid>
+                        <Border x:Name="Border" Background="{TemplateBinding Background}"/>
+                        <ContentPresenter HorizontalAlignment="Center" x:Name="ContentPresenter" VerticalAlignment="Center" 
+                                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="true">
+                            <Setter Property="BorderBrush" Value="{DynamicResource DefaultedBorderBrush}" TargetName="Border"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" Value="LightGray" TargetName="Border"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter Property="Background" Value="Transparent" TargetName="Border"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource PressedBorderBrush}" TargetName="Border"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Simple Thumb - The Thumb is the draggable part of the Scrollbar -->
+    <Style x:Key="MGThumbStyle" d:IsControlPart="True" TargetType="{x:Type Thumb}" BasedOn="{x:Null}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Grid Margin="0,0,0,0" x:Name="Grid">
+                        <Rectangle HorizontalAlignment="Stretch" x:Name="Rectangle" 
+                                   VerticalAlignment="Stretch" Width="Auto" Height="Auto" Margin="1"
+                                   Fill="Black"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True"/>
+                        <Trigger Property="IsMouseOver" Value="True"/>
+                        <Trigger Property="IsEnabled" Value="False"/>
+                        <Trigger Property="IsDragging" Value="True"/>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Simple ScrollRepeatButton Style - This RepeatButton is used above and below the Thumb in the Scrollbar. They are set to transparent si that they do not show over the scrollbar -->
+    <Style x:Key="MGScrollRepeatButtonStyle" d:IsControlPart="True" TargetType="{x:Type RepeatButton}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="IsTabStop" Value="false"/>
+        <Setter Property="Focusable" Value="false"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Grid>
+                        <Rectangle Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="{TemplateBinding BorderThickness}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Simple ScrollBar  This makes use of SimpleThumb, SimpleRepeatButton and SimpleScrollRepeatButton -->
+
+    <Style x:Key="MGScrollBar" TargetType="{x:Type ScrollBar}">
+        <Setter Property="Stylus.IsFlicksEnabled" Value="false"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+        <Setter Property="Background" Value="#20FFFFFF"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <Grid x:Name="GridRoot" Width="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" Background="{TemplateBinding Background}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition MaxHeight="18"/>
+                            <RowDefinition Height="0.00001*"/>
+                            <RowDefinition MaxHeight="18"/>
+                        </Grid.RowDefinitions>
+
+                        <RepeatButton x:Name="DecreaseRepeat" Style="{DynamicResource MGRepeatButton}" Command="ScrollBar.LineUpCommand">
+                            <Grid>
+                                <Path x:Name="DecreaseArrow" Stroke="{TemplateBinding Foreground}" StrokeThickness="1" Data="M 0 4 L 8 4 L 4 0 Z"/>
+                            </Grid>
+                        </RepeatButton>
+
+                        <!-- Track is a special layout container which sizes the thumb and the repeat button which do jump scrolling either side of it -->
+                        <Track Grid.Row="1" x:Name="PART_Track" Orientation="Vertical" IsDirectionReversed="true">
+                            <Track.Thumb>
+                                <Thumb Style="{DynamicResource MGThumbStyle}"/>
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton x:Name="PageUp" Style="{DynamicResource MGScrollRepeatButtonStyle}" Command="ScrollBar.PageDownCommand"/>
+                            </Track.IncreaseRepeatButton>
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton x:Name="PageDown" Style="{DynamicResource MGScrollRepeatButtonStyle}" Command="ScrollBar.PageUpCommand"/>
+                            </Track.DecreaseRepeatButton>
+                        </Track>
+
+                        <RepeatButton Grid.Row="2" x:Name="IncreaseRepeat" Style="{DynamicResource MGRepeatButton}" Command="ScrollBar.LineDownCommand">
+                            <Grid>
+                                <Path x:Name="IncreaseArrow" Stroke="{TemplateBinding Foreground}" StrokeThickness="1" Data="M 0 0 L 4 4 L 8 0 Z"/>
+                            </Grid>
+                        </RepeatButton>
+                    </Grid>
+
+                    <!-- This uses a single template for ScrollBar and rotate it to be Horizontal
+					It also changes the commands so that the it does Left and Right instead of Up and Down Commands -->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Horizontal">
+
+                            <!-- Rotate the ScrollBar from Vertical to Horizontal -->
+                            <Setter Property="LayoutTransform" TargetName="GridRoot">
+                                <Setter.Value>
+                                    <RotateTransform Angle="-90"/>
+                                </Setter.Value>
+                            </Setter>
+
+                            <!-- Track is bound to Orientation internally, so we need to rotate it back to Vertical -->
+                            <Setter TargetName="PART_Track" Property="Orientation" Value="Vertical"/>
+
+                            <!-- Change the commands to do Horizontal commands -->
+                            <Setter Property="Command" Value="ScrollBar.LineLeftCommand" TargetName="DecreaseRepeat"/>
+                            <Setter Property="Command" Value="ScrollBar.LineRightCommand" TargetName="IncreaseRepeat"/>
+                            <Setter Property="Command" Value="ScrollBar.PageLeftCommand" TargetName="PageDown"/>
+                            <Setter Property="Command" Value="ScrollBar.PageRightCommand" TargetName="PageUp"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="MGScrollViewer" TargetType="{x:Type ScrollViewer}" BasedOn="{x:Null}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <ScrollContentPresenter Grid.Column="0" Grid.Row="0" Margin="{TemplateBinding Padding}" 
+                                                Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                                CanContentScroll="{TemplateBinding CanContentScroll}"/>
+
+                        <!-- The visibility of the ScrollBars is controlled by the implementation fo the control -->
+                        <ScrollBar Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Grid.Column="0" Grid.Row="1" x:Name="PART_HorizontalScrollBar" 
+                                   Style="{DynamicResource MGScrollBar}" Orientation="Horizontal"
+                                   Value="{Binding Path=HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   ViewportSize="{TemplateBinding ViewportWidth}" Minimum="0" Maximum="{TemplateBinding ScrollableWidth}" />
+                        <ScrollBar Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Grid.Column="1" Grid.Row="0" x:Name="PART_VerticalScrollBar"
+                                   Style="{DynamicResource MGScrollBar}" Orientation="Vertical"
+                                   Value="{Binding Path=VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   ViewportSize="{TemplateBinding ViewportHeight}" Minimum="0" Maximum="{TemplateBinding ScrollableHeight}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="MGListBoxItem" d:IsControlPart="True" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="SnapsToDevicePixels" Value="true"/>
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Grid SnapsToDevicePixels="true" HorizontalAlignment="Stretch">
+                        <Border x:Name="Border" Background="Transparent"
 						 BorderBrush="{TemplateBinding BorderBrush}" 
 						 BorderThickness="{TemplateBinding BorderThickness}"/>
-						<ContentPresenter HorizontalAlignment="Stretch" 
+                        <ContentPresenter HorizontalAlignment="Stretch" 
 										VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-					</Grid>
-					<ControlTemplate.Triggers>
-						<Trigger Property="IsSelected" Value="true">
-							<Setter Property="Background" Value="{DynamicResource SelectedItemBrush}" TargetName="Border"/>
-						</Trigger>
-					</ControlTemplate.Triggers>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="true">
+                            <Setter Property="Background" Value="{DynamicResource SelectedItemBrush}" TargetName="Border"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <Style x:Key="MGListBox" TargetType="{x:Type ListBox}">
         <Setter Property="SnapsToDevicePixels" Value="true"/>
@@ -245,7 +426,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ListBox}">
                     <Border x:Name="Bd" SnapsToDevicePixels="True" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="1">
-                        <ScrollViewer Padding="{TemplateBinding Padding}" Focusable="False" Style="{StaticResource SimpleScrollViewer}">
+                        <ScrollViewer Padding="{TemplateBinding Padding}" Focusable="False" Style="{StaticResource MGScrollViewer}">
                             <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                         </ScrollViewer>
                     </Border>

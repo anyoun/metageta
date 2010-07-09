@@ -167,7 +167,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Services\DirectoryPromptMessage.cs" />
+    <Compile Include="Services\InputPromptMessage.cs" />
     <Compile Include="ViewModels\GridViewModel.cs" />
+    <Compile Include="ViewModels\Import2ViewModel.cs" />
     <Compile Include="ViewModels\ImportStatusViewModel.cs" />
     <Compile Include="ViewModels\JobQueueViewModel.cs" />
     <Compile Include="ViewModels\NavigationTab.cs" />
@@ -178,6 +181,9 @@
     <Compile Include="Views\GridView.xaml.cs">
       <DependentUpon>GridView.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\Import2View.xaml.cs">
+      <DependentUpon>Import2View.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ImportStatusView.xaml.cs">
       <DependentUpon>ImportStatusView.xaml</DependentUpon>
@@ -198,6 +204,9 @@
     <Compile Include="Windows\GlobalSettingsEditor.xaml.cs">
       <DependentUpon>GlobalSettingsEditor.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Windows\InputDialog.xaml.cs">
+      <DependentUpon>InputDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\NewDataStoreWindow.xaml.cs">
       <DependentUpon>NewDataStoreWindow.xaml</DependentUpon>
@@ -258,6 +267,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\Import2View.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\ImportStatusView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -285,6 +298,10 @@
     <Page Include="Windows\GlobalSettingsEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\InputDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -433,6 +450,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="SampleData\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 </Project>

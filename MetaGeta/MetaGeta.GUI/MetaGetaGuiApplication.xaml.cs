@@ -29,43 +29,47 @@ using MetaGeta.Utilities;
 #endregion
 
 namespace MetaGeta.GUI {
-    public partial class MetaGetaGuiApplication : System.Windows.Application {
-        // Application-level events, such as Startup, Exit, and DispatcherUnhandledException
-        // can be handled in this file.
+	public partial class MetaGetaGuiApplication : System.Windows.Application {
+		// Application-level events, such as Startup, Exit, and DispatcherUnhandledException
+		// can be handled in this file.
 
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        protected override void OnStartup(StartupEventArgs e) {
-            base.OnStartup(e);
-            XmlConfigurator.Configure();
-            ExtractUnmanagedDlls();
-        }
+		static MetaGetaGuiApplication() {
+			GalaSoft.MvvmLight.Threading.DispatcherHelper.Initialize();
+		}
 
-        private static void ExtractUnmanagedDlls() {
-            if (Is64BitProcess) {
-                log.Debug("MetaGeta is running in 64-bit mode.");
-                LoadUnmanagedDll(@"lib-x64\MediaInfo.dll");
-                LoadUnmanagedDll(@"lib-x64\sqlite3.dll");
-            } else {
-                log.Debug("MetaGeta is running in 32-bit mode.");
-                LoadUnmanagedDll(@"lib-x86\MediaInfo.dll");
-                LoadUnmanagedDll(@"lib-x86\sqlite3.dll");
-            }
-        }
+		protected override void OnStartup(StartupEventArgs e) {
+			base.OnStartup(e);
+			XmlConfigurator.Configure();
+			ExtractUnmanagedDlls();
+		}
 
-        private static bool Is64BitProcess {
-            get { return IntPtr.Size == 8; }
-        }
+		private static void ExtractUnmanagedDlls() {
+			if (Is64BitProcess) {
+				log.Debug("MetaGeta is running in 64-bit mode.");
+				LoadUnmanagedDll(@"lib-x64\MediaInfo.dll");
+				LoadUnmanagedDll(@"lib-x64\sqlite3.dll");
+			} else {
+				log.Debug("MetaGeta is running in 32-bit mode.");
+				LoadUnmanagedDll(@"lib-x86\MediaInfo.dll");
+				LoadUnmanagedDll(@"lib-x86\sqlite3.dll");
+			}
+		}
+
+		private static bool Is64BitProcess {
+			get { return IntPtr.Size == 8; }
+		}
 
 
-        [DllImport("kernel32", SetLastError = true)]
-        static extern IntPtr LoadLibrary(string lpFileName);
+		[DllImport("kernel32", SetLastError = true)]
+		static extern IntPtr LoadLibrary(string lpFileName);
 
-        private static void LoadUnmanagedDll(string path) {
-            IntPtr ptr = LoadLibrary(path);
-            if (ptr == IntPtr.Zero)
-                throw new Exception(string.Format("Couldn't load library \"{0}\".", path),
-                                    Marshal.GetExceptionForHR(Marshal.GetLastWin32Error()));
-        }
-    }
+		private static void LoadUnmanagedDll(string path) {
+			IntPtr ptr = LoadLibrary(path);
+			if (ptr == IntPtr.Zero)
+				throw new Exception(string.Format("Couldn't load library \"{0}\".", path),
+									Marshal.GetExceptionForHR(Marshal.GetLastWin32Error()));
+		}
+	}
 }

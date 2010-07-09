@@ -15,4 +15,7 @@
     <SolidColorBrush x:Key="ButtonIconBrush" Color="{StaticResource ButtonIconColor}"/>
     <FontFamily x:Key="MainFont">Droid Sans</FontFamily>
     <SolidColorBrush x:Key="PressedButtonBrush" Color="Gray"/>
+
+    <SolidColorBrush x:Key="ProgressBarEmptyBrush" Color="LightGray"/>
+    <SolidColorBrush x:Key="ProgressBarFilledBrush" Color="DarkGray"/>
 </ResourceDictionary>

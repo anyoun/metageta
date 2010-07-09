@@ -47,8 +47,8 @@ namespace MetaGeta.GUI {
 		private readonly RelayCommand m_AddDataStoreCommand;
 		private readonly RelayCommand<MGDataStore> m_RemoveDataStoreCommand;
 
-		public NavigationTabManager(DataStoreManager dataStoreManager) {
-			MessengerInstance = new Messenger();
+		public NavigationTabManager(IMessenger messenger, DataStoreManager dataStoreManager) {
+			MessengerInstance = messenger;
 
 			m_MetaGetaTabGroup = new NamedNavigationTabGroup("MetaGeta");
 			m_TabGroups.Add(new NullViewModel(m_MetaGetaTabGroup, MessengerInstance, "Settings", s_ConfigureImage));
@@ -131,6 +131,7 @@ namespace MetaGeta.GUI {
 
 			m_TabGroups.Add(new GridViewModel(grp, MessengerInstance, dataStore));
 			m_TabGroups.Add(new ImportStatusViewModel(grp, MessengerInstance, dataStore));
+			m_TabGroups.Add(new Import2ViewModel(grp, MessengerInstance, dataStore));
 			m_TabGroups.Add(new TvShowViewModel(grp, MessengerInstance, dataStore));
 		}
 
@@ -148,9 +149,9 @@ namespace MetaGeta.GUI {
 
 	public class DesignTimeNavigationTabManager : NavigationTabManager {
 		public DesignTimeNavigationTabManager()
-			: base(new DataStoreManager(true)) {
+			: base(new Messenger(), new DataStoreManager(true)) {
 			//SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab.Group is DataStoreNavigationTabGroup);
-			SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab is JobQueueViewModel);
+			SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab is Import2ViewModel);
 		}
 	}
 }

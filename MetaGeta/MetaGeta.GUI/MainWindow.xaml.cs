@@ -25,27 +25,54 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using log4net;
 using MetaGeta.DataStore;
+using GalaSoft.MvvmLight.Messaging;
+using MetaGeta.GUI.Services;
+using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 #endregion
 
 namespace MetaGeta.GUI {
-    public partial class MainWindow {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+	public partial class MainWindow {
+		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private DataStoreManager m_DataStoreManager;
-        private NavigationTabManager m_Navigation;
+		private DataStoreManager m_DataStoreManager;
+		private NavigationTabManager m_Navigation;
+		private readonly Messenger m_Messenger;
 
-        public MainWindow() {
-            m_DataStoreManager = new DataStoreManager(false);
-            m_Navigation = new NavigationTabManager(m_DataStoreManager);
+		public MainWindow() {
+			m_DataStoreManager = new DataStoreManager(false);
 
-            InitializeComponent();
+			m_Messenger = new Messenger();
+			m_Messenger.Register<DirectoryPromptMessage>(this, ProcessDirectoryPrompt);
+			m_Messenger.Register<InputPromptMessage>(this, ProcessInputPrompt);
 
-            DataContext = m_Navigation;
-        }
+			m_Navigation = new NavigationTabManager(m_Messenger, m_DataStoreManager);
 
-        private void MainWindow_Closing(object sender, EventArgs e) {
+			InitializeComponent();
+
+			DataContext = m_Navigation;
+		}
+
+		private void ProcessDirectoryPrompt(DirectoryPromptMessage message) {
+			var cfd = new CommonOpenFileDialog();
+			cfd.IsFolderPicker = true;
+			cfd.EnsurePathExists = true;
+			cfd.EnsureValidNames = true;
+			cfd.Multiselect = false;
+			cfd.Title = message.Title;
+			if (cfd.ShowDialog() == CommonFileDialogResult.OK) {
+				message.Callback(cfd.FileName);
+			} else {
+				message.Callback(null);
+			}
+		}
+		private void ProcessInputPrompt(InputPromptMessage message) {
+			
+		}
+
+		private void MainWindow_Closing(object sender, EventArgs e) {
 			m_Navigation.Cleanup();
-        }   
-    }
+		}
+	}
 }

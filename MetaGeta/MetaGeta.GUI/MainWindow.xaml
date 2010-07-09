@@ -111,6 +111,9 @@
                 <DataTemplate DataType="{x:Type GUI:ImportStatusViewModel}">
                     <GUI:ImportStatusView/>
                 </DataTemplate>
+                <DataTemplate DataType="{x:Type GUI:Import2ViewModel}">
+                    <GUI:Import2View/>
+                </DataTemplate>
                 <DataTemplate DataType="{x:Type GUI:TvShowViewModel}">
                     <GUI:TvShowView/>
                 </DataTemplate>
