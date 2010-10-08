@@ -131,8 +131,11 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
 			var extensionsLookup = new HashSet<string>(Extensions);
 			var files = new List<FileInfo>();
 			foreach (string d in DirectoriesToWatch) {
-				var di = new DirectoryInfo(d);
-				if (di.Exists)
+				DirectoryInfo di = null;
+				try {
+					di = new DirectoryInfo(d);
+				} catch (ArgumentException) { } catch (PathTooLongException) { }
+				if (di != null && di.Exists)
 					files.AddRange(di.GetFiles("*", SearchOption.AllDirectories));
 			}
 			files.RemoveAll(f => !(extensionsLookup.Contains(Path.GetExtension(f.FullName))
