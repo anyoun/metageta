@@ -14,11 +14,11 @@ using System.Windows.Shapes;
 namespace MetaGeta.GUI
 {
 	/// <summary>
-	/// Interaction logic for Import2View.xaml
+	/// Interaction logic for ImportView.xaml
 	/// </summary>
-	public partial class Import2View : UserControl
+	public partial class ImportView : UserControl
 	{
-		public Import2View()
+		public ImportView()
 		{
 			this.InitializeComponent();
 		}

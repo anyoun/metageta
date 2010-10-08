@@ -32,7 +32,7 @@ using MetaGeta.GUI.Services;
 using MetaGeta.Utilities;
 
 namespace MetaGeta.GUI {
-	public class Import2ViewModel : NavigationTab {
+	public class ImportViewModel : NavigationTab {
 		private static readonly BitmapImage s_ViewImage = new BitmapImage(new Uri("pack://application:,,,/MetaGeta.GUI;component/Resources/fileimport.png"));
 
 		private readonly MGDataStore m_DataStore;
@@ -42,7 +42,7 @@ namespace MetaGeta.GUI {
 		private readonly RelayCommand m_ImportCommand, m_AddDirectoryCommand, m_AddExtensionCommand;
 		private readonly RelayCommand<string> m_RemoveDirectoryCommand, m_RemoveExtensionCommand;
 
-		public Import2ViewModel(NavigationTabGroupBase group, IMessenger messenger, MGDataStore dataStore)
+		public ImportViewModel(NavigationTabGroupBase group, IMessenger messenger, MGDataStore dataStore)
 			: base(group, messenger) {
 			m_DataStore = dataStore;
 
@@ -64,7 +64,7 @@ namespace MetaGeta.GUI {
 		}
 
 		public virtual ImportStatus ImportStatus { get { return m_DataStore.ImportStatus; } }
-		public override string Caption { get { return "Import2"; } }
+		public override string Caption { get { return "Import Files"; } }
 		public override ImageSource Icon { get { return s_ViewImage; } }
 
 		public virtual IList<string> Directories {
@@ -123,8 +123,8 @@ namespace MetaGeta.GUI {
 		}
 	}
 
-	public class DesignTimeImport2ViewModel : Import2ViewModel {
-		public DesignTimeImport2ViewModel()
+	public class DesignTimeImportViewModel : ImportViewModel {
+		public DesignTimeImportViewModel()
 			: base(null, null, null) { }
 		public override IList<string> Directories {
 			get { return new[] { @"c:\foo\bar\", @"c:\foo\", @"e:\bar\" }; }

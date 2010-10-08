@@ -108,11 +108,8 @@
                 <DataTemplate DataType="{x:Type GUI:GridViewModel}">
                     <GUI:GridView/>
                 </DataTemplate>
-                <DataTemplate DataType="{x:Type GUI:ImportStatusViewModel}">
-                    <GUI:ImportStatusView/>
-                </DataTemplate>
-                <DataTemplate DataType="{x:Type GUI:Import2ViewModel}">
-                    <GUI:Import2View/>
+                <DataTemplate DataType="{x:Type GUI:ImportViewModel}">
+                    <GUI:ImportView/>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type GUI:TvShowViewModel}">
                     <GUI:TvShowView/>

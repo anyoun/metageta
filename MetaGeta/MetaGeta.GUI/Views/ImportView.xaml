@@ -5,12 +5,12 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
 	xmlns:local="clr-namespace:MetaGeta.GUI"
-	x:Class="MetaGeta.GUI.Import2View"
+	x:Class="MetaGeta.GUI.ImportView"
 	x:Name="UserControl"
 	d:DesignWidth="708" d:DesignHeight="611">
 
     <UserControl.Resources>
-        <local:DesignTimeImport2ViewModel x:Key="DesignTimeImport2ViewModelDataSource" d:IsDataSource="True"/>
+        <local:DesignTimeImportViewModel x:Key="DesignTimeImportViewModelDataSource" d:IsDataSource="True"/>
         <DataTemplate x:Key="StringTemplate">
             <StackPanel>
                 <TextBlock Text="{Binding}"/>
@@ -23,7 +23,7 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid x:Name="LayoutRoot" d:DataContext="{Binding Source={StaticResource DesignTimeImport2ViewModelDataSource}}">
+    <Grid x:Name="LayoutRoot" d:DataContext="{Binding Source={StaticResource DesignTimeImpor2ViewModelDataSource}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="0.748*"/>
             <RowDefinition Height="100"/>

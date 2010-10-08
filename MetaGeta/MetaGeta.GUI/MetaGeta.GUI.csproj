@@ -178,8 +178,7 @@
     <Compile Include="Services\DirectoryPromptMessage.cs" />
     <Compile Include="Services\InputPromptMessage.cs" />
     <Compile Include="ViewModels\GridViewModel.cs" />
-    <Compile Include="ViewModels\Import2ViewModel.cs" />
-    <Compile Include="ViewModels\ImportStatusViewModel.cs" />
+    <Compile Include="ViewModels\ImportViewModel.cs" />
     <Compile Include="ViewModels\JobQueueViewModel.cs" />
     <Compile Include="ViewModels\NavigationTab.cs" />
     <Compile Include="ViewModels\NavigationTabGroup.cs" />
@@ -190,12 +189,8 @@
       <DependentUpon>GridView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\Import2View.xaml.cs">
-      <DependentUpon>Import2View.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ImportStatusView.xaml.cs">
-      <DependentUpon>ImportStatusView.xaml</DependentUpon>
-      <SubType>Code</SubType>
+    <Compile Include="Views\ImportView.xaml.cs">
+      <DependentUpon>ImportView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\JobQueueView.xaml.cs">
       <DependentUpon>JobQueueView.xaml</DependentUpon>
@@ -275,13 +270,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\Import2View.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\ImportStatusView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Views\ImportView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

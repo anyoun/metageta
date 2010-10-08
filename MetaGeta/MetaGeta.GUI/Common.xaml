@@ -165,7 +165,7 @@
                     <Grid>
                         <Border x:Name="Border" Background="{x:Null}" BorderBrush="{x:Null}" BorderThickness="1" Padding="1" CornerRadius="0">
                             <!--  The implementation places the Content into the ScrollViewer. It must be named PART_ContentHost for the control to function -->
-                            <ScrollViewer Margin="0" x:Name="PART_ContentHost" Style="{DynamicResource SimpleScrollViewer}"/>
+                            <ScrollViewer Margin="0" x:Name="PART_ContentHost" Style="{DynamicResource MGScrollViewer}"/>
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
@@ -257,9 +257,9 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Grid Margin="0,0,0,0" x:Name="Grid">
-                        <Rectangle HorizontalAlignment="Stretch" x:Name="Rectangle" 
-                                   VerticalAlignment="Stretch" Width="Auto" Height="Auto" Margin="1"
+                    <Grid Margin="0" x:Name="Grid">
+                        <Rectangle HorizontalAlignment="Center" x:Name="Rectangle" SnapsToDevicePixels="True"
+                                   VerticalAlignment="Stretch" Width="5" Height="Auto" Margin="1"
                                    Fill="Black"/>
                     </Grid>
                     <ControlTemplate.Triggers>
@@ -301,19 +301,19 @@
                 <ControlTemplate TargetType="{x:Type ScrollBar}">
                     <Grid x:Name="GridRoot" Width="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" Background="{TemplateBinding Background}">
                         <Grid.RowDefinitions>
-                            <RowDefinition MaxHeight="18"/>
+                            <RowDefinition MaxHeight="14"/>
                             <RowDefinition Height="0.00001*"/>
-                            <RowDefinition MaxHeight="18"/>
+                            <RowDefinition MaxHeight="14"/>
                         </Grid.RowDefinitions>
 
-                        <RepeatButton x:Name="DecreaseRepeat" Style="{DynamicResource MGRepeatButton}" Command="ScrollBar.LineUpCommand">
+                        <RepeatButton x:Name="DecreaseRepeat" Style="{DynamicResource MGRepeatButton}" Command="ScrollBar.LineUpCommand" HorizontalAlignment="Center" Margin="2,0,0,0">
                             <Grid>
                                 <Path x:Name="DecreaseArrow" Stroke="{TemplateBinding Foreground}" StrokeThickness="1" Data="M 0 4 L 8 4 L 4 0 Z"/>
                             </Grid>
                         </RepeatButton>
 
                         <!-- Track is a special layout container which sizes the thumb and the repeat button which do jump scrolling either side of it -->
-                        <Track Grid.Row="1" x:Name="PART_Track" Orientation="Vertical" IsDirectionReversed="true">
+                        <Track Grid.Row="1" x:Name="PART_Track" Orientation="Vertical" IsDirectionReversed="true" HorizontalAlignment="Center">
                             <Track.Thumb>
                                 <Thumb Style="{DynamicResource MGThumbStyle}"/>
                             </Track.Thumb>
@@ -325,9 +325,9 @@
                             </Track.DecreaseRepeatButton>
                         </Track>
 
-                        <Rectangle Grid.Row="1" Width="1" HorizontalAlignment="Center" Fill="{TemplateBinding Foreground}" Margin="-1,0,0,0" />
+                        <Rectangle Grid.Row="1" Width="1" HorizontalAlignment="Center" Fill="{TemplateBinding Foreground}" Margin="0,0,0,0" SnapsToDevicePixels="True" />
 
-                        <RepeatButton Grid.Row="2" x:Name="IncreaseRepeat" Style="{DynamicResource MGRepeatButton}" Command="ScrollBar.LineDownCommand">
+                        <RepeatButton Grid.Row="2" x:Name="IncreaseRepeat" Style="{DynamicResource MGRepeatButton}" Command="ScrollBar.LineDownCommand" HorizontalAlignment="Center" Margin="2,0,0,0">
                             <Grid>
                                 <Path x:Name="IncreaseArrow" Stroke="{TemplateBinding Foreground}" StrokeThickness="1" Data="M 0 0 L 4 4 L 8 0 Z"/>
                             </Grid>

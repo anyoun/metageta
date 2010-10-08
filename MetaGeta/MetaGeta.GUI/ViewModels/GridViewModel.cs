@@ -52,13 +52,8 @@ namespace MetaGeta.GUI {
 			}
 		}
 
-		public string[] ColumnNames {
-			get { return m_DataStore.Template.GetColumnNames(); }
-		}
-
-		public IList<MGFile> Files {
-			get { return m_DataStore.Files; }
-		}
+		public string[] ColumnNames { get { return m_DataStore.Template.GetColumnNames(); } }
+		public IList<MGFile> Files { get { return m_DataStore.Files; } }
 
 		public IList<MGFile> SelectedFiles {
 			get { return m_SelectedFiles; }
@@ -73,13 +68,8 @@ namespace MetaGeta.GUI {
 
 		public MGFile SelectedFile { get { return m_SelectedFiles == null || m_SelectedFiles.Count != 1 ? null : m_SelectedFiles.First(); } }
 
-		public override string Caption {
-			get { return "Grid"; }
-		}
-
-		public override ImageSource Icon {
-			get { return s_ViewImage; }
-		}
+		public override string Caption { get { return "View"; } }
+		public override ImageSource Icon { get { return s_ViewImage; } }
 
 		#region "Commands"
 
@@ -90,21 +80,14 @@ namespace MetaGeta.GUI {
 
 		#region "Execute"
 
-		public void RemoveFile(IList<MGFile> param) {
-			m_DataStore.RemoveFiles(param);
-		}
+		public void RemoveFile(IList<MGFile> param) { m_DataStore.RemoveFiles(param); }
 
 		#endregion
 
 		#region "Command helper functions"
 
-		private static bool IsNonEmpty(IList<MGFile> files) {
-			return files != null && files.Count > 0;
-		}
-
-		private static bool IsExactlyOne(IList<MGFile> files) {
-			return files != null && files.Count == 1;
-		}
+		private static bool IsNonEmpty(IList<MGFile> files) { return files != null && files.Count > 0; }
+		private static bool IsExactlyOne(IList<MGFile> files) { return files != null && files.Count == 1; }
 
 		#endregion
 
