@@ -49,18 +49,9 @@ namespace MetaGeta.GUI {
 			m_Series = CreateRuntimeData();
 		}
 
-		public override string Caption {
-			get { return "TV Shows"; }
-		}
-
-
-		public ObservableCollection<TvSeries> Series {
-			get { return m_Series; }
-		}
-
-		public override ImageSource Icon {
-			get { return s_ViewImage; }
-		}
+		public override string Caption { get { return "TV Shows"; } }
+		public ObservableCollection<TvSeries> Series { get { return m_Series; } }
+		public override ImageSource Icon { get { return s_ViewImage; } }
 
 		private void DataStorePropertyChanged(object sender, PropertyChangedEventArgs e) {
 			if (e.PropertyName == "ImportStatus") {
@@ -81,6 +72,7 @@ namespace MetaGeta.GUI {
 				var series = new TvSeries(seriesGroup.Key);
 				series.SeriesBannerPath = seriesGroup.Select(f => f.Tags.GetString(TVShowDataStoreTemplate.SeriesBanner)).Coalesce();
 				series.SeriesPosterPath = seriesGroup.Select(f => f.Tags.GetString(TVShowDataStoreTemplate.SeriesPoster)).Coalesce();
+				series.SeriesDescription = seriesGroup.Select(f => f.Tags.GetString(TVShowDataStoreTemplate.SeriesDescription)).Coalesce();
 
 				var episodeGroups = from f in seriesGroup
 									group f by
@@ -94,21 +86,23 @@ namespace MetaGeta.GUI {
 											grp.Key.EpisodeNumber,
 											Episodes = grp,
 											FirstAired = grp.Select(file => file.Tags.GetDateTime(TVShowDataStoreTemplate.EpisodeFirstAired)).Coalesce(),
+											EpisodeBannerPath = grp.Select(file => file.Tags.GetString(TVShowDataStoreTemplate.EpisodeBanner)).Coalesce(),
 											Length = grp.Select(file => file.Tags.GetTimeSpan(TVShowDataStoreTemplate.PlayTime)).Coalesce(),
 											Title = grp.Select(file => file.Tags.GetString(TVShowDataStoreTemplate.EpisodeTitle)).Coalesce(),
 											Ipod = grp.Any(file => true == file.Tags.GetBool(TVShowDataStoreTemplate.iPodClassicCompatible)),
 											Iphone = grp.Any(file => true == file.Tags.GetBool(TVShowDataStoreTemplate.iPhoneCompatible)),
-											Computer = grp.Any()
+											Computer = grp.Any(),
 										};
 
 				IEnumerable<TvEpisode> episodes = from ep in episodeGroups
 												  where ep.SeasonNumber.HasValue && ep.EpisodeNumber.HasValue
 												  select new TvEpisode(series, ep.SeasonNumber.Value, ep.EpisodeNumber.Value, ep.Title) {
 													  AirDate = ep.FirstAired,
+													  EpisodeBannerPath = ep.EpisodeBannerPath,
 													  Length = ep.Length,
 													  HasComputerVersion = ep.Computer,
 													  HasIphoneVersion = ep.Iphone,
-													  HasIpodVersion = ep.Ipod
+													  HasIpodVersion = ep.Ipod,
 												  };
 				episodes = from ep in episodes orderby ep.SeasonNumber, ep.EpisodeNumber select ep;
 
@@ -124,27 +118,33 @@ namespace MetaGeta.GUI {
 			get {
 				var results = new ObservableCollection<TvSeries>();
 				results.Add(new TvSeries("Mythbusters") {
-					SeriesBannerPath = "f:\\ipod\\73388-g.jpg",
-					SeriesPosterPath = "f:\\ipod\\img_posters_73388-1.jpg"
+					SeriesBannerPath = "e:\\ipod.not\\73388-g.jpg",
+					SeriesPosterPath = "e:\\ipod.not\\img_posters_73388-1.jpg",
+					SeriesDescription = "So exactly how hard is it to find a needle in a haystack, anyway? And can water dripping on your forehead really drive you nuts? Those are the kinds of questions, myths and urban legends that are put to the test in this humorous series to find out which ones hold water (and keep it from dripping on your forehead and driving you insane).",
 				});
-				results.Last().Episodes.Add(new TvEpisode(results.Last(), 8, 1, "Demolition Derby"));
-				results.Last().Episodes.Add(new TvEpisode(results.Last(), 8, 2, "Alaska Special 2"));
-				results.Last().Episodes.Add(new TvEpisode(results.Last(), 8, 3, "Banana Slip/Double-Dip"));
+				results.Last().Episodes.Add(new TvEpisode(results.Last(), 6, 1, "James Bond Special Part 1") { EpisodeBannerPath = @"e:\ipod.not\Images\408062.jpg", });
+				results.Last().Episodes.Add(new TvEpisode(results.Last(), 6, 2, "Lead Balloon") { EpisodeBannerPath = @"e:\ipod.not\Images\408062.jpg", });
+				results.Last().Episodes.Add(new TvEpisode(results.Last(), 7, 1, "Demolition Derby") { EpisodeBannerPath = @"e:\ipod.not\Images\408062.jpg", });
+				results.Last().Episodes.Add(new TvEpisode(results.Last(), 7, 2, "Alaska Special 2") { EpisodeBannerPath = @"e:\ipod.not\Images\408062.jpg", });
+				results.Last().Episodes.Add(new TvEpisode(results.Last(), 7, 13, "Banana Slip/Double-Dip") { EpisodeBannerPath = @"e:\ipod.not\Images\408062.jpg", });
 				results.Add(new TvSeries("Arrested Development") {
 					SeriesBannerPath = "f:\\ipod\\72173-g.jpg",
 					SeriesPosterPath = "f:\\ipod\\72173-1.jpg"
 				});
 				results.Last().Episodes.Add(new TvEpisode(results.Last(), 1, 1, "Pilot") {
 					AirDate = new DateTime(2003, 11, 2),
-					Length = new TimeSpan(0, 22, 0)
+					Length = new TimeSpan(0, 22, 0),
+					EpisodeBannerPath = @"e:\ipod.not\Images\408062.jpg",
 				});
 				results.Last().Episodes.Add(new TvEpisode(results.Last(), 1, 2, "Top Banana") {
 					AirDate = new DateTime(2003, 11, 9),
-					Length = new TimeSpan(0, 22, 0)
+					Length = new TimeSpan(0, 22, 0),
+					EpisodeBannerPath = @"e:\ipod.not\Images\408062.jpg",
 				});
 				results.Last().Episodes.Add(new TvEpisode(results.Last(), 1, 3, "Bringing Up Buster") {
 					AirDate = new DateTime(2003, 11, 16),
-					Length = new TimeSpan(0, 22, 0)
+					Length = new TimeSpan(0, 22, 0),
+					EpisodeBannerPath = @"e:\ipod.not\Images\408062.jpg",
 				});
 				return results;
 			}
@@ -152,37 +152,23 @@ namespace MetaGeta.GUI {
 	}
 
 	public class TvSeries {
-		private readonly List<TvEpisode> m_Episodes = new List<TvEpisode>();
 		private readonly string m_Name;
-		private string m_SeriesBannerPath;
-
-		private string m_SeriesPosterPath;
+		private readonly List<TvEpisode> m_Episodes = new List<TvEpisode>();
 
 		public TvSeries(string seriesName) {
 			m_Name = seriesName;
 		}
 
-		public string Name {
-			get { return m_Name; }
-		}
+		public string Name { get { return m_Name; } }
+		public IList<TvEpisode> Episodes { get { return m_Episodes; } }
 
-		public IList<TvEpisode> Episodes {
-			get { return m_Episodes; }
-		}
+		public string SeriesBannerPath { get; set; }
+		public string SeriesPosterPath { get; set; }
+		public bool HasPoster { get { return SeriesBannerPath != null; } }
 
-		public string SeriesBannerPath {
-			get { return m_SeriesBannerPath; }
-			set { m_SeriesBannerPath = value; }
-		}
+		public string SeriesDescription { get; set; }
 
-		public string SeriesPosterPath {
-			get { return m_SeriesPosterPath; }
-			set { m_SeriesPosterPath = value; }
-		}
-
-		public bool HasPoster {
-			get { return SeriesBannerPath != null; }
-		}
+		public bool HasMultipleSeasons { get { return Episodes.Select(e => e.SeasonNumber).Distinct().Count() > 1; } }
 	}
 
 	public class TvEpisode {
@@ -190,12 +176,6 @@ namespace MetaGeta.GUI {
 		private readonly int m_SeasonNumber;
 		private readonly TvSeries m_Series;
 		private readonly string m_Title;
-		private DateTimeOffset m_AirDate;
-		private bool m_HasComputerVersion;
-
-		private bool m_HasIphoneVersion;
-		private bool m_HasIpodVersion;
-		private TimeSpan m_Length;
 
 		public TvEpisode(TvSeries series, int seasonNumber, int episodeNumber, string title) {
 			m_Series = series;
@@ -204,31 +184,13 @@ namespace MetaGeta.GUI {
 			m_Title = title;
 		}
 
-		public TvSeries Series {
-			get { return m_Series; }
-		}
-
-		public int SeasonNumber {
-			get { return m_SeasonNumber; }
-		}
-
-		public int EpisodeNumber {
-			get { return m_EpisodeNumber; }
-		}
-
-		public string Title {
-			get { return m_Title; }
-		}
-
-		public DateTimeOffset AirDate {
-			get { return m_AirDate; }
-			set { m_AirDate = value; }
-		}
-
-		public TimeSpan Length {
-			get { return m_Length; }
-			set { m_Length = value; }
-		}
+		public TvSeries Series { get { return m_Series; } }
+		public int SeasonNumber { get { return m_SeasonNumber; } }
+		public int EpisodeNumber { get { return m_EpisodeNumber; } }
+		public string Title { get { return m_Title; } }
+		public string EpisodeBannerPath { get; set; }
+		public DateTimeOffset AirDate { get; set; }
+		public TimeSpan Length { get; set; }
 
 		public string LongName {
 			get {
@@ -239,23 +201,15 @@ namespace MetaGeta.GUI {
 			}
 		}
 
-		public bool IsEven {
-			get { return EpisodeNumber % 2 == 0; }
-		}
+		public bool HasComputerVersion { get; set; }
+		public bool HasIpodVersion { get; set; }
+		public bool HasIphoneVersion { get; set; }
 
-		public bool HasComputerVersion {
-			get { return m_HasComputerVersion; }
-			set { m_HasComputerVersion = value; }
-		}
-
-		public bool HasIpodVersion {
-			get { return m_HasIpodVersion; }
-			set { m_HasIpodVersion = value; }
-		}
-
-		public bool HasIphoneVersion {
-			get { return m_HasIphoneVersion; }
-			set { m_HasIphoneVersion = value; }
+		public IEnumerable<Tuple<string, string>> Details {
+			get {
+				yield return new Tuple<string, string>("First Aired:", AirDate.ToString("d"));
+				yield return new Tuple<string, string>("Length:", Length.ToString("g"));
+			}
 		}
 	}
 
