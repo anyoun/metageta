@@ -44,6 +44,10 @@ namespace MetaGeta.DataStore.Database {
             return new MGFile[0];
         }
 
+		public long GetFileCount(MGDataStore dataStore) {
+			return 0;
+		}
+
         public string GetGlobalSetting(string settingName) {
             return null;
         }

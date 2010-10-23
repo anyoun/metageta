@@ -26,6 +26,7 @@ using System.Reflection;
 using log4net;
 using MetaGeta.DataStore;
 using MetaGeta.Utilities;
+using System.Threading;
 
 #endregion
 
@@ -35,13 +36,15 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
 		private MGDataStore m_DataStore;
 
 		private ReadOnlyCollection<string> m_DirectoriesToWatch;
-
 		private ReadOnlyCollection<string> m_Extensions;
 		private long m_ID;
 
-		public long ID {
-			get { return m_ID; }
-		}
+		private readonly Subject<FileAddedEventArgs> m_FileAddedSubject = new Subject<FileAddedEventArgs>();
+		private readonly Subject<FileModifiedEventArgs> m_FileModifiedSubject = new Subject<FileModifiedEventArgs>();
+		private readonly Subject<FileMovedEventArgs> m_FileMovedSubject = new Subject<FileMovedEventArgs>();
+		private readonly Subject<FileDeletedEventArgs> m_FileDeleteSubject = new Subject<FileDeletedEventArgs>();
+
+		public long ID { get { return m_ID; } }
 
 		[Settings("Directories To Watch", new string[0], SettingType.DirectoryList, "Locations")]
 		public ReadOnlyCollection<string> DirectoriesToWatch {
@@ -69,7 +72,12 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
 
 		#region IMGFileSourcePlugin Members
 
-		public void Refresh(out ICollection<Uri> addedFiles, out ICollection<Uri> removedFiles) {
+		public IObservable<FileAddedEventArgs> FileAddedEvent { get { return m_FileAddedSubject; } }
+		public IObservable<FileModifiedEventArgs> FileModifiedEvent { get { return m_FileModifiedSubject; } }
+		public IObservable<FileMovedEventArgs> FileMovedEvent { get { return m_FileMovedSubject; } }
+		public IObservable<FileDeletedEventArgs> FileDeleteEvent { get { return m_FileDeleteSubject; } }
+
+		public void Refresh(CancellationToken cancel) {
 			var fileNameToFileDict = new Dictionary<string, MGFile>();
 			foreach (var t in m_DataStore.GetAllTagOnFiles(MGFile.FileNameKey))
 				fileNameToFileDict[new Uri((string)t.Item1.Value).LocalPath] = t.Item2;
@@ -77,71 +85,59 @@ namespace MetaGeta.DirectoryFileSourcePlugin {
 			var newFiles = new List<Uri>();
 
 			foreach (FileInfo fi in GetAllFilesInWatchedDirectories()) {
-				MGFile mgFile = null;
 				if (fileNameToFileDict.Remove(fi.FullName)) {
 					//Already exits, remove it from the dictionary
 					log.DebugFormat("File \"{0}\" already exists.", fi.FullName);
 				} else {
 					//New files
 					log.DebugFormat("New files: \"{0}\".", fi.FullName);
-					newFiles.Add(new Uri(fi.FullName));
+					m_FileAddedSubject.OnNext(new FileAddedEventArgs(new Uri(fi.FullName)));
 				}
+				if (cancel.IsCancellationRequested)
+					return;
 			}
 
 			var deletedFiles = new List<Uri>();
 			foreach (var item in fileNameToFileDict) {
+				m_FileDeleteSubject.OnNext(new FileDeletedEventArgs(new Uri(item.Key)));
 				deletedFiles.Add(new Uri(item.Key));
 			}
-
-			addedFiles = newFiles;
-			removedFiles = deletedFiles;
 		}
 
 		#endregion
 
 		#region IMGPluginBase Members
 
-		long IMGPluginBase.PluginID {
-			get { return ID; }
-		}
-
-		public string FriendlyName {
-			get { return "Directory File Source Plugin"; }
-		}
-
-		public string UniqueName {
-			get { return "DirectoryFileSourcePlugin"; }
-		}
-
-		public Version Version {
-			get { return new Version(1, 0, 0, 0); }
-		}
-
 		public void Startup(MGDataStore dataStore, long id) {
 			m_DataStore = dataStore;
+			m_ID = id;
 		}
-
 		public void Shutdown() { }
+
+		long IMGPluginBase.PluginID { get { return ID; } }
+		public string FriendlyName { get { return "Directory File Source Plugin"; } }
+		public string UniqueName { get { return "DirectoryFileSourcePlugin"; } }
+		public Version Version { get { return new Version(1, 0, 0, 0); } }
 
 		public event PropertyChangedEventHandler SettingChanged;
 
 		#endregion
 
-		private ICollection<FileInfo> GetAllFilesInWatchedDirectories() {
+		private IEnumerable<FileInfo> GetAllFilesInWatchedDirectories() {
 			var extensionsLookup = new HashSet<string>(Extensions);
-			var files = new List<FileInfo>();
 			foreach (string d in DirectoriesToWatch) {
 				DirectoryInfo di = null;
 				try {
 					di = new DirectoryInfo(d);
 				} catch (ArgumentException) { } catch (PathTooLongException) { }
-				if (di != null && di.Exists)
-					files.AddRange(di.GetFiles("*", SearchOption.AllDirectories));
+				if (di != null && di.Exists) {
+					foreach (var fileInfo in di.EnumerateFiles("*", SearchOption.AllDirectories)) {
+						var ext = Path.GetExtension(fileInfo.FullName);
+						if(extensionsLookup.Contains(ext) || extensionsLookup.Contains(ext.TrimStart('.')))
+							yield return fileInfo;
+					}
+				}
 			}
-			files.RemoveAll(f => !(extensionsLookup.Contains(Path.GetExtension(f.FullName))
-								   || extensionsLookup.Contains(Path.GetExtension(f.FullName).TrimStart('.'))
-								  ));
-			return files;
 		}
 	}
 }

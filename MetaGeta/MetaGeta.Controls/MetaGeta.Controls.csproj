@@ -115,6 +115,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoRefreshCollectionViewSource.cs" />
+    <Compile Include="DependancyObjectNotifyPropertyChanged.cs" />
     <Compile Include="My Project\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

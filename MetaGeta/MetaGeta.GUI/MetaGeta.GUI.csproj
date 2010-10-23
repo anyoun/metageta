@@ -125,8 +125,24 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.CoreEx, Version=1.0.2698.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\rx\System.CoreEx.dll</HintPath>
+    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Interactive, Version=1.0.2698.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\rx\System.Interactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive, Version=1.0.2698.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\rx\System.Reactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Testing, Version=1.0.2698.104, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\rx\System.Reactive.Testing.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -148,6 +164,7 @@
     <Compile Include="Controls\ProgressBadge.xaml.cs">
       <DependentUpon>ProgressBadge.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DispacherScheduler.cs" />
     <Compile Include="MetaGetaGuiApplication.xaml.cs">
       <DependentUpon>MetaGetaGuiApplication.xaml</DependentUpon>
     </Compile>
@@ -362,10 +379,6 @@
     <ProjectReference Include="..\MediaInfoPlugin\MediaInfoPlugin.csproj">
       <Project>{399AAC6A-11BB-471A-A95B-DD81786B728B}</Project>
       <Name>MediaInfoPlugin</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MetaGeta.Browser\MetaGeta.Browser.csproj">
-      <Project>{61424E44-4829-4269-AB4B-7B66F69D8DDC}</Project>
-      <Name>MetaGeta.Browser</Name>
     </ProjectReference>
     <ProjectReference Include="..\MetaGeta.Controls\MetaGeta.Controls.csproj">
       <Project>{34255A45-AF81-4427-905B-7F3C67E9BAB7}</Project>

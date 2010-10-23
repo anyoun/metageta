@@ -31,6 +31,7 @@ namespace MetaGeta.DataStore.Database {
         void WriteNewFiles(IEnumerable<MGFile> files, MGDataStore dataStore);
         IEnumerable<MGDataStore> GetDataStores(IDataStoreOwner owner);
         IList<MGFile> GetFiles(MGDataStore dataStore);
+		long GetFileCount(MGDataStore dataStore);
         IList<Tuple<MGTag, MGFile>> GetTagOnAllFiles(MGDataStore dataStore, string tagName);
         void WriteFile(MGFile file);
         void WriteDataStore(MGDataStore dataStore);

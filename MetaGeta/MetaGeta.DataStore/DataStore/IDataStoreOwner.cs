@@ -14,9 +14,11 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with MetaGeta. If not, see <http://www.gnu.org/licenses/>.
+using System.Concurrency;
 namespace MetaGeta.DataStore {
     public interface IDataStoreOwner {
         void DeleteDataStore(MGDataStore dataStore);
         void EnqueueAction(IAction action, MGDataStore dataStore, MGFile file);
+		IScheduler MainThreadScheduler { get; }
     }
 }

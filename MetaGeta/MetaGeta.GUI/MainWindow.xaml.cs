@@ -29,6 +29,7 @@ using GalaSoft.MvvmLight.Messaging;
 using MetaGeta.GUI.Services;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Concurrency;
 
 #endregion
 
@@ -41,7 +42,7 @@ namespace MetaGeta.GUI {
 		private readonly Messenger m_Messenger;
 
 		public MainWindow() {
-			m_DataStoreManager = new DataStoreManager(false);
+			m_DataStoreManager = new DataStoreManager(false, new DispatcherScheduler(Dispatcher));
 
 			m_Messenger = new Messenger();
 			m_Messenger.Register<DirectoryPromptMessage>(this, ProcessDirectoryPrompt);

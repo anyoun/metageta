@@ -33,7 +33,9 @@ namespace MetaGeta.DataStore.DataStore {
 
         [SetUp]
         private void InializeConnection() {
-            Console.WriteLine(Environment.CurrentDirectory);
+			NativeHelper.ExtractUnmanagedDlls();
+			
+			Console.WriteLine(Environment.CurrentDirectory);
             m_Connection = new SQLiteConnection("Data Source=:memory:");
             m_Connection.Open();
 

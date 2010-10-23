@@ -20,6 +20,7 @@
 using System;
 using log4net.Config;
 using MetaGeta.DataStore;
+using System.Concurrency;
 
 #endregion
 
@@ -28,7 +29,8 @@ namespace MetaGetaCLI {
         public static void Main(string[] args) {
             XmlConfigurator.Configure();
 
-            var dsm = new DataStoreManager(false);
+			var scheduler = new NewThreadScheduler();
+			var dsm = new DataStoreManager(false, scheduler);
 
             foreach (MGDataStore ds in dsm.DataStores) {
                 Console.WriteLine("Refreshing {0}...", ds.Name);

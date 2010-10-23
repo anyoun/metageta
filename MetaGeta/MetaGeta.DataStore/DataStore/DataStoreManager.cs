@@ -23,92 +23,96 @@ using System.Reflection;
 using log4net;
 using MetaGeta.DataStore.Database;
 using MetaGeta.Utilities;
+using System.Concurrency;
 
 #endregion
 
 namespace MetaGeta.DataStore {
-    public class DataStoreManager : INotifyPropertyChanged, IDataStoreOwner {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly IDataMapper m_DataMapper;
-        private readonly ObservableCollection<MGDataStore> m_DataStores = new ObservableCollection<MGDataStore>();
+	public class DataStoreManager : INotifyPropertyChanged, IDataStoreOwner {
+		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly IDataMapper m_DataMapper;
+		private readonly ObservableCollection<MGDataStore> m_DataStores = new ObservableCollection<MGDataStore>();
+		private readonly IScheduler m_MainThreadScheduler;
 
-        private readonly JobQueue m_JobQueue;
+		private readonly JobQueue m_JobQueue;
 
-        public DataStoreManager(bool designMode) {
-            log.InfoFormat("DataStoreManager ctor");
+		public DataStoreManager(bool designMode, IScheduler mainThreadScheduler) {
+			log.InfoFormat("DataStoreManager ctor");
+			m_MainThreadScheduler = mainThreadScheduler;
 
-            if (!designMode)
-                m_DataMapper = new DataMapper("metageta.db3");
-            else
-                m_DataMapper = new MockDataMapper();
+			if (!designMode)
+				m_DataMapper = new DataMapper("metageta.db3");
+			else
+				m_DataMapper = new MockDataMapper();
 
-            m_JobQueue = new JobQueue(designMode);
+			m_JobQueue = new JobQueue(designMode);
 
-            m_DataMapper.Initialize();
-            m_DataStores.AddRange(m_DataMapper.GetDataStores(this));
-            OnDataStoresChanged();
-        }
+			m_DataMapper.Initialize();
+			m_DataStores.AddRange(m_DataMapper.GetDataStores(this));
+			OnDataStoresChanged();
+		}
 
-        public JobQueue JobQueue {
-            get { return m_JobQueue; }
-        }
+		public JobQueue JobQueue {
+			get { return m_JobQueue; }
+		}
 
-        public ObservableCollection<MGDataStore> DataStores {
-            get { return m_DataStores; }
-        }
+		public ObservableCollection<MGDataStore> DataStores {
+			get { return m_DataStores; }
+		}
 
-        #region IDataStoreOwner Members
+		#region IDataStoreOwner Members
 
-        public void DeleteDataStore(MGDataStore dataStore) {
-            dataStore.Close();
-            m_DataMapper.RemoveDataStore(dataStore);
-            DataStores.Remove(dataStore);
-        }
+		public void DeleteDataStore(MGDataStore dataStore) {
+			dataStore.Close();
+			m_DataMapper.RemoveDataStore(dataStore);
+			DataStores.Remove(dataStore);
+		}
 
-        public void EnqueueAction(IAction action, MGDataStore dataStore, MGFile file) {
-            m_JobQueue.EnqueueAction(action, dataStore, file);
-        }
+		public void EnqueueAction(IAction action, MGDataStore dataStore, MGFile file) {
+			m_JobQueue.EnqueueAction(action, dataStore, file);
+		}
+		public IScheduler MainThreadScheduler { get { return m_MainThreadScheduler; } }
 
-        #endregion
+		#endregion
 
-        #region INotifyPropertyChanged Members
+		#region INotifyPropertyChanged Members
 
-        public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler PropertyChanged;
 
-        #endregion
+		#endregion
 
-        public void WaitForQueueToEmpty() {
-            m_JobQueue.WaitForQueueToEmpty();
-        }
+		public void WaitForQueueToEmpty() {
+			m_JobQueue.WaitForQueueToEmpty();
+		}
 
-        public void Shutdown() {
-            m_JobQueue.Dispose();
-            foreach (MGDataStore ds in m_DataStores)
-                ds.Close();
-            m_DataMapper.Close();
-        }
+		public void Shutdown() {
+			m_JobQueue.Dispose();
+			foreach (MGDataStore ds in m_DataStores)
+				ds.Close();
+			m_DataMapper.Close();
+		}
 
-        public MGDataStore NewDataStore(string name, IDataStoreTemplate template) {
-            var data = new MGDataStore(this, m_DataMapper);
-            using ((data.SuspendUpdates())) {
-                data.Template = template;
-                data.Name = name;
-            }
-            foreach (string pluginTypeName in template.GetPluginTypeNames())
-                data.AddNewPlugin(pluginTypeName);
-            m_DataMapper.WriteNewDataStore(data);
-            m_DataStores.Add(data);
-            OnDataStoresChanged();
-            return data;
-        }
+		public MGDataStore NewDataStore(string name, IDataStoreTemplate template) {
+			var data = new MGDataStore(this, m_DataMapper);
+			using ((data.SuspendUpdates())) {
+				data.Template = template;
+				data.Name = name;
+			}
+			foreach (string pluginTypeName in template.GetPluginTypeNames())
+				data.AddNewPlugin(pluginTypeName);
+			m_DataMapper.WriteNewDataStore(data);
+			m_DataStores.Add(data);
+			OnDataStoresChanged();
+			return data;
+		}
 
-        private void OnDataStoresChanged() {
-            OnPropertyChanged("DataStores");
-        }
+		private void OnDataStoresChanged() {
+			OnPropertyChanged("DataStores");
+		}
 
-        private void OnPropertyChanged(string name) {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-        }
-    }
+		private void OnPropertyChanged(string name) {
+			if (PropertyChanged != null)
+				PropertyChanged(this, new PropertyChangedEventArgs(name));
+		}
+	}
 }

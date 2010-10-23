@@ -30,6 +30,7 @@ using GalaSoft.MvvmLight.Messaging;
 using System.Windows.Data;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
+using System.Concurrency;
 
 #endregion
 
@@ -147,7 +148,7 @@ namespace MetaGeta.GUI {
 
 	public class DesignTimeNavigationTabManager : NavigationTabManager {
 		public DesignTimeNavigationTabManager()
-			: base(new Messenger(), new DataStoreManager(true)) {
+			: base(new Messenger(), new DataStoreManager(true, new TestScheduler())) {
 			SelectedTab = Tabs.Cast<NavigationTab>().First(tab => tab is ImportViewModel);
 		}
 	}

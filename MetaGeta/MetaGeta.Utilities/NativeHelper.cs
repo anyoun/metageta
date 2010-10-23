@@ -1,4 +1,4 @@
-// Copyright 2009 Will Thomas
+﻿// Copyright 2009 Will Thomas
 // 
 // This file is part of MetaGeta.
 // 
@@ -18,31 +18,35 @@
 #region
 
 using System.Runtime.InteropServices;
-using System.Windows;
-using log4net.Config;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using MetaGeta.Utilities;
+using System.ComponentModel;
 
 #endregion
 
-namespace MetaGeta.GUI {
-	public partial class MetaGetaGuiApplication : System.Windows.Application {
-		// Application-level events, such as Startup, Exit, and DispatcherUnhandledException
-		// can be handled in this file.
-
-		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-		static MetaGetaGuiApplication() {
-			GalaSoft.MvvmLight.Threading.DispatcherHelper.Initialize();
+namespace MetaGeta.Utilities {
+	public class NativeHelper {
+		public static void ExtractUnmanagedDlls() {
+			if (Environment.Is64BitProcess) {
+				LoadUnmanagedDll(@"lib-x64\MediaInfo.dll");
+				LoadUnmanagedDll(@"lib-x64\sqlite3.dll");
+			} else {
+				LoadUnmanagedDll(@"lib-x86\MediaInfo.dll");
+				LoadUnmanagedDll(@"lib-x86\sqlite3.dll");
+			}
 		}
 
-		protected override void OnStartup(StartupEventArgs e) {
-			base.OnStartup(e);
-			XmlConfigurator.Configure();
-			NativeHelper.ExtractUnmanagedDlls();
+		[DllImport("kernel32", SetLastError = true)]
+		static extern IntPtr LoadLibrary(string lpFileName);
+
+		private static void LoadUnmanagedDll(string path) {
+			IntPtr ptr = LoadLibrary(path);
+			if (ptr == IntPtr.Zero)
+				throw new Exception(string.Format("Couldn't load library \"{0}\".", path),
+									new Win32Exception());
 		}
 	}
 }

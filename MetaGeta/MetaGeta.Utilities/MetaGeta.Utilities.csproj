@@ -97,9 +97,6 @@
       <HintPath>..\..\log4net\log4net.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="PresentationFramework">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core">
@@ -110,16 +107,12 @@
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="WindowsBase">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoRefreshCollectionViewSource.cs" />
     <Compile Include="DbHelpers.cs" />
-    <Compile Include="DependancyObjectNotifyPropertyChanged.cs" />
     <Compile Include="LinqExtensions.cs" />
     <Compile Include="My Project\AssemblyInfo.cs" />
+    <Compile Include="NativeHelper.cs" />
     <Compile Include="StringHelpers.cs" />
   </ItemGroup>
   <ItemGroup>

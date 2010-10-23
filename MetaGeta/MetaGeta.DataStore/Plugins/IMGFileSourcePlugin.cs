@@ -19,11 +19,47 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 #endregion
 
 namespace MetaGeta.DataStore {
-    public interface IMGFileSourcePlugin {
-        void Refresh(out ICollection<Uri> addedFiles, out ICollection<Uri> removedFiles);
-    }
+	public interface IMGFileSourcePlugin {
+		void Refresh(CancellationToken cancel);
+		IObservable<FileAddedEventArgs> FileAddedEvent { get; }
+		IObservable<FileModifiedEventArgs> FileModifiedEvent { get; }
+		IObservable<FileMovedEventArgs> FileMovedEvent { get; }
+		IObservable<FileDeletedEventArgs> FileDeleteEvent { get; }
+	}
+
+	public class FileAddedEventArgs : EventArgs {
+		private readonly Uri m_FilePath;
+		public FileAddedEventArgs(Uri filePath) {
+			m_FilePath = filePath;
+		}
+		public Uri FilePath { get { return m_FilePath; } }
+	}
+	public class FileModifiedEventArgs : EventArgs {
+		private readonly Uri m_FilePath;
+		public FileModifiedEventArgs(Uri filePath) {
+			m_FilePath = filePath;
+		}
+		public Uri FilePath { get { return m_FilePath; } }
+	}
+	public class FileMovedEventArgs : EventArgs {
+		private readonly Uri m_OldFilePath, m_NewFilePath;
+		public FileMovedEventArgs(Uri oldFilePath, Uri newFilePath) {
+			m_OldFilePath = oldFilePath;
+			m_NewFilePath = newFilePath;
+		}
+		public Uri OldFilePath { get { return m_OldFilePath; } }
+		public Uri NewFilePath { get { return m_NewFilePath; } }
+	}
+	public class FileDeletedEventArgs : EventArgs {
+		private readonly Uri m_FilePath;
+		public FileDeletedEventArgs(Uri filePath) {
+			m_FilePath = filePath;
+		}
+		public Uri FilePath { get { return m_FilePath; } }
+	}
 }

@@ -30,6 +30,8 @@ using System.Threading;
 using log4net;
 using MetaGeta.DataStore.Database;
 using MetaGeta.Utilities;
+using System.Concurrency;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -40,26 +42,20 @@ namespace MetaGeta.DataStore {
 		private readonly List<IMGPluginBase> m_AllPlugins = new List<IMGPluginBase>();
 		private readonly IDataMapper m_DataMapper;
 		private readonly IDataStoreOwner m_Owner;
-		private readonly ManualResetEvent m_ShutdownEvent = new ManualResetEvent(false);
+		private readonly CancellationTokenSource m_CancelTaskSource = new CancellationTokenSource();
 		private string m_Description = "";
 		private long m_ID = -1;
 		private string m_Name;
 		private IDataStoreTemplate m_Template;
 
 		internal MGDataStore(IDataStoreOwner owner, IDataMapper dataMapper) {
-			m_ImportThread = new Thread(ImportThread);
 			m_Owner = owner;
 			m_DataMapper = dataMapper;
 
-			m_ImportThread.IsBackground = true;
-			m_ImportThread.Start();
-
-			SetImportStatus(string.Format("{0} files total.", Files.Count), -1);
+			ImportStatus = new ImportStatus(string.Format("{0} files total.", m_DataMapper.GetFileCount(this)), 0);
 		}
 
-		public IList<MGFile> Files {
-			get { return m_DataMapper.GetFiles(this); }
-		}
+		public IList<MGFile> Files { get { return m_DataMapper.GetFiles(this); } }
 
 		public string Name {
 			get { return m_Name; }
@@ -112,9 +108,7 @@ namespace MetaGeta.DataStore {
 
 		private int m_SuspendCount = 0;
 
-		private bool AreUpdatesSuspended {
-			get { return m_SuspendCount != 0; }
-		}
+		private bool AreUpdatesSuspended { get { return m_SuspendCount != 0; } }
 
 		public IDisposable SuspendUpdates() {
 			m_SuspendCount += 1;
@@ -158,8 +152,7 @@ namespace MetaGeta.DataStore {
 		#endregion
 
 		public void Close() {
-			m_ShutdownEvent.Set();
-			m_ImportThread.Join();
+			m_CancelTaskSource.Cancel();
 			foreach (IMGPluginBase plugin in m_AllPlugins)
 				plugin.Shutdown();
 		}
@@ -208,19 +201,15 @@ namespace MetaGeta.DataStore {
 		private void OnNameChanged() {
 			OnPropertyChanged("Name");
 		}
-
 		private void OnDescriptionChanged() {
 			OnPropertyChanged("Description");
 		}
-
 		private void OnTemplateChanged() {
 			OnPropertyChanged("Template");
 		}
-
 		private void OnFilesChanged() {
 			OnPropertyChanged("Files");
 		}
-
 		private void OnPropertyChanged(string propertyName) {
 			if (PropertyChanged != null)
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
@@ -300,6 +289,15 @@ namespace MetaGeta.DataStore {
 
 			log.InfoFormat("StartupPlugin(): {0}", plugin.GetType().FullName);
 
+			if (plugin is IMGFileSourcePlugin) {
+				var fsp = (IMGFileSourcePlugin)plugin;
+				var bufferTime = TimeSpan.FromMilliseconds(100);
+				fsp.FileAddedEvent.BufferWithTime(bufferTime).Where(l => l.Count > 0).Subscribe(l => OnFileAdded(fsp, l));
+				fsp.FileModifiedEvent.BufferWithTime(bufferTime).Where(l => l.Count > 0).Subscribe(l => OnFileModified(fsp, l));
+				fsp.FileMovedEvent.BufferWithTime(bufferTime).Where(l => l.Count > 0).Subscribe(l => OnFileMoved(fsp, l));
+				fsp.FileDeleteEvent.BufferWithTime(bufferTime).Where(l => l.Count > 0).Subscribe(l => OnFileDeleted(fsp, l));
+			}
+
 			plugin.Startup(this, id);
 
 			foreach (SettingInfo setting in SettingInfoCollection.GetSettings(plugin)) {
@@ -316,16 +314,19 @@ namespace MetaGeta.DataStore {
 
 		#region "Importing"
 
-		private readonly AutoResetEvent m_ImportNow = new AutoResetEvent(false);
-		private readonly Thread m_ImportThread;
-		private ReadOnlyCollection<MGFile> m_ImportQueueCache;
-		private ImportStatus m_LastImportStatus = new ImportStatus();
+		private ImportStatus m_LastImportStatus = ImportStatus.None;
 		private object m_LastImportStatusLock = new object();
 
 		public ImportStatus ImportStatus {
 			get {
 				lock (m_LastImportStatusLock) {
 					return m_LastImportStatus;
+				}
+			}
+			private set {
+				lock (m_LastImportStatusLock) {
+					m_LastImportStatus = value;
+					OnPropertyChanged("ImportStatus");
 				}
 			}
 		}
@@ -336,64 +337,39 @@ namespace MetaGeta.DataStore {
 		/// </summary>
 		/// <remarks></remarks>
 		public void BeginRefresh() {
-			m_ImportNow.Set();
+			ImportStatus = new ImportStatus("Listing files...", 0);
+			FileSourcePlugins.AsParallel().WithCancellation(m_CancelTaskSource.Token).ForEach(fs => fs.Refresh(m_CancelTaskSource.Token));
 		}
 
-		private void SetImportStatus(string message, int progressPct) {
-			lock (m_LastImportStatusLock) {
-				if (progressPct == -1)
-					m_LastImportStatus = new ImportStatus(message);
-				else
-					m_LastImportStatus = new ImportStatus(message, progressPct);
+		private void OnFileAdded(IMGFileSourcePlugin pluing, IList<FileAddedEventArgs> events) {
+			var files = events.Select(e => new MGFile(this)).ToArray();
+			m_DataMapper.WriteNewFiles(files, this);
+			var filePaths = events.Select(e => e.FilePath).ToArray();
+			for (int i = 0; i < filePaths.Length; i++) {
+				ImportStatus = new ImportStatus(string.Format("Importing \"{0}\"", filePaths[i].LocalPath), filePaths.Length - 1);
+				ImportNewFile(files[i], filePaths[i]);
 			}
-			OnPropertyChanged("ImportStatus");
+			ImportStatus = new ImportStatus("Import complete.", 0);
+			m_Owner.MainThreadScheduler.Schedule(OnFilesChanged);
 		}
+		private void OnFileModified(IMGFileSourcePlugin pluing, IList<FileModifiedEventArgs> events) {
 
-		public void ImportThread() {
-			while (true) {
-				int wakeupHandle = WaitHandle.WaitAny(new WaitHandle[] {
-                                                                           m_ImportNow,
-                                                                           m_ShutdownEvent
-                                                                       });
-				if (wakeupHandle == 1)
-					return;
+		}
+		private void OnFileMoved(IMGFileSourcePlugin pluing, IList<FileMovedEventArgs> events) {
 
-				SetImportStatus("Listing files...", 0);
-
-				var addedFiles = new List<Uri>();
-				var removedFiles = new List<Uri>();
-				foreach (var fs in FileSourcePlugins) {
-					ICollection<Uri> added, removed;
-					fs.Refresh(out added, out removed);
-					addedFiles.AddRange(added);
-					removedFiles.AddRange(removed);
-				}
-
-				var filesToRemove = Files.Where(f => removedFiles.Contains(f.FileNameUri));
-				m_DataMapper.RemoveFiles(filesToRemove, this);
-
-				MGFile[] files = (addedFiles.Select(p => new MGFile(this))).ToArray();
-				m_DataMapper.WriteNewFiles(files, this);
-
-				foreach (Tuple<MGFile, Uri, int> fileAndPath in files.IndexInnerJoin(addedFiles)) {
-					MGFile newfile = fileAndPath.Item1;
-					Uri filePath = fileAndPath.Item2;
-					int index = fileAndPath.Item3;
-					SetImportStatus(string.Format("Importing \"{0}\"", filePath.LocalPath), (int)(index * 100.0) / files.Length);
-					ImportNewFile(newfile, filePath);
-				}
-
-				SetImportStatus(string.Format("Import complete. {0} files total.", Files.Count), 100);
-
-				OnFilesChanged();
-			}
+		}
+		private void OnFileDeleted(IMGFileSourcePlugin pluing, IList<FileDeletedEventArgs> events) {
+			var removedFiles = events.ToLookup(e => e.FilePath);
+			m_DataMapper.RemoveFiles(Files.Where(f => removedFiles.Contains(f.FileNameUri)), this);
+			ImportStatus = new ImportStatus("", 0);
+			m_Owner.MainThreadScheduler.Schedule(OnFilesChanged);
 		}
 
 		public MGFile AddNewFile(Uri path) {
 			var file = new MGFile(this);
 			m_DataMapper.WriteNewFiles(file.SingleToEnumerable(), this);
 			ImportNewFile(file, path);
-			OnFilesChanged();
+			m_Owner.MainThreadScheduler.Schedule(OnFilesChanged);
 			return file;
 		}
 
@@ -425,36 +401,19 @@ namespace MetaGeta.DataStore {
 
 		#endregion
 	}
-}
 
-namespace MetaGeta.DataStore {
 	public class ImportStatus {
-		private readonly bool m_IsImporting;
-
-		private readonly bool m_IsIndeterminate;
-		private readonly int m_ProgressPct;
+		private readonly int m_FilesRemaining;
 		private readonly string m_StatusMessage;
 
-		public ImportStatus(string statusMessage, int progressPct) {
+		public ImportStatus(string statusMessage, int filesRemaining) {
 			m_StatusMessage = statusMessage;
-			m_ProgressPct = progressPct;
-			m_IsImporting = true;
-			m_IsIndeterminate = false;
-		}
-
-		public ImportStatus()
-			: this(string.Empty, 0) {
-			m_IsImporting = false;
-		}
-
-		public ImportStatus(string statusMessage)
-			: this(statusMessage, 0) {
-			m_IsIndeterminate = true;
+			m_FilesRemaining = filesRemaining;
 		}
 
 		public string StatusMessage { get { return m_StatusMessage; } }
-		public int ProgressPct { get { return m_ProgressPct; } }
-		public bool IsImporting { get { return m_IsImporting; } }
-		public bool IsIndeterminate { get { return m_IsIndeterminate; } }
+		public int FilesRemaining { get { return m_FilesRemaining; } }
+
+		public static readonly ImportStatus None = new ImportStatus(string.Empty, 0);
 	}
 }

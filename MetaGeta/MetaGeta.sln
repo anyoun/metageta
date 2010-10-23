@@ -22,8 +22,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaGeta.DataStore", "MetaG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaGeta.Controls", "MetaGeta.Controls\MetaGeta.Controls.csproj", "{34255A45-AF81-4427-905B-7F3C67E9BAB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaGeta.Browser", "MetaGeta.Browser\MetaGeta.Browser.csproj", "{61424E44-4829-4269-AB4B-7B66F69D8DDC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,18 +152,6 @@ Global
 		{34255A45-AF81-4427-905B-7F3C67E9BAB7}.Release|x64.Build.0 = Release|x64
 		{34255A45-AF81-4427-905B-7F3C67E9BAB7}.Release|x86.ActiveCfg = Release|x86
 		{34255A45-AF81-4427-905B-7F3C67E9BAB7}.Release|x86.Build.0 = Release|x86
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Debug|x64.ActiveCfg = Debug|x64
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Debug|x64.Build.0 = Debug|x64
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Debug|x86.ActiveCfg = Debug|x86
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Debug|x86.Build.0 = Debug|x86
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Release|x64.ActiveCfg = Release|x64
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Release|x64.Build.0 = Release|x64
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Release|x86.ActiveCfg = Release|x86
-		{61424E44-4829-4269-AB4B-7B66F69D8DDC}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
