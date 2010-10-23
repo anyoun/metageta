@@ -20,12 +20,18 @@
 using System;
 using MetaGeta.DataStore;
 using NUnit.Framework;
+using MetaGeta.Utilities;
 
 #endregion
 
 namespace MetaGeta.TVShowPlugin {
     [TestFixture]
     public class TvShowPluginUnitTests : AssertionHelper {
+		[TestFixtureSetUp]
+		public void Setup() {
+			NativeHelper.ExtractUnmanagedDlls();
+		}
+
         private void Expect(string fileName,
                             string seriesTitle,
                             int? seasonNumber,
