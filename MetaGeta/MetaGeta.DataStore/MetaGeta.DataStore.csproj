@@ -233,4 +233,9 @@
       <Name>MetaGeta.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="lib-x64\sqlite3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

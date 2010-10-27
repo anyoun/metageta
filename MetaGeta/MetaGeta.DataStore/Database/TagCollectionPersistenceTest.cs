@@ -29,6 +29,11 @@ using NUnit.Framework;
 namespace MetaGeta.DataStore.Database {
     [TestFixture]
     public class TagCollectionPersistenceTest : AssertionHelper {
+		[TestFixtureSetUp]
+		public void Setup() {
+			NativeHelper.ExtractSqlite();
+		}
+
         private MGTagCollection CreateTags() {
             var tags = new MGTagCollection();
             tags.Add("foo", 123);

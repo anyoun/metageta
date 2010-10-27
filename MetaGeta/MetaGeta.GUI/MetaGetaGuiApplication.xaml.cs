@@ -42,7 +42,8 @@ namespace MetaGeta.GUI {
 		protected override void OnStartup(StartupEventArgs e) {
 			base.OnStartup(e);
 			XmlConfigurator.Configure();
-			NativeHelper.ExtractUnmanagedDlls();
+			NativeHelper.ExtractSqlite();
+			NativeHelper.ExtractMediaInfo();
 		}
 	}
 }

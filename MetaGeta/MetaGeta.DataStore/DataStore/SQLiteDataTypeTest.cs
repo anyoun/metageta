@@ -32,8 +32,8 @@ namespace MetaGeta.DataStore.DataStore {
         #region Setup/Teardown
 
         [SetUp]
-        private void InializeConnection() {
-			NativeHelper.ExtractUnmanagedDlls();
+        public void InializeConnection() {
+			NativeHelper.ExtractSqlite();
 			
 			Console.WriteLine(Environment.CurrentDirectory);
             m_Connection = new SQLiteConnection("Data Source=:memory:");
@@ -45,7 +45,7 @@ namespace MetaGeta.DataStore.DataStore {
         }
 
         [TearDown]
-        private void CloseConnection() {
+		public void CloseConnection() {
             m_Connection.Close();
         }
 

@@ -29,12 +29,17 @@ using System.ComponentModel;
 
 namespace MetaGeta.Utilities {
 	public class NativeHelper {
-		public static void ExtractUnmanagedDlls() {
+		public static void ExtractMediaInfo() {
 			if (Environment.Is64BitProcess) {
 				LoadUnmanagedDll(@"lib-x64\MediaInfo.dll");
-				LoadUnmanagedDll(@"lib-x64\sqlite3.dll");
 			} else {
 				LoadUnmanagedDll(@"lib-x86\MediaInfo.dll");
+			}
+		}
+		public static void ExtractSqlite() {
+			if (Environment.Is64BitProcess) {
+				LoadUnmanagedDll(@"lib-x64\sqlite3.dll");
+			} else {
 				LoadUnmanagedDll(@"lib-x86\sqlite3.dll");
 			}
 		}
@@ -43,6 +48,8 @@ namespace MetaGeta.Utilities {
 		static extern IntPtr LoadLibrary(string lpFileName);
 
 		private static void LoadUnmanagedDll(string path) {
+			if (!File.Exists(path))
+				throw new Exception(string.Format("Can't find dll \"{0}\".", Path.GetFullPath(path)));
 			IntPtr ptr = LoadLibrary(path);
 			if (ptr == IntPtr.Zero)
 				throw new Exception(string.Format("Couldn't load library \"{0}\".", path),
